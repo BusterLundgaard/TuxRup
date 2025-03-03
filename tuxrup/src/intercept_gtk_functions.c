@@ -22,6 +22,7 @@ GtkApplication *gtk_application_new(const char *application_id, GApplicationFlag
 
     GtkApplication* app = original_gtk_application_new(application_id, flags);
     on_init(app);
+    return app;
 }
 
 

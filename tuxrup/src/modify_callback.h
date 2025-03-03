@@ -5,4 +5,6 @@
 
 void modify_callback(void* callback, GtkWidget* widget, char* callback_name, char* new_function_code);
 
+void simple_tests(void* callback, GtkWidget* widget, char* callback_name);
+
 #endif

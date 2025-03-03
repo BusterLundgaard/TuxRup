@@ -46,3 +46,13 @@ bool is_mappable_action(const gchar* event_name){
     }
     return false; 
 }
+
+char* get_working_directory(){
+    FILE* pipe = popen("pwd", "r");
+    char buffer[1024];
+    if(fgets(buffer, sizeof(buffer), pipe) == NULL){
+        printf("Error finding working directory\n");
+        return NULL;
+    }
+    return g_strdup(buffer);
+}

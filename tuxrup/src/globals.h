@@ -18,6 +18,7 @@ extern GHashTable *widget_hashes;
 
 #define MAPPABLE_ACTIONS_LEN 1
 extern const char* program_src_folder;
+extern const char* working_directory;
 extern const char *remapable_events[MAPPABLE_ACTIONS_LEN];
 
 #endif

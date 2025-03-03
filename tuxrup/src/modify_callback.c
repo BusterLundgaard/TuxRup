@@ -18,7 +18,19 @@ void remove_click_signal (GtkWidget* w){
 }
 
 char* get_document_path(char* function_name){
-    return "";
+    FILE* fp = popen(g_strdup_printf("ctags -R -o - %s | grep %s", program_src_folder, function_name), "r");
+
+    char buffer[1024];
+    if(fgets(buffer, sizeof(buffer), fp) == NULL){
+        return NULL;
+    }
+
+    char document_path[1024];
+    document_path[0]='\0';
+    sscanf(buffer, "%*s %1023s", document_path);
+
+    return g_strdup(document_path);
+    //return g_strdup_printf("%s/%s", working_directory, document_path);
 }
 
 void modify_callback(void* callback, GtkWidget* widget, char* callback_name, char* new_function_code){
@@ -65,3 +77,25 @@ void modify_callback(void* callback, GtkWidget* widget, char* callback_name, cha
     remove_click_signal(widget);
     normal_g_signal_connect_data(widget, callback_name, G_CALLBACK(function_dispatcher), callback_name, NULL, (GConnectFlags)0);
 }
+
+static bool only_once = true; 
+
+void simple_tests(void* callback, GtkWidget* widget, char* callback_name){
+    if(!only_once){return;}
+    only_once=false;
+    
+    char* function_name = get_identifier_from_pointer(callback);
+    g_print("Function name is %s\n", function_name);
+
+    char* document_path = get_document_path(function_name);
+    printf("the document name is: %s\n", document_path);
+
+    document_generation_test1(document_path, function_name);
+
+    //void* button_A_callback_pointer = get_pointer_from_identifier("button_A_callback");
+    //printf("button_A_callback has pointer %p\n", button_A_callback_pointer);
+    //printf("the pointer points at a function with name: %s\n", get_identifier_from_pointer(button_A_callback_pointer));
+
+    //printf("this callback function has name %s\n", get_identifier_from_pointer(callback));
+}
+

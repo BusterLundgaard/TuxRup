@@ -12,4 +12,6 @@ void remove_signal (GtkWidget* w, char* signal_name);
 
 bool is_mappable_action(const gchar* event_name);
 
+char* get_working_directory();
+
 #endif

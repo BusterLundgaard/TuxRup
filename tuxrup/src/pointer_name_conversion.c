@@ -89,8 +89,10 @@ void* scan_elf(enum elf_scan_mode mode, void* comparison_value){
             if(mode == ELF_FIND_POINTER && sym_pointer == comparison_value){
                 ret = (void*)(g_strdup(sym_name));
             }
-            if(mode==ELF_FIND_IDENTIFIER && strcmp(sym_name, (char*)comparison_value)){
+            else if(mode==ELF_FIND_IDENTIFIER && strcmp(sym_name, (char*)comparison_value) == 0){
                 ret = sym_pointer;
+            } else {
+                continue;
             }
 
             elf_end(elf);
