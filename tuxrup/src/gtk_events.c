@@ -9,8 +9,7 @@
 #include "modify_callback.h"
 
 void on_right_click(GtkGestureClick *gesture,int, double x, double y, gpointer* self){
-    GtkWidget* widget = GTK_WIDGET(self); //widget that was clicked
-    //guint hash_value = *((guint*)(g_hash_table_lookup(widget_hashes, widget)));
+    GtkWidget* widget = GTK_WIDGET(self); 
     
     callback_identifier cb_id = {widget, "clicked"};
     gpointer value = g_hash_table_lookup(widget_callback_table, &cb_id);
@@ -18,29 +17,12 @@ void on_right_click(GtkGestureClick *gesture,int, double x, double y, gpointer* 
         g_print("Couldn't find the callback information for the widget you just right-clicked..\n");
         return;
     }
-
-    modify_callback(((callback_info*)value)->original_function_pointer, widget, "clicked", "");
+    callback_info* cb_info = (callback_info*)value;
     
-    // g_print("hash of cb_id you right clicked is: %u\n", callback_key_hash(&cb_id));
-    // gpointer key, value;
-    // GHashTableIter iter;
-    // g_hash_table_iter_init(&iter, widget_callback_table);
-    // for(; g_hash_table_iter_next(&iter, &key, &value); ){
-    //     printf("the map contains some key with hash: %u\n", callback_key_hash(key));
-    //     printf("is this key equal to ours? %d\n", callback_key_equal(key, (gpointer)(&cb_id)));
-    // }
-    //g_print("amount of things in table: %d", g_hash_table_size(widget_callback_table));
-    
-    //gpointer value = g_hash_table_lookup(widget_callback_table, &cb_id);
-    //callback_info* cb = (callback_info*)value;
-    //printf("found out that the callback is %p\n", cb->original_function_pointer);
-
-
-
-    //modify_callback(  )
+    char* callback_name = "clicked"; // This is just hard-coded for now, can be generalized later
+    callback_code_information* code_info = get_callback_code_information(cb_info->original_function_pointer, "clicked");
+    create_code_editing_menu(widget, callback_name, code_info);
 }
-
-// static void show_code_editor(GtkGestureClick *gesture,int, double x, double y, gpointer* self){
 
 void on_added_to_dom(GtkWidget* widget, gpointer data){
     guint* hash = malloc(sizeof(guint));  
@@ -48,7 +30,6 @@ void on_added_to_dom(GtkWidget* widget, gpointer data){
     const gchar* widget_type = g_type_name(G_OBJECT_TYPE(widget));    
     g_hash_table_insert(widget_hashes, (gpointer)widget, (gpointer)hash);
 }
-
 
 gulong
 on_g_signal_connect_data(

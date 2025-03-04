@@ -69,3 +69,13 @@ unsigned long hash_string(const char *str) {
     }
     return hash;
 }
+
+char* get_text_view_text(GtkWidget* text_view){
+    GtkTextBuffer* buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(buffer, &start);
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    return gtk_text_buffer_get_text(buffer, &start, &end, FALSE);  
+}
+
+   

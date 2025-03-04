@@ -18,4 +18,6 @@ unsigned int hash_int(int key);
 
 unsigned long hash_string(const char *str);
 
+char* get_text_view_text(GtkWidget* text_view);
+
 #endif
