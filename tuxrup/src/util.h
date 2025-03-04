@@ -14,4 +14,8 @@ bool is_mappable_action(const gchar* event_name);
 
 char* get_working_directory();
 
+unsigned int hash_int(int key);
+
+unsigned long hash_string(const char *str);
+
 #endif

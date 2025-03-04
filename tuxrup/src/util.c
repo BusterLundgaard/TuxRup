@@ -56,3 +56,16 @@ char* get_working_directory(){
     }
     return g_strdup(buffer);
 }
+
+unsigned int hash_int(int key) {
+    return (unsigned int)key * 2654435761U;  // Knuth's multiplicative hash
+}
+
+unsigned long hash_string(const char *str) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;  // hash * 33 + c
+    }
+    return hash;
+}

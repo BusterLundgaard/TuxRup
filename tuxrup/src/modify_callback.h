@@ -3,7 +3,16 @@
 
 #include <gtk/gtk.h>
 
-void modify_callback(void* callback, GtkWidget* widget, char* callback_name, char* new_function_code);
+typedef struct {
+    GString* function_name;
+    GString* document_path;
+    GString* before_code;
+    GString* args_code;
+    GString* function_code;
+    GString* after_code;
+} callback_code_information;
+
+void modify_callback(GtkWidget* widget, char* callback_name, char* new_function_code);
 
 void simple_tests(void* callback, GtkWidget* widget, char* callback_name);
 

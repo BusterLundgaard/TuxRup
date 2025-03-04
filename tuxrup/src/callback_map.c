@@ -1,10 +1,11 @@
 #include <dlfcn.h>
 
 #include "callback_map.h"
+#include "util.h"
 
 guint callback_key_hash(gconstpointer key){
-    const callback_identifier *k = key;
-    guint hash = g_str_hash(k->callback_name);
+    const callback_identifier* k = key;
+    guint hash = hash_string(k->callback_name);
     hash ^= g_direct_hash(k->widget);
     return hash;
 }

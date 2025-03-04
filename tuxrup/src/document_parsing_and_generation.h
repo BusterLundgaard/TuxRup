@@ -22,10 +22,14 @@ typedef struct {
     char* args_types;
 } reference_type;
 
-typedef struct {GString* buffer; char* function_name; GList** required_identifiers; char* document_path} create_modified_function_document_data;
+typedef struct {
+    callback_code_information* callback_info;
+    GString* buffer; 
+    GHashTable* undefined_identifiers; 
+    GHashTable* declared_identifiers} 
+parsing_data;
 
-create_modified_function_document_data 
-create_modified_document_and_find_identifiers(const char* filepath, const char* modified_function_name);
+parsing_data create_modified_document_and_find_identifiers(const char* filepath, const char* modified_function_name);
 
 void document_generation_test1(char* document_path, char* function_name);
 

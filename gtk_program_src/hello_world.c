@@ -1,16 +1,7 @@
 #define _GNU_SOURCE
-#include <execinfo.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <libelf.h>
-#include <fcntl.h>
-#include <gelf.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <stdbool.h>
 
 // typedef void (*callback_type)(GtkWidget*, gpointer);
 
