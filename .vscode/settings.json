@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "pointer_name_conversion.h": "c"
+        "pointer_name_conversion.h": "c",
+        "compute_widget_hash.h": "c",
+        "util.h": "c"
     }
 }

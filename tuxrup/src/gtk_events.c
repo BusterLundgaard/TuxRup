@@ -21,6 +21,7 @@ void on_right_click(GtkGestureClick *gesture,int, double x, double y, gpointer* 
     
     char* callback_name = "clicked"; // This is just hard-coded for now, can be generalized later
     callback_code_information* code_info = get_callback_code_information(cb_info->original_function_pointer, "clicked");
+    
     create_code_editing_menu(widget, callback_name, code_info);
 }
 
@@ -78,12 +79,10 @@ GConnectFlags connect_flags){
 
 void on_gtk_window_present(GtkWindow *window)
 {
-    g_print("Print on present yay!\n");
     //clang_tests("../program_src/hello_world.c");
 }
 
 void on_init(GtkApplication* app){
-    g_print("Print on init yay!\n");
     working_directory = get_working_directory();
     widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
     widget_callback_table = g_hash_table_new_full(callback_key_hash, callback_key_equal, callback_key_free, callback_value_free);

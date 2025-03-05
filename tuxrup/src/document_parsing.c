@@ -1,377 +1,17 @@
 #include "document_parsing.h"
 #include "modify_callback.h"
+#include "reference_type.h"
+#include "util.h"
 
-// typedef struct {
-//     GHashTable** undefined;
-//     GHashTable** declared;
-// } set_undefined_needed_data;
+// ==================================================
+// FUNCTIONS TO GET CURSORS
+// ==================================================
 
-// bool is_part_of_file(CXCursor* cursor, char* filename){
-//     CXFile file;
-//     clang_getFileLocation(clang_getCursorLocation(*cursor), &file, NULL, NULL, NULL);
-//     if (!file)
-//     {return false;}
-
-//     CXString clang_filename = clang_getFileName(file);
-//     bool is_our_file = strcmp(clang_getCString(clang_filename), filename) == 0;
-//     clang_disposeString(clang_filename);
-//     if(!is_our_file)
-//     {return false;}
-
-//     return true;
-// }
-
-// void write_cursor_element(CXCursor* c, GString* buffer){
-//     // Get string contents:
-//     CXSourceRange range = clang_getCursorExtent(*c);
-//     CXSourceLocation start = clang_getRangeStart(range);
-//     CXSourceLocation end = clang_getRangeEnd(range);
-//     CXFile file;
-//     unsigned start_offset, end_offset;
-//     clang_getSpellingLocation(start, &file, NULL, NULL, &start_offset);
-//     clang_getSpellingLocation(end, NULL, NULL, NULL, &end_offset);
-//     CXTranslationUnit tu = clang_Cursor_getTranslationUnit(*c);
-//     const char* fileContents = clang_getFileContents(tu, file, NULL);
-//     char* contents = g_strdup_printf("%.*s", (int)(end_offset - start_offset), fileContents + start_offset);
-
-//     // Add them to buffer with certain edge cases for inclusion directives and macros:
-//     enum CXCursorKind kind = clang_getCursorKind(*c);
-//     g_string_append(
-//         buffer,
-//         (kind == CXCursor_MacroDefinition) ? "#define" : ""
-//     );
-//     g_string_append(buffer, contents); 
-//     g_string_append(
-//         buffer, 
-//         (kind == CXCursor_InclusionDirective || kind == CXCursor_MacroDefinition) ? "\n" : ";\n");
-// }
-
-// enum CXChildVisitResult add_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data){
-//     GString* buffer = (GString*)data;
-//     g_string_append(buffer, "    ");
-//     write_cursor_element(&c, buffer);
-//     g_string_append(buffer, ";\n");
-//     return CXChildVisit_Continue;
-// }
-
-// // Takes a cursor c it assumes points to a FunctionDecl, returns a buffer with the arguments definition code
-// GString* get_function_arguments(CXCursor c){
-//     CXType type = clang_getCursorType(c);
-
-//     GString* argstr = g_string_new("");
-//     unsigned int num_args = clang_getNumArgTypes(type);
-//     for(int i = 0; i < num_args; i++){
-//         CXType arg_type = clang_getArgType(type, i);
-//         g_string_append(argstr, clang_getCString(clang_getTypeSpelling(arg_type)));
-//         if(i == num_args - 1){continue;}
-//         g_string_append(argstr, ",");
-//     }
-//     return argstr;
-// }
-
-// enum CXChildVisitResult visit_next_compound_stmt(CXCursor c, CXCursor parent, CXClientData data){
-//     CXCursor** next_compund = (CXCursor*)data;
-//     enum CXCursorKind kind = clang_getCursorKind(c);
-//     if(kind == CXCursor_CompoundStmt){
-//         *next_compund = &c;
-//         return CXChildVisit_Break;
-//     }
-//     return CXChildVisit_Recurse;
-// }
-
-// // Takes a cursor c it assumes points to a FunctionDecl, returns a cursor pointing to the body code (a compoundStmt);
-// CXCursor* get_function_body_cursor(CXCursor c){
-//     CXCursor* next_compound = NULL;
-//     clang_visitChildren(c, visit_next_compound_stmt, &next_compound);
-//     return next_compound;
-// }
-
-
-// void destroy_identifier_type_info(reference_type* identifier_info){
-//     // Function deallocating memory here
-// }
-
-// // Takes a cursor c it assumes points to a function body, fills out sets with the declared and undefined variables and type information about these:
-// enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){
-//     parsing_data* _data = (parsing_data*)data;
-//     GHashTable** undefined = _data->undefined_identifiers;
-//     GHashTable** declared = _data->declared_identifiers;
-
-//     enum CXCursorKind kind = clang_getCursorKind(c);
-
-//     // Add declarations 
-//     if(kind == CXCursor_DeclStmt){
-//         g_hash_table_add(*declared, g_strdup(clang_getCString(clang_getCursorSpelling(c))));
-//         return CXChildVisit_Recurse;
-//     }
-
-//     // Check it is a reference to something undeclared we haven't seen before:
-//     if(kind != CXCursor_DeclRefExpr)
-//     {return CXChildVisit_Recurse;}
-
-//     CXCursor referenced_cursor = clang_getCursorReferenced(c);
-//     enum CXCursorKind referenced_kind = clang_getCursorKind(referenced_cursor);
-//     char* identifier = clang_getCString(clang_getCursorSpelling(referenced_cursor));
-//     if(g_hash_table_contains(*declared, identifier) || g_hash_table_contains(*undefined, identifier))
-//     {return CXChildVisit_Continue;}
-
-//     // Build the type information
-//     reference_type* undefined_ref_type = create_identifier_type_info(referenced_cursor);
-//     undefined_ref_type->number = g_hash_table_size(*undefined);
-//     g_hash_table_insert(*undefined, identifier, undefined_ref_type);    
-
-//     return CXChildVisit_Continue;
-// }
-
-// void write_ref_typedef(char* identifier, reference_type* ref, GString* buffer){
-//     typedef int my_cooler_int;
-    
-//     if(ref->is_function){
-//         g_string_append(buffer, g_strdup_printf("typedef %s(*%s_t)(%s);\n", ref->return_type, identifier, ref->args_types));
-//     } else {
-//         g_string_append(buffer, g_strdup_printf("typedef %s %s_t;\n", ref->return_type, identifier));     
-//     }
-// }
-
-// void write_ref_declaration(char* identifier, reference_type* ref, GString* buffer){
-//     if(ref->is_function){
-//         g_string_append(buffer, g_strdup_printf("%s_t %s = (%s_t)(&data[%d]);\n", identifier, identifier, identifier, ref->number));
-//     } else {
-//         g_string_append(buffer, g_strdup_printf("%s_t %s = *((%s_t*)(&data[%d]));\n", identifier, identifier, identifier, ref->number));
-//     }
-    
-// }
-
-// void write_var_overwrite(char* identifier, reference_type* ref, GString* buffer){
-//     g_string_append(buffer, g_strdup_printf("*((%s_t*)(&data[%d])) = %s;\n", identifier, ref->number, identifier));
-// }
-
-// void free_reference_type(void* data){
-//     reference_type* value = (reference_type*)data;
-//     printf("I am freeing some shit bro!\n");
-//     g_free(value->return_type);
-//     g_free(value->args_types);
-//     g_free(value);
-// }
-
-// enum CXChildVisitResult clang_parse_build_buffer_modified_function(CXCursor c, CXCursor parent, CXClientData data){
-//     GString* document_buffer = ((create_modified_function_document_data*)data)->buffer;
-//     char* function_name = ((create_modified_function_document_data*)data)->function_name;
-//     GList** required_identifiers = ((create_modified_function_document_data*)data)->required_identifiers;
-
-//     enum CXCursorKind kind = clang_getCursorKind(c);
-//     if(kind == CXCursor_CompoundStmt){
-
-//         GHashTable* undefined = g_hash_table_new(g_str_hash, g_str_equal);
-//         GHashTable* declarations = g_hash_table_new(g_str_hash, g_str_equal);
-//         set_undefined_needed_data sets = {&undefined, &declarations};
-//         clang_visitChildren(c, set_undefined_references, &sets);
-
-//         // print your own function start here
-//         g_string_append(document_buffer, g_strdup_printf("void %s (GtkWidget* widget, gpointer data){\n //PREFIX: \n ", function_name));
-
-//         GHashTableIter iter;
-//         g_hash_table_iter_init(&iter, undefined);
-        
-//         char* undefined_identifier;
-//         reference_type* undefined_type;
-//         gpointer key, value;
-
-//         for(; g_hash_table_iter_next(&iter, &key, &value); ){
-//             undefined_identifier = (char*)key;
-//             undefined_type = (reference_type*)value;
-//             *required_identifiers = g_list_append(*required_identifiers, g_strdup(undefined_identifier));
-//             g_string_append(document_buffer, "    ");
-//             write_ref_typedef(undefined_identifier, undefined_type, document_buffer);
-//             g_string_append(document_buffer, "    ");
-//             write_ref_declaration(undefined_identifier, undefined_type, document_buffer);
-//         }
-
-//         // // print the actual function body here
-//         g_string_append(document_buffer, "\n //THEIR FUNCTION: \n");
-//         clang_visitChildren(c, add_cursor_to_buffer, document_buffer);
-//         g_string_append(document_buffer, "\n");
-//         g_string_append(document_buffer, "//POSTFIX: \n");
-
-//         // // print your function end here:
-//         g_hash_table_iter_init(&iter, undefined);
-//         for(; g_hash_table_iter_next(&iter, &key, &value); ){
-//             undefined_identifier = (char*)key;
-//             undefined_type = (reference_type*)value;
-//             if(undefined_type->is_function){continue;}
-//             g_string_append(document_buffer, "    ");
-//             write_var_overwrite(undefined_identifier, undefined_type, document_buffer);
-//         }
-
-//         g_string_append(document_buffer, "}");
-
-//         g_hash_table_destroy(undefined);
-//         g_hash_table_destroy(declarations);
-//         return CXChildVisit_Continue;
-//     }
-
-//     //write_cursor_element(&c, document_buffer);
-//     return CXChildVisit_Continue;
-// }
-
-// // Takes a cursor to the body of the function we want to modify, builds the version allowing it to be compiled seperately
-// void* build_modified_function(CXCursor* body_c, parsing_data* _data){
-//     // PREFIX
-//     g_string_append(_data->buffer, g_strdup_printf("void %s (%s){\n //PREFIX: \n ", _data->callback_info->function_name->str, _data->callback_info->args_code->str));
-
-//     GHashTableIter iter;
-//     gpointer key, value;
-//     g_hash_table_iter_init(&iter, _data->undefined_identifiers);
-    
-//     for(; g_hash_table_iter_next(&iter, &key, &value); ){
-//         char* undefined_identifier = (char*)key;
-//         reference_type* undefined_type = (reference_type*)value;
-        
-//         g_string_append(_data->buffer, "    ");
-//         write_ref_typedef(undefined_identifier, undefined_type, _data->buffer);
-//         g_string_append(_data->buffer, "    ");
-//         write_ref_declaration(undefined_identifier, undefined_type, _data->buffer);
-//     }
-
-//     // BODY
-//     g_string_append(_data->buffer, "\n //THEIR FUNCTION: \n");
-//     clang_visitChildren(*body_c, add_cursor_to_buffer, _data->buffer);
-//     g_string_append(_data->buffer, "\n");
-
-//     // POSTFIX
-//     g_string_append(_data->buffer, "//POSTFIX: \n");
-//     g_hash_table_iter_init(&iter, _data->undefined_identifiers);
-//     for(; g_hash_table_iter_next(&iter, &key, &value); ){
-//         char* undefined_identifier = (char*)key;
-//         reference_type* undefined_type = (reference_type*)value;
-//         if(undefined_type->is_function){continue;}
-
-//         g_string_append(_data->buffer, "    ");
-//         write_var_overwrite(undefined_identifier, undefined_type, _data->buffer);
-//     }
-//     g_string_append(_data->buffer, "}");
-// }
-
-
-// enum CXChildVisitResult build_document_with_modified_function(CXCursor c, CXCursor parent, CXClientData data){    
-//     parsing_data* _data = (parsing_data*)data;
-//     enum CXCursorKind kind = clang_getCursorKind(c);
-//     char* identifier = clang_getCString(clang_getCursorSpelling(c));
-
-//     // Check for cases to ignore:
-//     if( kind == CXCursor_VarDecl || 
-//         kind == CXCursor_MacroExpansion || 
-//         (kind == CXCursor_FunctionDecl && (strcmp(identifier, _data->callback_info->function_name) != 0)) ||
-//         !is_part_of_file(&c, _data->callback_info->document_path))
-
-//         {return CXChildVisit_Continue;}
-
-//     // Build either the modified function or some other part of the document:
-//     if( kind == CXCursor_FunctionDecl){
-//         CXCursor* body_c = get_function_body_cursor(c);
-//         clang_visitChildren(*body_c, set_undefined_references, _data);
-//         build_modified_function(body_c, data);
-//     } else {
-//         write_cursor_element(&c, _data->buffer);
-//     }
-
-//     return CXChildVisit_Continue;
-// }
-
-// create_modified_function_document_data 
-// create_modified_document_and_find_identifiers(callback_code_information* callback_info){
-//     CXIndex index = clang_createIndex(0,0);
-//     CXTranslationUnit unit = clang_parseTranslationUnit(index, filepath, NULL, 0, NULL, 0, CXTranslationUnit_DetailedPreprocessingRecord);
-//     if (!unit) {
-//         create_modified_function_document_data nothing = {};
-//         return nothing;
-//         }
-
-//     CXCursor cursor = clang_getTranslationUnitCursor(unit);
-
-//     GHashTable* undefined_identifers = g_hash_table_new(g_str_hash, g_str_equal); // This needs to have a custom destroy function for the value!
-//     GHashTable* declarations = g_hash_table_new(g_str_hash, g_str_equal); // This does not, it only stores keys (works as a set), not values
-//     GString* buffer = g_string_new("");
-    
-//     create_modified_function_document_data data = {callback_info, buffer, undefined_identifers, declarations};
-//     clang_visitChildren(cursor, clang_parse_build_buffer_ignore_other_identifiers, &data);
-
-//     return data;
-// }
-
-// // Takes a code_info with document_path and function_name set, fills out the rest
-// enum CXChildVisitResult clang_parse_function_code(CXCursor c, CXCursor parent, CXClientData data){    
-//     callback_code_information* code_info = (callback_code_information*)data;
-    
-//     enum CXCursorKind kind = clang_getCursorKind(c);
-
-//     if(kind == CXCursor_VarDecl)
-//     {return CXChildVisit_Continue;}
-
-//     if(kind == CXCursor_FunctionDecl){
-//         char* identifier = clang_getCString(clang_getCursorSpelling(c));
-//         if(strcmp(identifier, code_info->function_name) != 0)
-//         {return CXChildVisit_Continue;}
-
-//         GString* args = get_function_arguments(c);
-//         code_info->args_code = g_strdup(args->str);
-//         g_string_free(args, TRUE);
-
-
-
-//         clang_visitChildren(c, clang_parse_build_buffer_modified_function, data);
-//         return CXChildVisit_Continue;
-//     }
-
-//     if(kind == CXCursor_MacroExpansion){
-//         return CXChildVisit_Continue;
-//     }
-
-//     if(!is_part_of_file(&c, document_path))
-//     {return CXChildVisit_Continue;}
-
-//     if(kind == CXCursor_MacroDefinition){
-//         g_string_append(document_buffer, "#define ");
-//     } 
-
-//     write_cursor_element(&c, document_buffer);
-    
-
-//     if(kind == CXCursor_InclusionDirective || kind == CXCursor_MacroDefinition)
-//     {
-//         g_string_append(document_buffer, "\n");
-//     } else {
-//         g_string_append(document_buffer, ";\n");
-//     }
-//     return CXChildVisit_Continue;
-// }
-
-// void set_function_code(callback_code_information* code_info){
-//     if(code_info->document_path == NULL){
-//         g_print("You need to fill out document_path before calling set_function_code!\n");
-//         return;
-//     }
-//     if(code_info->function_name == NULL){
-//         g_print("You need to fill out function_name before calling set_function_code!\n");
-//         return;
-//     }
-
-//     CXIndex index = clang_createIndex(0,0);
-//     CXTranslationUnit unit = clang_parseTranslationUnit(index, code_info->document_path, NULL, 0, NULL, 0, CXTranslationUnit_DetailedPreprocessingRecord);
-//     if (!unit) {
-//         return;
-//         }
-
-//     CXCursor cursor = clang_getTranslationUnitCursor(unit);
-
-//     clang_visitChildren(cursor, clang_parse_function_code, code_info);
-// }
-
-
-// FUNCTIONS TO GET CURSORS:
 CXCursor get_root_cursor(char* filepath){
     CXIndex index = clang_createIndex(0,0);
-    CXTranslationUnit unit = clang_parseTranslationUnit(index, filepath, NULL, 0, NULL, 0, CXTranslationUnit_DetailedPreprocessingRecord);
+    CXTranslationUnit unit = clang_parseTranslationUnit(
+        index, filepath, NULL, 0, NULL, 0, 
+        CXTranslationUnit_DetailedPreprocessingRecord);
     if (!unit) {
         CXCursor empty = {};
         return empty;
@@ -380,7 +20,52 @@ CXCursor get_root_cursor(char* filepath){
     return clang_getTranslationUnitCursor(unit);
 }
 
+typedef struct {
+    char* function_name;
+    CXCursor* function_cursor;
+} visit_function_with_name_args;
+
+enum CXChildVisitResult visit_function_with_name(CXCursor c, CXCursor parent, CXClientData data){
+    visit_function_with_name_args* args = (visit_function_with_name_args*)data;
+
+    char* identifier = clang_getCString(clang_getCursorSpelling(c));
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    if(kind == CXCursor_FunctionDecl && (strcmp(identifier, args->function_name) == 0)){
+        *(args->function_cursor) = c;
+        return CXChildVisit_Break;
+    }
+
+    return CXChildVisit_Continue;
+}
+
+CXCursor get_function_cursor(CXCursor c, char* function_name){
+    CXCursor function_cursor;
+    visit_function_with_name_args args = {function_name, &function_cursor};
+    clang_visitChildren(c, visit_function_with_name, &args);
+    return function_cursor;
+}
+
+enum CXChildVisitResult visit_next_compound_stmt(CXCursor c, CXCursor parent, CXClientData data){
+    CXCursor* next_compound = (CXCursor*)data;
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    if(kind == CXCursor_CompoundStmt){
+        *next_compound = c;
+        return CXChildVisit_Break;
+    }
+    return CXChildVisit_Recurse;
+}
+
+CXCursor get_function_body_cursor(CXCursor c){
+    CXCursor next_compound = {};
+    clang_visitChildren(c, visit_next_compound_stmt, &next_compound);
+    return next_compound;
+}
+
+
+// ======================================================
 // CONDITIONAL FUNCTIONS:
+// ======================================================
+
 int is_part_of_main_file(CXCursor cursor) {
     CXTranslationUnit tu = clang_Cursor_getTranslationUnit(cursor);
     CXFile mainFile = clang_getFile(tu, clang_getCString(clang_getTranslationUnitSpelling(tu)));
@@ -393,53 +78,144 @@ int is_part_of_main_file(CXCursor cursor) {
     return cursorFile == mainFile; // Compare file pointers directly
 }
 
-bool is_cursor_before(CXSourceLocation* c1, CXSourceLocation* c2){
+int cursor_compare(CXSourceLocation c1, CXSourceLocation c2){
     CXFile file1, file2;
     unsigned line1, column1, offset1;
     unsigned line2, column2, offset2;
-
-    clang_getSpellingLocation(*c1, &file1, &line1, &column1, &offset1);
-    clang_getSpellingLocation(*c2, &file2, &line2, &column2, &offset2);
-    return (line1 == line2) ? column1 < column2 : line1 < line2;   
+    clang_getSpellingLocation(c1, &file1, &line1, &column1, &offset1);
+    clang_getSpellingLocation(c2, &file2, &line2, &column2, &offset2);
+    if(line1 == line2 && column1 == column2){return 0;}
+    if(line1 == line2)                      {return column1 < column2 ? -1 : 1;}
+    else                                    {return line1 < line2 ? -1 : 1;}
 }
 
+
+// ===============================================================
 // PARSING FUNCTIONS
-void set_function_argument(CXCursor c_func, GString* buffer){
+// ===============================================================
+
+void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool newline){
+    // Get string contents:
+    CXSourceRange range = clang_getCursorExtent(*c);
+    CXSourceLocation start = clang_getRangeStart(range);
+    CXSourceLocation end = clang_getRangeEnd(range);
+    CXFile file;
+    unsigned start_offset, end_offset;
+    clang_getSpellingLocation(start, &file, NULL, NULL, &start_offset);
+    clang_getSpellingLocation(end, NULL, NULL, NULL, &end_offset);
+    CXTranslationUnit tu = clang_Cursor_getTranslationUnit(*c);
+    const char* fileContents = clang_getFileContents(tu, file, NULL);
+    char* contents = g_strdup_printf("%.*s", (int)(end_offset - start_offset), fileContents + start_offset);
+
+    // Add them to buffer with certain edge cases for inclusion directives and macros:
+    enum CXCursorKind kind = clang_getCursorKind(*c);
+    g_string_append(
+        buffer,
+        (kind == CXCursor_MacroDefinition) ? "#define " : ""
+    );
+    g_string_append(buffer, contents); 
+    if(semicolons && !((kind == CXCursor_InclusionDirective || kind == CXCursor_MacroDefinition))){
+        g_string_append(buffer, ";");
+    }
+    if(newline){
+        g_string_append(buffer, "\n");
+    }
+}
+
+char* extract_type(const char* argument) {
+    if (!argument) return NULL;
+
+    size_t len = strlen(argument);
+    if (len == 0) return NULL;
+
+    // Find the last word (parameter name)
+    int last_space_index = -1;
+    for (int i = len - 1; i >= 0; i--) {
+        if (argument[i] == ' ') {
+            last_space_index = i;
+            break;
+        }
+    }
+
+    // If no spaces were found, the input is invalid
+    if (last_space_index == -1) return NULL;
+
+    // Allocate memory for the extracted type
+    char* type = (char*)malloc(last_space_index + 1);
+    if (!type) return NULL;
+
+    strncpy(type, argument, last_space_index);
+    type[last_space_index] = '\0';  // Null-terminate the string
+
+    return type;
+}
+
+void set_function_argument_types(CXCursor c_func, GString* buffer){
     CXType type = clang_getCursorType(c_func);
     unsigned int num_args = clang_getNumArgTypes(type);
     for(int i = 0; i < num_args; i++){
-        CXType arg_type = clang_getArgType(type, i);
-        g_string_append(buffer, clang_getCString(clang_getTypeSpelling(arg_type)));
+        CXCursor arg_cursor = clang_Cursor_getArgument(c_func, i);
+        GString* full_arg = g_string_new("");
+        write_cursor_element(&arg_cursor, full_arg, false, false);
+        char* arg_type = extract_type(full_arg->str);
+        g_string_append(buffer, arg_type);
+        
         if(i == num_args - 1){continue;}
         g_string_append(buffer, ",");
+    }
+}
+
+void set_function_arguments(CXCursor c_func, GString* buffer) {
+    CXType type = clang_getCursorType(c_func);
+    unsigned int num_args = clang_getNumArgTypes(type);
+
+    for (unsigned int i = 0; i < num_args; i++) {
+        CXCursor arg_cursor = clang_Cursor_getArgument(c_func, i);
+        write_cursor_element(&arg_cursor, buffer, false, false);
+        if (i < num_args - 1) {
+            g_string_append(buffer, ", ");
+        }
     }
 }
 
 enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXClientData data){
     set_before_after_code_args* args = (set_before_after_code_args*)data;
 
-    if(is_part_of_main_file(c))
+    if(!is_part_of_main_file(c))
     {return CXChildVisit_Continue;}
 
     CXSourceLocation loc = clang_getCursorLocation(c);
-    if(is_cursor_before(&loc, &args->modified_function_location)){
-        write_cursor_element(&c, args->before_code);
-    } else {
-        write_cursor_element(&c, args->after_code);
+    int cursor_comparison = cursor_compare(loc, args->modified_function_location);
+    if(cursor_comparison == 0){
+        return CXChildVisit_Continue;
+    }
+    else if(cursor_comparison == -1){
+        write_cursor_element(&c, args->before_code, true, true);
+    } 
+    else {
+        write_cursor_element(&c, args->after_code, true, true);
     }
 
     return CXChildVisit_Continue;
 } 
 
 enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClientData data){
+    GString* buffer = (GString*)data;
+    
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    if(kind == CXCursor_VarDecl || kind == CXCursor_MacroExpansion || kind == CXCursor_FunctionDecl || !is_part_of_main_file(c)){
+        return CXChildVisit_Continue;
+    }
 
+    write_cursor_element(&c, buffer, true, true);
+
+    return CXChildVisit_Continue;
 }
 
 enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data){
     GString* buffer = (GString*)data;
     g_string_append(buffer, "    ");
-    write_cursor_element(&c, buffer);
-    g_string_append(buffer, ";\n");
+    write_cursor_element(&c, buffer, true, true);
     return CXChildVisit_Continue;
 }
 
@@ -458,7 +234,8 @@ reference_type* create_identifier_type_info(CXCursor identifier_cursor){
         CXType type = clang_getCursorType(identifier_cursor);
         identifier_info->return_type = g_strdup(clang_getCString(clang_getTypeSpelling(clang_getResultType(type))));
        
-        GString* argstr = get_function_arguments(identifier_cursor);
+        GString* argstr = g_string_new("");
+        set_function_argument_types(identifier_cursor, argstr);
         identifier_info->args_types = g_strdup(argstr->str);
         g_string_free(argstr, TRUE);
     }
@@ -467,7 +244,7 @@ reference_type* create_identifier_type_info(CXCursor identifier_cursor){
 }
 
 enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){
-    find_undefined_references_args* args = (find_undefined_references_args*)data;;
+    find_undefined_references_args* args = (find_undefined_references_args*)data;
     GHashTable* undefined = args->undefined_identifiers;
     GHashTable* declared = args->declared_identifiers;
 
@@ -484,12 +261,17 @@ enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CX
     {return CXChildVisit_Recurse;}
 
     CXCursor referenced_cursor = clang_getCursorReferenced(c);
+
     enum CXCursorKind referenced_kind = clang_getCursorKind(referenced_cursor);
     char* identifier = clang_getCString(clang_getCursorSpelling(referenced_cursor));
     if(g_hash_table_contains(declared, identifier) || g_hash_table_contains(undefined, identifier))
     {return CXChildVisit_Continue;}
 
+    if(clang_equalCursors(referenced_cursor, clang_getNullCursor())){
+    return CXChildVisit_Continue;}
+
     // Build the type information
+    g_print("in parsing, adding the undeclared identifier: %s\n", identifier);
     reference_type* undefined_ref_type = create_identifier_type_info(referenced_cursor);
     undefined_ref_type->number = g_hash_table_size(undefined);
     g_hash_table_insert(undefined, identifier, undefined_ref_type);    

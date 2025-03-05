@@ -5,10 +5,15 @@
 #include "globals.h"
 
 void function_dispatcher(GtkWidget* widget, gpointer data){
+    // Something something computing a hash and loading a file if DL-handle doesn't exist
     callback_identifier cb_id = {widget, (char*)data};
-    callback_info* cb = (callback_info*)g_hash_table_lookup(widget_callback_table, &cb_id);
-    if(cb == NULL){return;}
+    callback_info* cb_info = (callback_info*)g_hash_table_lookup(widget_callback_table, &cb_id);
+    if(cb_info == NULL){return;}
 
-    callback_type their_foo = (callback_type) dlsym(cb->dl_handle, cb->function_name);
-    their_foo(widget, cb->identifier_pointers);
+    callback_type their_foo = (callback_type) dlsym(cb_info->dl_handle, cb_info->function_name);
+    if(their_foo == NULL){
+        g_print("it's null god damant!\n");
+    }
+
+    their_foo(widget, cb_info->identifier_pointers);
 }

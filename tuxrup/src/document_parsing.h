@@ -1,5 +1,5 @@
-#ifndef MODIFIED_DOCUMENT_GENERATION_H
-#define MODIFIED_DOCUMENT_GENERATION_H
+#ifndef DOCUMENT_PARSING_H
+#define DOCUMENT_PARSING_H
 
 #include <gtk/gtk.h>
 #include <stdio.h>
@@ -17,9 +17,9 @@
 
 CXCursor get_root_cursor(char* document_path);
 CXCursor get_function_cursor(CXCursor c, char* function_name);
-CXCursor get_function_body_cursor(CXCursor c_func);
+CXCursor get_function_body_cursor(CXCursor c_func);   
 
-void set_function_argument(CXCursor c_func, GString* buffer);   
+void set_function_arguments(CXCursor c_func, GString* buffer);
 
 typedef struct {
     GHashTable* undefined_identifiers; 
@@ -35,6 +35,8 @@ typedef struct {
 enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXClientData data);
 
 enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClientData data);
+
+void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool newline);
 
 enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data);
 
