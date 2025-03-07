@@ -4,7 +4,7 @@ project(TuxRup C)
 # Define GTK version from the command line
 # write `cmake .. -DUSE_GTK3` to use build GTK3 version
 # write `cmake ..` to build GTK4 version
-option(USE_GTK3 "Use GTK3" OFF)  # Default is OFF, so GTK4 is used unless specified
+option(USE_GTK3 "Use GTK3" OFF)  
 
 # Find required packages
 find_package(PkgConfig REQUIRED)

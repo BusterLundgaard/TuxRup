@@ -1,3 +1,0 @@
-/home/buster/Documents/tuxrup/tuxrup/build/CMakeFiles/tuxrup_gtk3.dir
-/home/buster/Documents/tuxrup/tuxrup/build/CMakeFiles/edit_cache.dir
-/home/buster/Documents/tuxrup/tuxrup/build/CMakeFiles/rebuild_cache.dir
