@@ -6,11 +6,7 @@
 #include <fcntl.h>
 #include <gelf.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <stdbool.h>
-#include <clang-c/Index.h>
-#include <limits.h>
 
 #include "pointer_name_conversion.h"
 

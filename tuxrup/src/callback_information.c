@@ -1,4 +1,11 @@
-#include <gtk/gtk.h>
+
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else 
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
+
 #include "callback_information.h"
 #include "document_parsing.h"
 #include "pointer_name_conversion.h"

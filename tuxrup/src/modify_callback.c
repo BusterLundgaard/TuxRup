@@ -8,6 +8,7 @@
 #include "reference_type.h"
 #include "fix_function_body.h"
 #include "callback_information.h"
+#include <dlfcn.h>
 
 typedef struct {
     GtkWidget* modified_widget;
@@ -116,7 +117,12 @@ void create_code_editing_menu(
     callback_code_information* code_info
     ){
 
+    #ifdef USE_GTK3
+    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_toplevel(widget));  // Get the parent window
+    #else
     GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_native(widget));  // Get the parent window
+    #endif
+    
     GtkApplication *app = GTK_APPLICATION(gtk_window_get_application(parent_window)); // Get the application
 
     // Create a new window
@@ -125,34 +131,44 @@ void create_code_editing_menu(
     gtk_window_set_default_size(GTK_WINDOW(window), 600, 800);
     
     // Create a vertical box layout
+    #ifdef USE_GTK3
+    GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkWidget* scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
+    #else 
     GtkWidget* scrolled_window = gtk_scrolled_window_new();
+    #endif
     gtk_widget_set_size_request(scrolled_window, 380, 280);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), 
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_window_set_child(GTK_WINDOW(window), scrolled_window);
-
+    
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), vbox);
-
-    // Create the code 
     GtkWidget *before_text = create_textview(code_info->before_code, FALSE);
-    gtk_box_append(GTK_BOX(vbox), before_text);
-
     GtkWidget *var_text = create_textview("// Define your variables here\n", TRUE);
-    gtk_box_append(GTK_BOX(vbox), var_text);
-
     GtkWidget *header_text = create_textview(g_strdup_printf("void %s(%s){", code_info->function_name, code_info->args_code) , FALSE);
-    gtk_box_append(GTK_BOX(vbox), header_text);
-
     GtkWidget *code_text = create_textview(code_info->function_code, TRUE);
-    gtk_box_append(GTK_BOX(vbox), code_text);
-
     GtkWidget *after_text = create_textview(g_strdup_printf("}\n %s", code_info->after_code), FALSE);
-    gtk_box_append(GTK_BOX(vbox), after_text);
-
-    // Add done button
     GtkWidget* done_button = gtk_button_new_with_label("Done");
+    
+    #ifdef USE_GTK3 
+    gtk_container_add(GTK_CONTAINER(window), scrolled_window);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), vbox);
+    gtk_container_add(GTK_CONTAINER(vbox), before_text);
+    gtk_container_add(GTK_CONTAINER(vbox), var_text);
+    gtk_container_add(GTK_CONTAINER(vbox), header_text);
+    gtk_container_add(GTK_CONTAINER(vbox), code_text);
+    gtk_container_add(GTK_CONTAINER(vbox), after_text);
+    gtk_container_add(GTK_CONTAINER(vbox), done_button);
+    #else 
+    gtk_window_set_child(GTK_WINDOW(window), scrolled_window);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), vbox);
+    gtk_box_append(GTK_BOX(vbox), before_text);
+    gtk_box_append(GTK_BOX(vbox), var_text);
+    gtk_box_append(GTK_BOX(vbox), header_text);
+    gtk_box_append(GTK_BOX(vbox), code_text);
+    gtk_box_append(GTK_BOX(vbox), after_text);
     gtk_box_append(GTK_BOX(vbox), done_button);
+    #endif
 
     code_editing_done_button_arguments* code_editing_done_button_args = malloc(sizeof(code_editing_done_button_arguments));
     code_editing_done_button_args->modified_widget = widget;

@@ -1,5 +1,5 @@
-#include <gtk/gtk.h>
 #include "reference_type.h"
+#include "fix_function_body.h"
 
 void write_ref_typedef(char* identifier, reference_type* ref, GString* buffer){
     typedef int my_cooler_int;

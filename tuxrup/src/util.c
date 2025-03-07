@@ -2,6 +2,34 @@
 #include <clang-c/Index.h>
 
 int get_child_number(GtkWidget* widget){
+    
+}
+
+#ifdef USE_GTK3
+int get_child_number_gtk3(GtkWidget* widget){
+    GtkWidget *parent = gtk_widget_get_parent(widget);
+    if (parent && GTK_IS_CONTAINER(parent)) {
+        GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
+        
+        int index = 0;
+        for (GList *l = children; l != NULL; l = l->next, index++) {
+            GtkWidget *child = GTK_WIDGET(l->data);
+            if (child == widget) {
+                g_list_free(children);  
+                return index;
+            }
+        }
+        
+        g_print("Widget not found among parent's children.\n");
+        g_list_free(children);  
+        return -1;
+    } else {
+        g_print("Widget has no parent, or at least no parent that is a container.\n");
+        return -1;
+    }
+}
+#else 
+int get_child_number_gtk4(GtkWidget* widget){
     GtkWidget *parent = gtk_widget_get_parent(widget);
     if (parent) {
         GtkWidget *child = gtk_widget_get_first_child(parent);
@@ -18,6 +46,7 @@ int get_child_number(GtkWidget* widget){
         return -1;
     }
 }
+#endif
 
 char* get_basename_without_extension(const char *filepath) {
     char *dot = strrchr(filepath, '.');  // Find the last dot (.)

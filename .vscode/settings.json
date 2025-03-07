@@ -2,6 +2,13 @@
     "files.associations": {
         "pointer_name_conversion.h": "c",
         "compute_widget_hash.h": "c",
-        "util.h": "c"
+        "util.h": "c",
+        "gtk.h": "c",
+        "callback_information.h": "c",
+        "fix_function_body.h": "c",
+        "globals.h": "c",
+        "modify_callback.h": "c",
+        "callback_map.h": "c",
+        "function_dispatcher.h": "c"
     }
 }

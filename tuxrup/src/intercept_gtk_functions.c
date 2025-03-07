@@ -1,4 +1,11 @@
-#include <gtk/gtk.h>
+
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else 
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
@@ -25,6 +32,25 @@ GtkApplication *gtk_application_new(const char *application_id, GApplicationFlag
     return app;
 }
 
+typedef int (*g_application_run_t)(GApplication* application, int argc, char** argv);
+
+int 
+g_application_run(
+    GApplication* application,
+    int argc,
+    char** argv
+){
+    g_application_run_t original_g_application_run = (g_application_run_t)dlsym(RTLD_NEXT, "g_application_run");
+    if (!original_g_application_run)
+    {
+        fprintf(stderr, "Error finding original g_application_run: %s\n", dlerror());
+        return 1; 
+    }
+    on_init();
+    int res = original_g_application_run(application, argc, argv);
+    return res;
+}
+
 
 gulong
 g_signal_connect_data(gpointer instance,
@@ -47,7 +73,7 @@ g_signal_connect_data(gpointer instance,
 
     normal_g_signal_connect_data = original_g_signal_connect_data;
 
-    on_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
+    //on_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
     
     original_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
 }
@@ -69,7 +95,8 @@ void gtk_window_present(GtkWindow *window)
     }
 
     // Print your custom message
-    on_gtk_window_present(window);
+    //on_gtk_window_present(window);
+    printf("gtk_window_present was called!\n");
 
     // Call the original gtk_window_present function
     original_gtk_window_present(window);

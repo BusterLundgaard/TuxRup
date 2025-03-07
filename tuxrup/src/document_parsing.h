@@ -1,19 +1,20 @@
 #ifndef DOCUMENT_PARSING_H
 #define DOCUMENT_PARSING_H
 
-#include <gtk/gtk.h>
+
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else 
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
-#include <libelf.h>
 #include <fcntl.h>
-#include <gelf.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <stdbool.h>
 #include <clang-c/Index.h>
-#include <limits.h>
 
 CXCursor get_root_cursor(char* document_path);
 CXCursor get_function_cursor(CXCursor c, char* function_name);

@@ -70,12 +70,11 @@ int is_part_of_main_file(CXCursor cursor) {
     CXTranslationUnit tu = clang_Cursor_getTranslationUnit(cursor);
     CXFile mainFile = clang_getFile(tu, clang_getCString(clang_getTranslationUnitSpelling(tu)));
 
-    // Get the file associated with the cursor
     CXSourceLocation loc = clang_getCursorLocation(cursor);
     CXFile cursorFile;
     clang_getSpellingLocation(loc, &cursorFile, NULL, NULL, NULL);
 
-    return cursorFile == mainFile; // Compare file pointers directly
+    return cursorFile == mainFile; 
 }
 
 int cursor_compare(CXSourceLocation c1, CXSourceLocation c2){
@@ -121,6 +120,14 @@ void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool ne
         g_string_append(buffer, "\n");
     }
 }
+
+enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data){
+    GString* buffer = (GString*)data;
+    g_string_append(buffer, "    ");
+    write_cursor_element(&c, buffer, true, true);
+    return CXChildVisit_Continue;
+}
+
 
 char* extract_type(const char* argument) {
     if (!argument) return NULL;
@@ -178,6 +185,7 @@ void set_function_arguments(CXCursor c_func, GString* buffer) {
     }
 }
 
+
 enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXClientData data){
     set_before_after_code_args* args = (set_before_after_code_args*)data;
 
@@ -199,6 +207,7 @@ enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXCli
     return CXChildVisit_Continue;
 } 
 
+
 enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClientData data){
     GString* buffer = (GString*)data;
     
@@ -212,12 +221,6 @@ enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClie
     return CXChildVisit_Continue;
 }
 
-enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data){
-    GString* buffer = (GString*)data;
-    g_string_append(buffer, "    ");
-    write_cursor_element(&c, buffer, true, true);
-    return CXChildVisit_Continue;
-}
 
 reference_type* create_identifier_type_info(CXCursor identifier_cursor){
     reference_type* identifier_info = malloc(sizeof(reference_type));
@@ -242,6 +245,7 @@ reference_type* create_identifier_type_info(CXCursor identifier_cursor){
 
     return identifier_info;
 }
+
 
 enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){
     find_undefined_references_args* args = (find_undefined_references_args*)data;

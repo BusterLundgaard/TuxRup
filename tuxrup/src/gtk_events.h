@@ -1,7 +1,13 @@
 #ifndef GTK_EVENTS_H
 #define GTK_EVENTS_H
 
-#include <gtk/gtk.h>
+
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else 
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
 #include "globals.h"
 #include "callback_map.h"
 
@@ -17,6 +23,6 @@ GClosureNotify destroy_data,
 GConnectFlags connect_flags);
 
 void on_gtk_window_present(GtkWindow *window);
-void on_init(GtkApplication* app);
+void on_init();
 
 #endif
