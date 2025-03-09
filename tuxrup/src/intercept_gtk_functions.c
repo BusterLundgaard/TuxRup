@@ -73,7 +73,7 @@ g_signal_connect_data(gpointer instance,
 
     normal_g_signal_connect_data = original_g_signal_connect_data;
 
-    //on_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
+    on_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
     
     original_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
 }

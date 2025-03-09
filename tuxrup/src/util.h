@@ -13,6 +13,10 @@
 #include <clang-c/Index.h>
 #include <stdbool.h>
 
+enum widget_type_category get_widget_type_category(GtkWidget* w);
+
+bool is_callback_remapable(enum widget_type_category widget_c, enum gtk_callback_category callback_c);
+
 int get_child_number(GtkWidget* widget);
 
 char* get_basename_without_extension(const char *filepath);

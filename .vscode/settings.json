@@ -9,6 +9,7 @@
         "globals.h": "c",
         "modify_callback.h": "c",
         "callback_map.h": "c",
-        "function_dispatcher.h": "c"
+        "function_dispatcher.h": "c",
+        "index.h": "c"
     }
 }

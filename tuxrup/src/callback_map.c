@@ -31,3 +31,18 @@ void callback_value_free(void* data){
     }
     g_free(cb);
 }
+
+void add_callback_to_table(GtkWidget* widget, const gchar* detailed_signal, gpointer c_handler){
+    callback_identifier* cb_key = malloc(sizeof(callback_identifier));
+    cb_key->widget = widget;
+    cb_key->callback_name = g_strdup(detailed_signal);
+
+    callback_info* cb_info = malloc(sizeof(callback_info));
+    cb_info->original_function_pointer = (callback_type)c_handler;
+    cb_info->function_name = get_identifier_from_pointer(c_handler);
+    cb_info->dl_handle = NULL;
+    cb_info->identifier_pointers = NULL;
+    cb_info->identifier_pointers_n = 0;
+
+    g_hash_table_insert(widget_callback_table, cb_key, cb_info);
+}

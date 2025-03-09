@@ -1,8 +1,40 @@
 #include "util.h"
 #include <clang-c/Index.h>
 
+enum widget_type_category get_widget_type_category(GtkWidget* w){
+    if(GTK_IS_BUTTON(w))        {return GTK_CATEGORY_Button;}
+    if(GTK_IS_ENTRY(w))         {return GTK_CATEGORY_Entry;}
+    if(GTK_IS_TEXT_BUFFER(w))   {return GTK_CATEGORY_TextBuffer;}
+    if(GTK_IS_CHECK_BUTTON(w))  {return GTK_CATEGORY_CheckButton;}
+    if(GTK_IS_TOGGLE_BUTTON(w)) {return GTK_CATEGORY_ToggleButton;}
+    if(GTK_IS_SPIN_BUTTON(w))   {return GTK_CATEGORY_SpinButton;}
+    if(GTK_IS_SCALE(w))         {return GTK_CATEGORY_Scale;}
+    if(GTK_IS_COMBO_BOX_TEXT(w)){return GTK_CATEGORY_ComboBoxText;}
+    if(GTK_IS_DROP_DOWN(w))     {return GTK_CATEGORY_DropDown;}
+    if(GTK_IS_WINDOW(w))        {return GTK_CATEGORY_Window;}
+}
+
+bool is_callback_remapable(enum widget_type_category widget_c, enum gtk_callback_category callback_c){
+    for(int i = 0; i < MAPPABLE_ACTIONS_LEN; i++){
+        if(callback_c == (&remapable_events[i])->action_name){
+            if((&remapable_events[i])->valid_widget_types[0] == GTK_CATEGORY_ANY)
+            {return true;}
+
+            int j = 0;
+            for(int j = 0; (&remapable_events[i])->valid_widget_types[j] != 0; j++){
+                if((&remapable_events[i])->valid_widget_types[j] == widget_c)
+                {return true;}
+            }
+        }
+    }
+}
+
 int get_child_number(GtkWidget* widget){
-    
+    #ifdef USE_GTK3
+    get_child_number_gtk3(widget);
+    #else 
+    get_child_number_gtk4(widget);
+    #endif    
 }
 
 #ifdef USE_GTK3
@@ -58,11 +90,11 @@ char* get_basename_without_extension(const char *filepath) {
 }
 
 bool is_mappable_action(const gchar* event_name){
-    for(int i = 0; i < MAPPABLE_ACTIONS_LEN; i++){
-        if(strcmp(event_name, remapable_events[i]) == 0){
-            return true;
-        }
-    }
+    // for(int i = 0; i < MAPPABLE_ACTIONS_LEN; i++){
+    //     if(strcmp(event_name, remapable_events[i]) == 0){
+    //         return true;
+    //     }
+    // }
     return false; 
 }
 

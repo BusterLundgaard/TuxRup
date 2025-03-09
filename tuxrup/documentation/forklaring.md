@@ -53,7 +53,7 @@ We now run `nm -D hw` and get:
     U __libc_start_main@GLIBC_2.34
 ```
 
-A few options here stick out. We see that `gtk_application_new` more or less has to be called from the very start of the program:
+A few options here stick out. We can that `gtk_application_new` more or less has to be called from the very start of the program:
 
 ```C hello_world.c:
 int
@@ -71,7 +71,9 @@ main (int    argc,
 
 We check out the documentation of `gtk_application_new` and see that it has the signature
 
-`GtkApplication* gtk_application_new(const char *application_id, GApplicationFlags flags)`
+```C 
+GtkApplication* gtk_application_new(const char *application_id, GApplicationFlags flags)
+```
 
 So we can make a new C file `oursharedlib.c`, put into it an implementation
 
