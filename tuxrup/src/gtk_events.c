@@ -48,21 +48,21 @@ GtkWidget* get_widget_from_connect_signal(gpointer instance){
 
 enum gtk_callback_category get_callback_category_from_connect_signal(gpointer instance, const gchar* detailed_signal){
     if(GTK_IS_WIDGET(instance)){
-      if(0 == strcmp(detailed_signal, "clicked"))          { return GTK_CALLBACK_clicked;            } else if 
-        (0 == strcmp(detailed_signal, "activate"))         { return GTK_CALLBACK_activate;           } else if
-        (0 == strcmp(detailed_signal, "toggled"))          { return GTK_CALLBACK_toggled;            } else if
-        (0 == strcmp(detailed_signal, "value-changed"))    { return GTK_CALLBACK_value_changed;      } else if
-        (0 == strcmp(detailed_signal, "notify::property")) { return GTK_CALLBACK_notify_property;    } else if
-        (0 == strcmp(detailed_signal, "insert-text"))      { return GTK_CALLBACK_insert_text;        } else if
-        (0 == strcmp(detailed_signal, "delete-text"))      { return GTK_CALLBACK_delete_text;        } else if
-        (0 == strcmp(detailed_signal, "backspace"))        { return GTK_CALLBACK_backspace;          } else if
-        (0 == strcmp(detailed_signal, "size-allocate"))    { return GTK_CALLBACK_size_allocate;      } else if
-        (0 == strcmp(detailed_signal, "map"))              { return GTK_CALLBACK_map;                } else if
-        (0 == strcmp(detailed_signal, "unmap"))            { return GTK_CALLBACK_unmap;              } else if
-        (0 == strcmp(detailed_signal, "drag-begin"))       { return GTK_CALLBACK_drag_begin;         } else if
-        (0 == strcmp(detailed_signal, "drag-drop"))        { return GTK_CALLBACK_drag_drop;          } else if
-        (0 == strcmp(detailed_signal, "drag-recieved"))    { return GTK_CALLBACK_drag_data_recieved; } else if
-        (0 == strcmp(detailed_signal, "configure-event"))  { return GTK_CALLBACK_configure_event;    } 
+      if(0 == strcmp(detailed_signal, "clicked"))             { return GTK_CALLBACK_clicked;            } else if 
+        (0 == strcmp(detailed_signal, "activate"))            { return GTK_CALLBACK_activate;           } else if
+        (0 == strcmp(detailed_signal, "toggled"))             { return GTK_CALLBACK_toggled;            } else if
+        (0 == strcmp(detailed_signal, "value-changed"))       { return GTK_CALLBACK_value_changed;      } else if
+        (0 == strcmp(detailed_signal, "notify::property"))    { return GTK_CALLBACK_notify_property;    } else if
+        (0 == strcmp(detailed_signal, "insert-text"))         { return GTK_CALLBACK_insert_text;        } else if
+        (0 == strcmp(detailed_signal, "delete-text"))         { return GTK_CALLBACK_delete_text;        } else if
+        (0 == strcmp(detailed_signal, "backspace"))           { return GTK_CALLBACK_backspace;          } else if
+        (0 == strcmp(detailed_signal, "size-allocate"))       { return GTK_CALLBACK_size_allocate;      } else if
+        (0 == strcmp(detailed_signal, "map"))                 { return GTK_CALLBACK_map;                } else if
+        (0 == strcmp(detailed_signal, "unmap"))               { return GTK_CALLBACK_unmap;              } else if
+        (0 == strcmp(detailed_signal, "drag-begin"))          { return GTK_CALLBACK_drag_begin;         } else if
+        (0 == strcmp(detailed_signal, "drag-drop"))           { return GTK_CALLBACK_drag_drop;          } else if
+        (0 == strcmp(detailed_signal, "drag-recieved"))       { return GTK_CALLBACK_drag_data_recieved; } else if
+        (0 == strcmp(detailed_signal, "configure-event"))     { return GTK_CALLBACK_configure_event;    } 
     }
 
     if(GTK_IS_GESTURE_CLICK(instance)){
@@ -76,16 +76,16 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
     }
 
     if(GTK_IS_EVENT_CONTROLLER_MOTION(instance)){
-        if(0 == strcmp(detailed_signal, "motion"))       {return GTK_CALLBACK_motion; }
-        if(0 == strcmp(detailed_signal, "enter"))        {return GTK_CALLBACK_enter; }
-        if(0 == strcmp(detailed_signal, "leave"))        {return GTK_CALLBACK_leave; }
-        if(0 == strcmp(detailed_signal, "motion-after")) {return GTK_CALLBACK_motion_after; }
-        if(0 == strcmp(detailed_signal, "end"))          {return GTK_CALLBACK_end; }
+        if(0 == strcmp(detailed_signal, "motion"))            { return GTK_CALLBACK_motion; }
+        if(0 == strcmp(detailed_signal, "enter"))             { return GTK_CALLBACK_enter; }
+        if(0 == strcmp(detailed_signal, "leave"))             { return GTK_CALLBACK_leave; }
+        if(0 == strcmp(detailed_signal, "motion-after"))      { return GTK_CALLBACK_motion_after; }
+        if(0 == strcmp(detailed_signal, "end"))               { return GTK_CALLBACK_end; }
     }
 
     if(GTK_IS_EVENT_CONTROLLER_KEY(instance)){
-        if(0 == strcmp(detailed_signal, "key-press-event")){return GTK_CALLBACK_key_pressed;}
-        if(0 == strcmp(detailed_signal, "key-release-event")){return GTK_CALLBACK_key_release;}
+        if(0 == strcmp(detailed_signal, "key-press-event"))   { return GTK_CALLBACK_key_pressed;}
+        if(0 == strcmp(detailed_signal, "key-release-event")) { return GTK_CALLBACK_key_release;}
     }
 }
 
@@ -104,10 +104,10 @@ GConnectFlags connect_flags){
     {return 0;}
 
     GtkWidget* widget = get_widget_from_connect_signal(instance);
-
+    
+    // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
+    // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
     if(!widget_seen_before(widget)){
-        // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
-        // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
         g_hash_table_insert(widget_hashes, widget, NULL);
         normal_g_signal_connect_data(widget, "notify::root", G_CALLBACK(on_added_to_dom), NULL, ((void*)0), (GConnectFlags)0);
     }
