@@ -3,14 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define stupid_ass_macro char**
-struct {
-  int wow;
-  long int more_wow;
-};
-typedef struct {
-  int wow;
-  long int more_wow;
-} my_epic_struct;
+
 typedef int my_own_int;
  
  void button_A_callback(GtkWidget *widget, gpointer   data){
