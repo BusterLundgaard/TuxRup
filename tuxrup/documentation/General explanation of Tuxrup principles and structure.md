@@ -1,7 +1,7 @@
 # What is Tuxrup, and how do you use it?
 Tuxrup is (meant to be) a program that allows you to modify various elements of GTK programs while they run.
 
-Tuxrup is delivered as shared library. For GTK2-3 programs, use `libtuxrup_gtk3.so`, for GTK4, use `libtuxrup_gtk4`. To use Tuxrup on, say, Inkscape, find the path for the inkscape executable (run `which inkscape`), then set the `LD_PRELOAD` environment when launching inkscape, like so:
+Tuxrup is delivered as shared library. For GTK2-3 programs, use `libtuxrup_gtk3.so`, for GTK4, use `libtuxrup_gtk4`. To use Tuxrup on, say, Inkscape, find the path for the inkscape executable (run `which inkscape`), then set the `LD_PRELOAD` environment variable when launching inkscape, like so:
 
 `LD_PRELOAD="./libtuxrup_gtk3.so" /usr/bin/inkscape`
 
