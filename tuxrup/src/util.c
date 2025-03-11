@@ -12,6 +12,55 @@ enum widget_type_category get_widget_type_category(GtkWidget* w){
     if(GTK_IS_COMBO_BOX_TEXT(w)){return GTK_CATEGORY_ComboBoxText;}
     if(GTK_IS_DROP_DOWN(w))     {return GTK_CATEGORY_DropDown;}
     if(GTK_IS_WINDOW(w))        {return GTK_CATEGORY_Window;}
+    return GTK_CATEGORY_UNDEFINED;
+}
+char* get_widget_type_category_str(enum widget_type_category c){
+    switch(c){
+        case GTK_CATEGORY_Button: return "GTK_CATEGORY_Button";
+        case GTK_CATEGORY_Entry: return "GTK_CATEGORY_Entry";
+        case GTK_CATEGORY_TextBuffer: return "GTK_CATEGORY_TextBuffer";
+        case GTK_CATEGORY_CheckButton: return "GTK_CATEGORY_CheckButton";
+        case GTK_CATEGORY_ToggleButton: return "GTK_CATEGORY_ToggleButton";
+        case GTK_CATEGORY_SpinButton: return "GTK_CATEGORY_SpinButton";
+        case GTK_CATEGORY_Scale: return "GTK_CATEGORY_Scale";
+        case GTK_CATEGORY_ComboBoxText: return "GTK_CATEGORY_ComboBoxText";
+        case GTK_CATEGORY_DropDown: return "GTK_CATEGORY_DropDown";
+        case GTK_CATEGORY_Window: return "GTK_CATEGORY_Window";
+        case GTK_CATEGORY_UNDEFINED: return "GTK_CATEGORY_UNDEFINED";
+    }
+    printf("Hey ya dumbass! Looks like you added a new widget_type_category, but forgot to update get_widget_type_category_str, so now it's just outputting empty\n");
+    return "";
+}
+char* get_callback_type_category_str(enum gtk_callback_category c){
+    switch(c) {
+    case GTK_CALLBACK_left_click: return "GTK_CALLBACK_left_click";
+    case GTK_CALLBACK_right_click: return "GTK_CALLBACK_right_click";
+    case GTK_CALLBACK_middle_click: return "GTK_CALLBACK_middle_click";
+    case GTK_CALLBACK_motion: return "GTK_CALLBACK_motion";
+    case GTK_CALLBACK_enter: return "GTK_CALLBACK_enter";
+    case GTK_CALLBACK_leave: return "GTK_CALLBACK_leave";
+    case GTK_CALLBACK_motion_after: return "GTK_CALLBACK_motion_after";
+    case GTK_CALLBACK_end: return "GTK_CALLBACK_end";
+    case GTK_CALLBACK_key_pressed: return "GTK_CALLBACK_key_pressed";
+    case GTK_CALLBACK_key_release: return "GTK_CALLBACK_key_release";
+    case GTK_CALLBACK_clicked: return "GTK_CALLBACK_clicked";
+    case GTK_CALLBACK_activate: return "GTK_CALLBACK_activate";
+    case GTK_CALLBACK_toggled: return "GTK_CALLBACK_toggled";
+    case GTK_CALLBACK_value_changed: return "GTK_CALLBACK_value_changed";
+    case GTK_CALLBACK_changed: return "GTK_CALLBACK_changed";
+    case GTK_CALLBACK_notify_property: return "GTK_CALLBACK_notify_property";
+    case GTK_CALLBACK_pressed: return "GTK_CALLBACK_pressed";
+    case GTK_CALLBACK_insert_text: return "GTK_CALLBACK_insert_text";
+    case GTK_CALLBACK_delete_text: return "GTK_CALLBACK_delete_text";
+    case GTK_CALLBACK_backspace: return "GTK_CALLBACK_backspace";
+    case GTK_CALLBACK_size_allocate: return "GTK_CALLBACK_size_allocate";
+    case GTK_CALLBACK_map: return "GTK_CALLBACK_map";
+    case GTK_CALLBACK_unmap: return "GTK_CALLBACK_unmap";
+    case GTK_CALLBACK_drag_begin: return "GTK_CALLBACK_drag_begin";
+    case GTK_CALLBACK_drag_drop: return "GTK_CALLBACK_drag_drop";
+    case GTK_CALLBACK_drag_data_recieved: return "GTK_CALLBACK_drag_data_recieved";
+    case GTK_CALLBACK_configure_event: return "GTK_CALLBACK_configure_even";
+    }
 }
 
 bool is_callback_remapable(enum widget_type_category widget_c, enum gtk_callback_category callback_c){
@@ -27,14 +76,6 @@ bool is_callback_remapable(enum widget_type_category widget_c, enum gtk_callback
             }
         }
     }
-}
-
-int get_child_number(GtkWidget* widget){
-    #ifdef USE_GTK3
-    get_child_number_gtk3(widget);
-    #else 
-    get_child_number_gtk4(widget);
-    #endif    
 }
 
 #ifdef USE_GTK3
@@ -79,6 +120,14 @@ int get_child_number_gtk4(GtkWidget* widget){
     }
 }
 #endif
+
+int get_child_number(GtkWidget* widget){
+    #ifdef USE_GTK3
+    get_child_number_gtk3(widget);
+    #else 
+    get_child_number_gtk4(widget);
+    #endif    
+}
 
 char* get_basename_without_extension(const char *filepath) {
     char *dot = strrchr(filepath, '.');  // Find the last dot (.)

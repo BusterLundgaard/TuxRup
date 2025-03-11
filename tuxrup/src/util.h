@@ -15,6 +15,10 @@
 
 enum widget_type_category get_widget_type_category(GtkWidget* w);
 
+char* get_widget_type_category_str(enum widget_type_category c);
+
+char* get_callback_type_category_str(enum gtk_callback_category c);
+
 bool is_callback_remapable(enum widget_type_category widget_c, enum gtk_callback_category callback_c);
 
 int get_child_number(GtkWidget* widget);

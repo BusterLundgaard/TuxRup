@@ -18,6 +18,8 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
 extern g_signal_connect_data_t normal_g_signal_connect_data;
 
 enum gtk_callback_category {
+    GTK_CALLBACK_UNDEFINED,
+
     // Mouse input
     GTK_CALLBACK_left_click,
     GTK_CALLBACK_right_click,
@@ -64,6 +66,8 @@ enum gtk_callback_category {
 
 enum widget_type_category {
     GTK_CATEGORY_ANY, 
+    GTK_CATEGORY_UNDEFINED,
+
     GTK_CATEGORY_Button, 
     
     GTK_CATEGORY_Entry, 

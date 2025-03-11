@@ -6,20 +6,20 @@
 #include "pointer_name_conversion.h"
 #include "modify_callback.h"
 
-// void on_right_click(GtkWidget* widget){
-//     callback_identifier cb_id = {widget, "clicked"};
-//     gpointer value = g_hash_table_lookup(widget_callback_table, &cb_id);
-//     if(value == NULL){
-//         g_print("Couldn't find the callback information for the widget you just right-clicked..\n");
-//         return;
-//     }
-//     callback_info* cb_info = (callback_info*)value;
+void on_right_click(GtkWidget* widget){
+    callback_identifier cb_id = {widget, "clicked"};
+    gpointer value = g_hash_table_lookup(widget_callback_table, &cb_id);
+    if(value == NULL){
+        g_print("Couldn't find the callback information for the widget you just right-clicked..\n");
+        return;
+    }
+    callback_info* cb_info = (callback_info*)value;
     
-//     char* callback_name = "clicked"; // This is just hard-coded for now, can be generalized later
-//     callback_code_information* code_info = get_callback_code_information(cb_info->original_function_pointer, "clicked");
+    char* callback_name = "clicked"; // This is just hard-coded for now, can be generalized later
+    callback_code_information* code_info = get_callback_code_information(cb_info->original_function_pointer, "clicked");
     
-//     create_code_editing_menu(widget, callback_name, code_info);
-// }
+    create_code_editing_menu(widget, callback_name, code_info);
+}
 
 #ifdef USE_GTK3
 void on_right_click_gtk3(GtkWidget *widget, GdkEventButton *event, gpointer user_data){
@@ -42,8 +42,17 @@ void on_added_to_dom(GtkWidget* widget, gpointer data){
 GtkWidget* get_widget_from_connect_signal(gpointer instance){
     if(GTK_IS_WIDGET(instance)){return instance;}
 
-    GtkGesture* gesture = (GtkGesture*)instance;
-    return gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+    if(GTK_IS_GESTURE_CLICK(instance)){
+        GtkGesture* gesture = (GtkGesture*)instance;
+        //gtk_event_controller_key_new()
+        return gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
+    }
+    if(GTK_IS_EVENT_CONTROLLER_MOTION(instance)){
+        GtkEventController* controller = (GtkEventController*)instance;
+        return gtk_event_controller_get_widget(controller);
+    }
+
+    return NULL;
 }
 
 enum gtk_callback_category get_callback_category_from_connect_signal(gpointer instance, const gchar* detailed_signal){
@@ -66,7 +75,7 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
     }
 
     if(GTK_IS_GESTURE_CLICK(instance)){
-        GtkGesture* gesture = (GtkGesture*)instance;
+        GtkGestureSingle* gesture = (GtkGestureSingle*)instance;
         guint clicked_mouse_button = gtk_gesture_single_get_button(gesture);
         switch(clicked_mouse_button){
             case 1: return GTK_CALLBACK_left_click;
@@ -87,6 +96,8 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
         if(0 == strcmp(detailed_signal, "key-press-event"))   { return GTK_CALLBACK_key_pressed;}
         if(0 == strcmp(detailed_signal, "key-release-event")) { return GTK_CALLBACK_key_release;}
     }
+
+    return GTK_CALLBACK_UNDEFINED;
 }
 
 bool widget_seen_before(GtkWidget* widget){return g_hash_table_contains(widget_hashes, widget);}
@@ -100,23 +111,48 @@ gpointer data,
 GClosureNotify destroy_data,
 GConnectFlags connect_flags){
 
-    if(widget_hashes == NULL)
+    if(instance == NULL || widget_hashes == NULL)
     {return 0;}
 
     GtkWidget* widget = get_widget_from_connect_signal(instance);
+    if(widget == NULL)
+    {return 0;}
     
-    // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
-    // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
+    // // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
+    // // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
     if(!widget_seen_before(widget)){
         g_hash_table_insert(widget_hashes, widget, NULL);
         normal_g_signal_connect_data(widget, "notify::root", G_CALLBACK(on_added_to_dom), NULL, ((void*)0), (GConnectFlags)0);
     }
 
     enum widget_type_category widget_category = get_widget_type_category(widget);
-    enum gtk_callback_category callback_category = get_callback_category_from_connect_signal(instance, detailed_signal);
-    if(is_callback_remapable(widget_category, callback_category)){
-        add_callback_to_table(widget, detailed_signal, c_handler);
+    if(widget_category == GTK_CATEGORY_UNDEFINED)
+    {return 0;}
+
+    printf("%s\n", get_widget_type_category_str(widget_category));
+    
+    if(strcmp(detailed_signal, "clicked") == 0){
+        printf("Adding callback with detailed_signal = %s\n", detailed_signal);
+        char* function_name = get_identifier_from_pointer(c_handler);
+        add_callback_to_table(widget, detailed_signal, c_handler, function_name);
+
+        GtkGesture* gesture = gtk_gesture_click_new();
+        gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
+        gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
+        g_signal_connect(gesture, "pressed", G_CALLBACK(on_right_click_gtk4), widget);
     }
+
+    // enum gtk_callback_category callback_category = get_callback_category_from_connect_signal(instance, detailed_signal);
+    // if(callback_category == GTK_CALLBACK_UNDEFINED)
+    // {return 0;}
+
+    // printf("%s\n", get_callback_type_category_str(callback_category));
+    
+    // if(is_callback_remapable(widget_category, callback_category)){
+    //     printf("Adding callback with detailed_signal = %s\n", detailed_signal);
+    //     char* function_name = get_identifier_from_pointer(c_handler);
+    //     add_callback_to_table(widget, detailed_signal, c_handler, function_name);
+    // }
 
     return 0;
 }
@@ -134,10 +170,8 @@ void on_init(){
 
         #ifdef USE_GTK3
             printf("Hello from GTK 3\n");
-        #elif defined(USE_GTK4)
-            printf("Hello from GTK 4\n");
         #else
-            printf("Unknown GTK version!\n");
+            printf("Hello from GTK 4\n");
         #endif
 
         printf("I was initialized yay! What's up with you though?\n");

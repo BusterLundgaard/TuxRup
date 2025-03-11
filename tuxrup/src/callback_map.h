@@ -23,7 +23,7 @@ typedef struct {
     int identifier_pointers_n;
 } callback_info;
 
-void add_callback_to_table(GtkWidget* widget, const gchar* detailed_signal, gpointer c_handler);
+void add_callback_to_table(GtkWidget* widget, const gchar* detailed_signal, gpointer c_handler, char* function_name);
 
 guint callback_key_hash(gconstpointer key);
 gboolean callback_key_equal(gconstpointer a, gconstpointer b);
