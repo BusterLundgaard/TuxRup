@@ -175,7 +175,7 @@ activate (GtkApplication *app,
   button_A = gtk_button_new_with_label ("Button_A");
   gtk_widget_set_name(button_A, "button_A");
   g_signal_connect (button_A, "clicked", G_CALLBACK (button_A_callback), NULL);
-  add_right_click_menu_to_widget(button_A);
+  //add_right_click_menu_to_widget(button_A);
 
   button_B = gtk_button_new_with_label ("Button_B");
   gtk_widget_set_name(button_B, "button_B");

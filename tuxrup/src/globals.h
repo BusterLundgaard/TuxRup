@@ -17,6 +17,9 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
                                           GConnectFlags connect_flags);
 extern g_signal_connect_data_t normal_g_signal_connect_data;
 
+typedef void(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
+typedef void(*menu_action_callback_type)(GSimpleAction* action, GVariant* parameter, gpointer user_data);
+
 enum gtk_callback_category {
     GTK_CALLBACK_UNDEFINED,
 

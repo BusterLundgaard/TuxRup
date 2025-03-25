@@ -51,6 +51,7 @@ set(SOURCES
     src/modify_callback.c
     src/pointer_name_conversion.c
     src/util.c
+    src/context_menu.c
 )
 
 # Add the shared library target

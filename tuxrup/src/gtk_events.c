@@ -5,6 +5,7 @@
 #include "util.h"
 #include "pointer_name_conversion.h"
 #include "modify_callback.h"
+#include "context_menu.h"
 
 void on_right_click(GtkWidget* widget){
     callback_identifier cb_id = {widget, "clicked"};
@@ -117,42 +118,45 @@ GConnectFlags connect_flags){
     GtkWidget* widget = get_widget_from_connect_signal(instance);
     if(widget == NULL)
     {return 0;}
-    
-    // // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
-    // // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
-    if(!widget_seen_before(widget)){
-        g_hash_table_insert(widget_hashes, widget, NULL);
-        normal_g_signal_connect_data(widget, "notify::root", G_CALLBACK(on_added_to_dom), NULL, ((void*)0), (GConnectFlags)0);
-    }
 
     enum widget_type_category widget_category = get_widget_type_category(widget);
     if(widget_category == GTK_CATEGORY_UNDEFINED)
     {return 0;}
 
-    printf("%s\n", get_widget_type_category_str(widget_category));
-    
-    if(strcmp(detailed_signal, "clicked") == 0){
-        printf("Adding callback with detailed_signal = %s\n", detailed_signal);
-        char* function_name = get_identifier_from_pointer(c_handler);
-        add_callback_to_table(widget, detailed_signal, c_handler, function_name);
-
-        GtkGesture* gesture = gtk_gesture_click_new();
-        gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
-        gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
-        g_signal_connect(gesture, "pressed", G_CALLBACK(on_right_click_gtk4), widget);
+        
+    // // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
+    // // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
+    if(!widget_seen_before(widget)){
+        g_hash_table_insert(widget_hashes, widget, NULL);
+        normal_g_signal_connect_data(widget, "notify::root", G_CALLBACK(on_added_to_dom), NULL, ((void*)0), (GConnectFlags)0);
+        
+        add_right_click_action(widget, create_and_open_right_click_context_menu, widget);
     }
 
-    // enum gtk_callback_category callback_category = get_callback_category_from_connect_signal(instance, detailed_signal);
-    // if(callback_category == GTK_CALLBACK_UNDEFINED)
-    // {return 0;}
+    printf("This recognized widget type is: %s, detailed_signal = %s\n", get_widget_type_category_str(widget_category), detailed_signal);
 
-    // printf("%s\n", get_callback_type_category_str(callback_category));
-    
-    // if(is_callback_remapable(widget_category, callback_category)){
+    // if(strcmp(detailed_signal, "clicked") == 0){
     //     printf("Adding callback with detailed_signal = %s\n", detailed_signal);
     //     char* function_name = get_identifier_from_pointer(c_handler);
     //     add_callback_to_table(widget, detailed_signal, c_handler, function_name);
+
+    //     GtkGesture* gesture = gtk_gesture_click_new();
+    //     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
+    //     gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
+    //     g_signal_connect(gesture, "pressed", G_CALLBACK(on_right_click_gtk4), widget);
     // }
+
+
+    enum gtk_callback_category callback_category = get_callback_category_from_connect_signal(instance, detailed_signal);
+    
+    if(callback_category == GTK_CALLBACK_UNDEFINED)
+    {return 0;}
+    
+    if(is_callback_remapable(widget_category, callback_category)){
+        printf("adding callback for widget category: %s, with signal type = %s\n", get_widget_type_category_str(widget_category), detailed_signal);
+        char* function_name = get_identifier_from_pointer(c_handler);
+        add_callback_to_table(widget, detailed_signal, c_handler, function_name);
+    }
 
     return 0;
 }

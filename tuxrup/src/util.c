@@ -60,6 +60,7 @@ char* get_callback_type_category_str(enum gtk_callback_category c){
     case GTK_CALLBACK_drag_drop: return "GTK_CALLBACK_drag_drop";
     case GTK_CALLBACK_drag_data_recieved: return "GTK_CALLBACK_drag_data_recieved";
     case GTK_CALLBACK_configure_event: return "GTK_CALLBACK_configure_even";
+    case GTK_CALLBACK_UNDEFINED: return "UNDEFINED";
     }
 }
 
@@ -219,3 +220,9 @@ void print_cursor_location(CXSourceLocation loc){
     g_print("The modified function location is at line %u, column %u\n", line, column);
 }
 
+void add_right_click_action(GtkWidget* widget, right_click_callback_type callback, gpointer user_data) {
+    GtkGesture* gesture = gtk_gesture_click_new();
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
+    gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
+    normal_g_signal_connect_data(gesture, "pressed", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
+}

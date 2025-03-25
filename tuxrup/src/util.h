@@ -43,4 +43,6 @@ GtkWidget* create_textview(const char* text, bool editable);
 
 void print_cursor_location(CXSourceLocation loc);
 
+void add_right_click_action(GtkWidget* widget, right_click_callback_type callback, gpointer user_data);
+
 #endif
