@@ -9,12 +9,17 @@
     -from a function name, use the tags file and the repository link to retrieve the individual file 
 
 # Functionality of Tuxrup
+-[] Create the menu for editing and adding callbacks of a given widget (but with the buttons doing nothing for now)
+-[] Create menu that asks the user for source code location and debug symbols location
+-[] Try to get the buttons in the callback editor window to actually work
+
+-[] At gtk_window_present, recursively find every widget in the tree (that we're interested in) and add it to our maps (and add the right click context menu to it)
+-[] When "GObject::notify" is called on a container, that container should search through it's children (of which one may have been added) and add any new ones we haven't seen so far. 
+
 -[] Revise the hashing system so that it is smarter and less dependent/variable on the path of the widget
--[] Add support for deletion of widgets
--[] Make this deletion permanent by reading a config file 
--[] Add a proper right-click button for what we have so far (deletion and changing source code)
--[] Add rudimentary support for editing properties of a widget, whatever that means or however it'd work
-    -Can we use GObject to somehow get a list of all valid properties for this instance of this class?
+-[x] Add support for deletion of widgets
+-[x] Add a proper right-click button for what we have so far (deletion and changing source code)
+-[x] Add rudimentary support for editing properties of a widget, whatever that means or however it'd work
 -[] Add rudimentary support for adding new widgets (maybe just type the name of the type of widgets, then edit it's properties after?)
 -[] Implement/integrate the CSS modification
 -[] Polish up the source code editing and make it possible to select between different callbacks 

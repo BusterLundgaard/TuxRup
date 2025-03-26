@@ -11,10 +11,12 @@ find_package(PkgConfig REQUIRED)
 if(USE_GTK3)
     # If GTK3 is selected, find GTK3
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+    pkg_check_modules(LIBELF REQUIRED libelf)
     add_definitions(-DUSE_GTK3)
 else()
     # If GTK3 is not selected, find GTK4
     pkg_check_modules(GTK4 REQUIRED gtk4)
+    pkg_check_modules(LIBELF REQUIRED libelf)
 endif()
 
 # Find LLVM (which includes libclang)
@@ -64,13 +66,21 @@ endif()
 
 # Link libraries based on GTK version
 if(USE_GTK3)
-    target_link_libraries(tuxrup_gtk3 ${GTK3_LIBRARIES})
-    target_link_libraries(tuxrup_gtk3 ${LIBCLANG_LIBRARY})
+    target_link_libraries(tuxrup_gtk3 PRIVATE ${GTK3_LIBRARIES})
     target_include_directories(tuxrup_gtk3 PRIVATE ${GTK3_INCLUDE_DIRS})
+
+    target_link_libraries(tuxrup_gtk3 PRIVATE ${LIBCLANG_LIBRARY})
+    
+    target_include_directories(tuxrup_gtk3 PRIVATE ${LIBELF_INCLUDE_DIRS})
+    target_link_libraries(tuxrup_gtk3 PRIVATE ${LIBELF_LIBRARIES})
 else()
-    target_link_libraries(tuxrup_gtk4 ${GTK4_LIBRARIES})
-    target_link_libraries(tuxrup_gtk4 ${LIBCLANG_LIBRARY})
+    target_link_libraries(tuxrup_gtk4 PRIVATE ${GTK4_LIBRARIES})
     target_include_directories(tuxrup_gtk4 PRIVATE ${GTK4_INCLUDE_DIRS})
+
+    target_link_libraries(tuxrup_gtk4 PRIVATE ${LIBCLANG_LIBRARY})
+
+    target_include_directories(tuxrup_gtk4 PRIVATE ${LIBELF_INCLUDE_DIRS})
+    target_link_libraries(tuxrup_gtk4 PRIVATE ${LIBELF_LIBRARIES})
 endif()
 
 # Add any additional compile options if necessary
