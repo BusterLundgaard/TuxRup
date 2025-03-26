@@ -1,25 +1,26 @@
 #include "context_menu.h"
 #include "globals.h"
+#include "edit_properties_window.h"
 
 static GtkWidget* context_menu_popover = NULL;
 static GtkWidget* active_widget = NULL;
 
-static void open_edit_properties_window(GSimpleAction *action, GVariant *parameter, gpointer user_data) {
+static void on_open_edit_properties_window(GSimpleAction *action, GVariant *parameter, gpointer user_data) {
     if(!active_widget){return;}
-    g_print("Opened the edit properties window! TODO");
+    open_edit_properties_window(active_widget);
 }
 
-static void open_edit_styling_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
+static void on_open_edit_styling_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
     if(!active_widget){return;}
     g_print("Opened edit styling window! TODO");
 }
 
-static void open_edit_callbacks_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
+static void on_open_edit_callbacks_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
     if(!active_widget){return;}
     g_print("Opened edit callbacks window! TODO");
 }
 
-static void remove_widget(GSimpleAction *action, GVariant *parameter, gpointer user_data){
+static void on_remove_widget(GSimpleAction *action, GVariant *parameter, gpointer user_data){
     if(!active_widget){return;}
     GtkWidget* parent = gtk_widget_get_parent(active_widget);
     if(parent){
@@ -48,10 +49,10 @@ void initialize_right_click_context_menu(){
     GSimpleAction* edit_styling_action = g_simple_action_new("editstyling", NULL);
     GSimpleAction* edit_callbacks_action = g_simple_action_new("editcallbacks", NULL);
     GSimpleAction* delete_widget_action = g_simple_action_new("deletewidget", NULL);
-    normal_g_signal_connect_data(edit_properties_action, "activate", G_CALLBACK(open_edit_properties_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(edit_styling_action, "activate", G_CALLBACK(open_edit_styling_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(edit_callbacks_action, "activate", G_CALLBACK(open_edit_callbacks_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(delete_widget_action, "activate", G_CALLBACK(remove_widget), NULL, NULL, (GConnectFlags)0);
+    normal_g_signal_connect_data(edit_properties_action, "activate", G_CALLBACK(on_open_edit_properties_window), NULL, NULL, (GConnectFlags)0);
+    normal_g_signal_connect_data(edit_styling_action, "activate", G_CALLBACK(on_open_edit_styling_window), NULL, NULL, (GConnectFlags)0);
+    normal_g_signal_connect_data(edit_callbacks_action, "activate", G_CALLBACK(on_open_edit_callbacks_window), NULL, NULL, (GConnectFlags)0);
+    normal_g_signal_connect_data(delete_widget_action, "activate", G_CALLBACK(on_remove_widget), NULL, NULL, (GConnectFlags)0);
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_properties_action));
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_styling_action));
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_callbacks_action));

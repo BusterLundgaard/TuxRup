@@ -52,6 +52,7 @@ set(SOURCES
     src/pointer_name_conversion.c
     src/util.c
     src/context_menu.c
+    src/edit_properties_window.c
 )
 
 # Add the shared library target

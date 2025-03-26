@@ -1,6 +1,72 @@
 #include "util.h"
 #include <clang-c/Index.h>
 
+GObjectClass* get_widget_class(GtkWidget* widget){
+    GObject* object = G_OBJECT(widget);
+    return G_OBJECT_GET_CLASS(G_OBJECT(widget));
+}
+
+GtkWidget* create_window(GtkWidget* any_widget_from_current_application, const char* title, guint width, guint height){
+    // Get the parent window
+    #ifdef USE_GTK3
+    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_toplevel(widget));  // Get the parent window
+    #else
+    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_native(any_widget_from_current_application));  
+    #endif
+    
+    // Get parent application
+    GtkApplication *app = GTK_APPLICATION(gtk_window_get_application(parent_window)); 
+
+    // Create a new window
+    GtkWidget *window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(window), title);
+    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
+    return window;
+}
+
+GtkWidget* add_widget_to_window(GtkWidget* window, GtkWidget* widget){
+    #ifdef USE_GTK3 
+    gtk_container_add(GTK_CONTAINER(window), widget);
+    #else 
+    gtk_window_set_child(GTK_WINDOW(window), widget);
+    #endif
+}
+
+// Creates and returns a vbox in scrollable window with width=width, height=height
+GtkWidget* create_and_add_scrollable_item_list(GtkWidget* window, guint width, guint height){
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_halign(vbox, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(vbox, GTK_ALIGN_CENTER);
+
+    #ifdef USE_GTK3
+    GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkWidget* scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
+    #else 
+    GtkWidget* scrolled_window = gtk_scrolled_window_new();
+    #endif
+    gtk_widget_set_size_request(scrolled_window, width, height);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), 
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    
+    #ifdef USE_GTK3 
+    gtk_container_add(GTK_CONTAINER(scrolled_window), vbox);
+    #else 
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), vbox);
+    #endif
+
+    add_widget_to_window(window, scrolled_window);
+    return vbox;
+}
+
+GtkWidget* add_widget_to_box(GtkWidget* box, GtkWidget* widget){
+    #ifdef USE_GTK3 
+    gtk_container_add(GTK_CONTAINER(box), widget);
+    #else 
+    gtk_box_append(GTK_BOX(box), widget);
+    #endif
+}
+
 enum widget_type_category get_widget_type_category(GtkWidget* w){
     if(GTK_IS_BUTTON(w))        {return GTK_CATEGORY_Button;}
     if(GTK_IS_ENTRY(w))         {return GTK_CATEGORY_Entry;}

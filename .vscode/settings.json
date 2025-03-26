@@ -10,6 +10,8 @@
         "modify_callback.h": "c",
         "callback_map.h": "c",
         "function_dispatcher.h": "c",
-        "index.h": "c"
+        "index.h": "c",
+        "edit_properties_window.h": "c",
+        "ios": "c"
     }
 }

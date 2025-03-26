@@ -136,6 +136,34 @@ static void create_and_add_input_items(GtkWidget* box){
   gtk_box_append(GTK_BOX(box), dropdown);
 }
 
+void list_enum_properties(GtkWidget *widget) {
+    guint n_properties;
+    GParamSpec **properties = g_object_class_list_properties(G_OBJECT_GET_CLASS(widget), &n_properties);
+
+    for (guint i = 0; i < n_properties; i++) {
+        GParamSpec *pspec = properties[i];
+
+        // Get the GType of the property
+        GType prop_type = G_PARAM_SPEC_VALUE_TYPE(pspec);
+
+        // Check if it's an enum type
+        if (G_TYPE_IS_ENUM(prop_type)) {
+            GEnumClass *enum_class = g_type_class_ref(prop_type);
+            g_print("Property: %s (Enum Type: %s)\n", pspec->name, g_type_name(prop_type));
+
+            // Iterate over the enum values
+            for (guint j = 0; j < enum_class->n_values; j++) {
+                GEnumValue *value = &enum_class->values[j];
+                g_print("  %d -> %s\n", value->value, value->value_nick);
+            }
+
+            g_type_class_unref(enum_class);
+        }
+    }
+
+    g_free(properties);
+}
+
 static void list_button_properties(GtkWidget* button){
   GObject* object = G_OBJECT(button);
   GObjectClass* klass = G_OBJECT_GET_CLASS(G_OBJECT(button));
@@ -169,7 +197,7 @@ activate (GtkApplication *app,
   GtkWidget *button_B;
 
   window = gtk_application_window_new (app);
-  gtk_window_set_title (GTK_WINDOW (window), "Hello");
+  gtk_window_set_title (GTK_WINDOW (window), "HelloWorldGtkApplication");
   gtk_window_set_default_size (GTK_WINDOW (window), 200, 200);
 
   button_A = gtk_button_new_with_label ("Button_A");
@@ -191,6 +219,7 @@ activate (GtkApplication *app,
   create_and_add_input_items(box);
 
   //list_button_properties(button_B);
+  list_enum_properties(button_B);
 
   gtk_window_set_child(GTK_WINDOW(window), box);
 

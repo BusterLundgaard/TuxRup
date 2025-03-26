@@ -15,6 +15,16 @@
 
 enum widget_type_category get_widget_type_category(GtkWidget* w);
 
+GObjectClass* get_widget_class(GtkWidget* widget);
+
+GtkWidget* create_window(GtkWidget* any_widget_from_current_application, const char* title, guint width, guint height);
+
+GtkWidget* create_and_add_scrollable_item_list(GtkWidget* window, guint width, guint height);
+
+GtkWidget* add_widget_to_window(GtkWidget* window, GtkWidget* widget);
+
+GtkWidget* add_widget_to_box(GtkWidget* box, GtkWidget* widget);
+
 char* get_widget_type_category_str(enum widget_type_category c);
 
 char* get_callback_type_category_str(enum gtk_callback_category c);
