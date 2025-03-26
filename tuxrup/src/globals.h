@@ -9,17 +9,6 @@
     #include <gtk-4.0/gtk/gtk.h>
 #endif
 
-typedef gulong (*g_signal_connect_data_t)(gpointer instance,
-                                          const gchar *detailed_signal,
-                                          GCallback c_handler,
-                                          gpointer data,
-                                          GClosureNotify destroy_data,
-                                          GConnectFlags connect_flags);
-extern g_signal_connect_data_t normal_g_signal_connect_data;
-
-typedef void(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
-typedef void(*menu_action_callback_type)(GSimpleAction* action, GVariant* parameter, gpointer user_data);
-
 enum gtk_callback_category {
     GTK_CALLBACK_UNDEFINED,
 
@@ -88,17 +77,29 @@ enum widget_type_category {
     GTK_CATEGORY_Window
 };
 
+extern GtkWidget* application_root;
+
+extern GHashTable *widget_callback_table;
+extern GHashTable *widget_hashes;
+extern const char* program_src_folder;
+extern const char* working_directory;
+
 typedef struct {
     enum gtk_callback_category action_name; // A string with the name of the action
     enum widget_type_category valid_widget_types[5]; // The widgets you can apply this action to. No callback has more than 5 categories applying, so it's kind of just an arbitrary number to avoid a dynamically-sized array
 } action;
 
-extern GHashTable *widget_callback_table;
-extern GHashTable *widget_hashes;
-
 #define MAPPABLE_ACTIONS_LEN 17
-extern const char* program_src_folder;
-extern const char* working_directory;
 extern const action remapable_events[MAPPABLE_ACTIONS_LEN];
 
+typedef gulong (*g_signal_connect_data_t)(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags);
+extern g_signal_connect_data_t normal_g_signal_connect_data;
+
+typedef void(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
+typedef void(*menu_action_callback_type)(GSimpleAction* action, GVariant* parameter, gpointer user_data);
 #endif

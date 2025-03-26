@@ -2,6 +2,7 @@
 
 g_signal_connect_data_t normal_g_signal_connect_data = NULL;
 
+GtkWidget* application_root = NULL;
 GHashTable *widget_callback_table = NULL;
 GHashTable *widget_hashes = NULL;
 

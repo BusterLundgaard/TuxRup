@@ -95,9 +95,10 @@ void gtk_window_present(GtkWindow *window)
     }
 
     // Print your custom message
-    //on_gtk_window_present(window);
-    printf("gtk_window_present was called!\n");
+    on_gtk_window_present(window);
 
     // Call the original gtk_window_present function
     original_gtk_window_present(window);
+
+    
 }

@@ -130,7 +130,7 @@ GConnectFlags connect_flags){
         g_hash_table_insert(widget_hashes, widget, NULL);
         normal_g_signal_connect_data(widget, "notify::root", G_CALLBACK(on_added_to_dom), NULL, ((void*)0), (GConnectFlags)0);
         
-        add_right_click_action(widget, create_and_open_right_click_context_menu, widget);
+        add_right_click_action(widget, open_right_click_context_menu, widget);
     }
 
     printf("This recognized widget type is: %s, detailed_signal = %s\n", get_widget_type_category_str(widget_category), detailed_signal);
@@ -164,7 +164,7 @@ GConnectFlags connect_flags){
 
 void on_gtk_window_present(GtkWindow *window)
 {
-    //clang_tests("../program_src/hello_world.c");
+    application_root = (GtkWidget*)window;
 }
 
 static bool initialized = false;
