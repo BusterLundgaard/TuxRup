@@ -1,7 +1,10 @@
-#include "editor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "utils.h"
+
+#include "edit_css_window.h"
 
 /* 
  * DEFINE the global here exactly once. 
@@ -61,14 +64,8 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
     g_free(data);
 }
 
-/* Opens the text editor window. */
-void open_text_editor(GtkWidget *widget, gpointer user_data)
-{
-    GtkApplication *app = GTK_APPLICATION(user_data);
-
-    GtkWidget *editor_window = gtk_application_window_new(app); // can change.
-    gtk_window_set_title(GTK_WINDOW(editor_window), "Text Editor");
-    gtk_window_set_default_size(GTK_WINDOW(editor_window), 600, 400);
+EditorData* build_css_editor_window(GtkWidget* widget){
+    GtkWidget* window = create_window(widget, "Edit widget styling", 400, 800);
 
     GtkWidget *vbox     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     GtkWidget *scrolled = gtk_scrolled_window_new();
@@ -78,9 +75,29 @@ void open_text_editor(GtkWidget *widget, gpointer user_data)
     GtkWidget *text_view = gtk_text_view_new();
     gtk_widget_set_hexpand(text_view, TRUE);
     gtk_widget_set_vexpand(text_view, TRUE);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), text_view);
 
+    gtk_box_append(GTK_BOX(vbox), scrolled);
+    gtk_box_append(GTK_BOX(vbox), done_button);
+    gtk_window_set_child(GTK_WINDOW(window), vbox);
+
+    GtkWidget *done_button = gtk_button_new_with_label("Done");
+    
+    EditorData *data       = g_malloc(sizeof(EditorData));
+    data->text_view        = text_view;
+    data->done_button      = done_button;
+    data->editor_window    = window;
+    data->target_button    = widget;
+
+    return data;
+}
+
+/* Opens the text editor window. */
+void open_css_editor(GtkWidget *widget)
+{
+    EditorData* editor_data = build_css_editor_window();
+    
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-
     CssProps result = listCssPropertiesOfGobject(G_OBJECT(widget));
     gchar *stored_filename = g_hash_table_lookup(widget_to_filepath_map, widget);
 
@@ -109,21 +126,17 @@ void open_text_editor(GtkWidget *widget, gpointer user_data)
         }
     }
 
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), text_view);
-
     GtkWidget *done_button = gtk_button_new_with_label("Done");
     EditorData *data       = g_malloc(sizeof(EditorData));
     data->text_view        = text_view;
-    data->editor_window    = editor_window;
+    data->editor_window    = window;
     data->target_button    = widget;
 
     g_signal_connect(done_button, "clicked", G_CALLBACK(on_done_clicked), data);
 
-    gtk_box_append(GTK_BOX(vbox), scrolled);
-    gtk_box_append(GTK_BOX(vbox), done_button);
-    gtk_window_set_child(GTK_WINDOW(editor_window), vbox);
+    
 
-    gtk_window_present(GTK_WINDOW(editor_window));
+    gtk_window_present(GTK_WINDOW(window));
 }
 
 /* The existing right-click handler that calls open_text_editor. */

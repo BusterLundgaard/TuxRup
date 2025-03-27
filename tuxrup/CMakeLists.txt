@@ -55,6 +55,7 @@ set(SOURCES
     src/util.c
     src/context_menu.c
     src/edit_properties_window.c
+    src/edit_css_window.c
 )
 
 # Add the shared library target

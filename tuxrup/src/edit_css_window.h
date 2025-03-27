@@ -1,5 +1,5 @@
-#ifndef EDITOR_UTILS_H
-#define EDITOR_UTILS_H
+#ifndef EDIT_CSS_WINDOW_H
+#define EDIT_CSS_WINDOW_H
 
 #include <gtk/gtk.h>
 #include "css_utils.h"   // So we can call changeCss(), getCss(), etc. if needed
@@ -11,6 +11,7 @@ typedef struct {
     GtkWidget *text_view;
     GtkWidget *editor_window;
     GtkWidget *target_button;
+    GtkWidget *done_button;
 } EditorData;
 
 extern GHashTable *widget_to_filepath_map;
@@ -24,7 +25,7 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data);
 /* 
  * Opens the text editor window (called from on_right_click). 
  */
-void open_text_editor(GtkWidget *widget, gpointer user_data);
+void open_css_editor(GtkWidget *widget);
 
 /*
  * A convenience function to attach a right-click gesture to a given widget,

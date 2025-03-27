@@ -1,6 +1,7 @@
 #include "context_menu.h"
 #include "globals.h"
 #include "edit_properties_window.h"
+#include "edit_css_window.h"
 
 static GtkWidget* context_menu_popover = NULL;
 static GtkWidget* active_widget = NULL;
@@ -12,7 +13,7 @@ static void on_open_edit_properties_window(GSimpleAction *action, GVariant *para
 
 static void on_open_edit_styling_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
     if(!active_widget){return;}
-    g_print("Opened edit styling window! TODO");
+    open_css_editor(active_widget);
 }
 
 static void on_open_edit_callbacks_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
