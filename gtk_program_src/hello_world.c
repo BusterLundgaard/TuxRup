@@ -188,6 +188,24 @@ static void list_button_properties(GtkWidget* button){
   g_free(properties);  // Must be freed after use
 }
 
+void apply_css_globally(const gchar *css_file_path)
+{
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    GFile *css_file = g_file_new_for_path(css_file_path);
+
+    gchar *path = g_file_get_path(css_file);
+    printf("The hello world program loads a css file with a path = %s\n", path);  
+
+    gtk_css_provider_load_from_file(css_provider, css_file);
+    GdkDisplay *display = gdk_display_get_default();
+    gtk_style_context_add_provider_for_display(display,
+        GTK_STYLE_PROVIDER(css_provider),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    g_object_unref(css_provider);
+    g_object_unref(css_file);
+}
+
 static void
 activate (GtkApplication *app,
           gpointer        user_data)
@@ -219,7 +237,9 @@ activate (GtkApplication *app,
   create_and_add_input_items(box);
 
   //list_button_properties(button_B);
-  list_enum_properties(button_B);
+  //list_enum_properties(button_B);
+
+  apply_css_globally("./example_css.css");
 
   gtk_window_set_child(GTK_WINDOW(window), box);
 

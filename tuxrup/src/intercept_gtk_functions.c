@@ -12,7 +12,38 @@
 
 #include "globals.h"
 #include "gtk_events.h"
+#include "util.h"
 
+// ===================================
+// CSS
+// =====================================
+typedef void(*gtk_css_provider_load_from_file_t)(GtkCssProvider* provider, GFile* file);
+
+void gtk_css_provider_load_from_file(GtkCssProvider *provider, GFile *file)
+{   
+    static gtk_css_provider_load_from_file_t original_gtk_css_provider_load_from_file = NULL;
+    if(!original_gtk_css_provider_load_from_file){
+        original_gtk_css_provider_load_from_file = (gtk_css_provider_load_from_file_t)dlsym(RTLD_NEXT, "gtk_css_provider_load_from_file");
+        if(!original_gtk_css_provider_load_from_file){
+            fprintf(stderr, "Error finding original gtk_application_new: %s\n", dlerror());
+            return;
+        }
+    }
+
+    GFile* fixed_file = file;
+    gchar* path = g_file_get_path(file);
+    if((path != NULL) && !file_exists(path)){
+        gchar* fixed_path = fix_broken_fucking_css_path(path);
+        fixed_file = g_file_new_for_path(fixed_path);
+    }  
+    
+    our_gtk_css_provider_load_from_file(fixed_file);
+    original_gtk_css_provider_load_from_file(provider, fixed_file);
+}
+
+// ====================================
+// Initialization
+// ====================================
 typedef GtkApplication* (*gtk_application_new_t)(const char* application_id, GApplicationFlags flags);
 
 GtkApplication *gtk_application_new(const char *application_id, GApplicationFlags flags){
@@ -51,7 +82,31 @@ g_application_run(
     return res;
 }
 
+typedef void (*gtk_window_present_t)(GtkWindow *window); // Define the function type
 
+void gtk_window_present(GtkWindow *window)
+{
+    static gtk_window_present_t original_gtk_window_present = NULL;
+    if (!original_gtk_window_present)
+    {
+        original_gtk_window_present = (gtk_window_present_t)dlsym(RTLD_NEXT, "gtk_window_present");
+        if (!original_gtk_window_present)
+        {
+            fprintf(stderr, "Error finding original gtk_window_present: %s\n", dlerror());
+            return; 
+        }
+    }
+
+    // Print your custom message
+    on_gtk_window_present(window);
+
+    // Call the original gtk_window_present function
+    original_gtk_window_present(window);
+}
+
+// =======================================
+// SIGNALS / CALLBACKS
+// =======================================
 gulong
 g_signal_connect_data(gpointer instance,
                       const gchar *detailed_signal,
@@ -76,29 +131,4 @@ g_signal_connect_data(gpointer instance,
     on_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
     
     original_g_signal_connect_data(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
-}
-
-
-typedef void (*gtk_window_present_t)(GtkWindow *window); // Define the function type
-
-void gtk_window_present(GtkWindow *window)
-{
-    static gtk_window_present_t original_gtk_window_present = NULL;
-    if (!original_gtk_window_present)
-    {
-        original_gtk_window_present = (gtk_window_present_t)dlsym(RTLD_NEXT, "gtk_window_present");
-        if (!original_gtk_window_present)
-        {
-            fprintf(stderr, "Error finding original gtk_window_present: %s\n", dlerror());
-            return; 
-        }
-    }
-
-    // Print your custom message
-    on_gtk_window_present(window);
-
-    // Call the original gtk_window_present function
-    original_gtk_window_present(window);
-
-    
 }

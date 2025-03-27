@@ -5,8 +5,10 @@ g_signal_connect_data_t normal_g_signal_connect_data = NULL;
 GtkWidget* application_root = NULL;
 GHashTable *widget_callback_table = NULL;
 GHashTable *widget_hashes = NULL;
+GHashTable *widget_to_css_filepath_map = NULL;
 
 const char* working_directory = "";
+const char* executable_path = "";
 const char* program_src_folder = "../../gtk_program_src";
 
 const action remapable_events[MAPPABLE_ACTIONS_LEN] = {

@@ -1,5 +1,7 @@
 #include "util.h"
 #include <clang-c/Index.h>
+#include <sys/stat.h>
+#include "globals.h"
 
 GObjectClass* get_widget_class(GtkWidget* widget){
     GObject* object = G_OBJECT(widget);
@@ -224,6 +226,40 @@ char* get_working_directory(){
     return g_strdup(buffer);
 }
 
+char* get_executable_directory() {
+    char* buffer = malloc(sizeof(char)*1024);
+    size_t size = 100000;
+    ssize_t len = readlink("/proc/self/exe", buffer, 1024 - 1);
+    if(len == -1){
+        return NULL;
+    }
+
+    buffer[len] = '\0';
+    return g_strdup(buffer);
+}
+
+gboolean file_exists(const gchar *filepath) {
+    struct stat buffer;
+    return (stat(filepath, &buffer) == 0);
+}
+
+char* fix_broken_fucking_css_path(char* path){
+    if(file_exists(path))
+    {return path;}
+
+    gchar *executable_dir = g_path_get_dirname(executable_path); // Get just the directory of the executable
+    gchar *relative_path = NULL;
+
+    relative_path = g_strdup(path + strlen(working_directory)); // Extract the relative part
+    if (*relative_path == '/') relative_path++; // Remove leading slash if necessary
+    
+    gchar* fixed_path = g_build_filename(executable_dir, relative_path, NULL);    
+    g_free(relative_path);
+    g_free(executable_dir);
+    
+    return fixed_path;
+}
+
 unsigned int hash_int(int key) {
     return (unsigned int)key * 2654435761U;  // Knuth's multiplicative hash
 }
@@ -292,3 +328,74 @@ void add_right_click_action(GtkWidget* widget, right_click_callback_type callbac
     gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
     normal_g_signal_connect_data(gesture, "pressed", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
 }
+
+char* execute_command_and_get_result(char* command){
+
+    printf("The command we are executing is: %s\n", command);
+
+    FILE *fp = popen(command, "r");
+    if (!fp) {
+        perror("Failed to run command");
+        return NULL;
+    }
+
+    size_t buffer_size = 1024;
+    size_t length = 0;
+    char *output = malloc(buffer_size);
+    if (!output) {
+        perror("Memory allocation failed");
+        pclose(fp);
+        return NULL;
+    }
+    output[0] = '\0';
+
+    char temp_buffer[1024];
+    while (fgets(temp_buffer, sizeof(temp_buffer), fp) != NULL) {
+        size_t temp_length = strlen(temp_buffer);
+        if (length + temp_length + 1 > buffer_size) {  // +1 for null terminator
+            buffer_size *= 2;
+            char *new_output = realloc(output, buffer_size);
+            if (!new_output) {
+                perror("Memory reallocation failed");
+                free(output);
+                pclose(fp);
+                return NULL;
+            }
+            output = new_output;
+        }
+        strcat(output, temp_buffer);
+        length += temp_length;
+    }
+
+    pclose(fp);
+    return output;
+}
+
+char* read_file_contents(char* filepath){
+    gchar *content = NULL;
+    gsize length = 0;
+    GError *error = NULL;
+    GFile* file = g_file_new_for_path(filepath);
+
+    if (!g_file_load_contents(file, NULL, &content, &length, NULL, &error)) {
+        fprintf(stderr, "Error loading file: %s\n", error->message);
+        g_error_free(error);
+        g_free(filepath);
+        return NULL;
+    }
+
+    return content;
+}
+
+void append_text_to_file(char* filepath, char* text){
+    FILE *output_file = fopen(filepath, "a");
+    if (!output_file) {
+        fprintf(stderr, "Error: Unable to open all_css.css for writing\n");
+        return;
+    }
+
+    fwrite(text, 1, strlen(text), output_file);
+    fprintf(output_file, "\n"); 
+    fclose(output_file);
+}
+

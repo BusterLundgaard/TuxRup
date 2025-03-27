@@ -4,7 +4,7 @@
 #include <gtk/gtk.h>
 #include "css_utils.h"   // So we can call changeCss(), getCss(), etc. if needed
 
-extern GHashTable *widget_to_filepath_map;
+extern GHashTable *widget_to_css_filepath_map;
 
 /* This struct holds references for the text editor window. */
 typedef struct {
@@ -14,7 +14,7 @@ typedef struct {
     GtkWidget *done_button;
 } EditorData;
 
-extern GHashTable *widget_to_filepath_map;
+extern GHashTable *widget_to_css_filepath_map;
 
 /* 
  * Called when “Done” is clicked in the text editor window. 

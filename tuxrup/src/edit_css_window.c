@@ -2,63 +2,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
+#include "util.h"
 
 #include "edit_css_window.h"
-
-/* 
- * DEFINE the global here exactly once. 
- * That’s the actual variable stored in memory. 
- */
-
-GHashTable *widget_to_filepath_map = NULL;
 
 /* "Done" button callback */
 void on_done_clicked(GtkWidget *widget, gpointer user_data)
 {   
-    static guint file_counter = 0;
     EditorData *data = (EditorData *)user_data;
-    GtkWidget *clickedWidget = data->target_button;
+    GtkWidget *modified_widget = data->target_button;
+    gchar* text = get_textview_text(data->text_view);
 
-    g_print("on_done_clicked triggered\n");
+    static guint file_counter = 0;
+    
+    // Apply the css
+    apply_css_to_widget(modified_widget, text);
 
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view));
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(buffer, &start, &end);
-    gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
-    /* Look up any existing filename in our global hash table. */
-    gchar *stored_filename = g_hash_table_lookup(widget_to_filepath_map, clickedWidget);
-    gchar *filename = NULL;
-
+    // Make changes permanent by saving to a file
+    gchar *filename;
+    gchar *stored_filename = g_hash_table_lookup(widget_to_css_filepath_map, modified_widget);
     if (stored_filename) {
-        g_print("Widget in hashmap with filename: %s (overwriting)\n", stored_filename);
         filename = stored_filename;
     } else {
         filename = g_strdup_printf("./css_output_%u.css", file_counter++);
-        g_hash_table_insert(widget_to_filepath_map, clickedWidget, filename);
+        g_hash_table_insert(widget_to_css_filepath_map, modified_widget, filename);
     }
 
-    g_print("Writing to file: %s\n", filename);
     GError *error = NULL;
     if (!g_file_set_contents(filename, text, -1, &error)) {
         g_print("Error writing to file %s: %s\n", filename, error->message);
         g_error_free(error);
         if (!stored_filename) {
             g_free(filename);
-            g_hash_table_remove(widget_to_filepath_map, clickedWidget);
+            g_hash_table_remove(widget_to_css_filepath_map, modified_widget);
         }
         g_free(text);
         gtk_window_destroy(GTK_WINDOW(data->editor_window));
         g_free(data);
         return;
-    } else {
-        g_print("Successfully wrote CSS to file: %s\n", filename);
-    }
+    } 
 
-    g_print("Applying CSS:\n%s\n", text);
-    changeCss(clickedWidget, text); /* from css_utils.h */
-
+    // Clean up and close the editor window
     g_free(text);
     gtk_window_destroy(GTK_WINDOW(data->editor_window));
     g_free(data);
@@ -77,11 +61,11 @@ EditorData* build_css_editor_window(GtkWidget* widget){
     gtk_widget_set_vexpand(text_view, TRUE);
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), text_view);
 
+    GtkWidget *done_button = gtk_button_new_with_label("Done");
+
     gtk_box_append(GTK_BOX(vbox), scrolled);
     gtk_box_append(GTK_BOX(vbox), done_button);
     gtk_window_set_child(GTK_WINDOW(window), vbox);
-
-    GtkWidget *done_button = gtk_button_new_with_label("Done");
     
     EditorData *data       = g_malloc(sizeof(EditorData));
     data->text_view        = text_view;
@@ -95,57 +79,33 @@ EditorData* build_css_editor_window(GtkWidget* widget){
 /* Opens the text editor window. */
 void open_css_editor(GtkWidget *widget)
 {
-    EditorData* editor_data = build_css_editor_window();
+    EditorData* editor_data = build_css_editor_window(widget);
+
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor_data->text_view));
     
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    CssProps result = listCssPropertiesOfGobject(G_OBJECT(widget));
-    gchar *stored_filename = g_hash_table_lookup(widget_to_filepath_map, widget);
+    CssProps result = get_css_class_information_of_widget(widget);
+    gchar *stored_filename = g_hash_table_lookup(widget_to_css_filepath_map, widget);
 
     if (stored_filename) {
-        g_print("File found for widget: %s\n", stored_filename);
         gchar *file_contents = NULL;
         gsize length = 0;
         GError *error = NULL;
         if (g_file_get_contents(stored_filename, &file_contents, &length, &error)) {
             gtk_text_buffer_set_text(buffer, file_contents, -1);
-            g_print("Loaded CSS contents:\n%s\n", file_contents);
             g_free(file_contents);
         } else {
             g_print("Error reading file %s: %s\n", stored_filename, error->message);
             g_error_free(error);
         }
     } else {
-        g_print("generating dynamically\n");
-        char *contents = getCss("/home/wowsuchdoge/coding/style.css",
-                                result.css_name,
-                                (const char **)result.css_classes,
-                                result.num_classes);
+        char *contents = parse_applicable_css_rules("./all_css.css", &result);
         if (contents) {
             gtk_text_buffer_set_text(buffer, contents, -1);
-            g_print("Dynamically loaded CSS contents:\n%s\n", contents);
         }
     }
 
-    GtkWidget *done_button = gtk_button_new_with_label("Done");
-    EditorData *data       = g_malloc(sizeof(EditorData));
-    data->text_view        = text_view;
-    data->editor_window    = window;
-    data->target_button    = widget;
+    g_signal_connect(editor_data->done_button, "clicked", G_CALLBACK(on_done_clicked), editor_data);
 
-    g_signal_connect(done_button, "clicked", G_CALLBACK(on_done_clicked), data);
-
-    
-
-    gtk_window_present(GTK_WINDOW(window));
-}
-
-/* The existing right-click handler that calls open_text_editor. */
-void on_right_click(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data)
-{
-    guint button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(gesture));
-    if (button == GDK_BUTTON_SECONDARY) {
-        GtkWidget *clicked_widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(gesture));
-        open_text_editor(clicked_widget, user_data);
-    }
+    gtk_window_present(GTK_WINDOW(editor_data->editor_window));
 }
 

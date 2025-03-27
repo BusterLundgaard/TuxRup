@@ -39,6 +39,12 @@ bool is_mappable_action(const gchar* event_name);
 
 char* get_working_directory();
 
+char* get_executable_directory();
+
+gboolean file_exists(const gchar *filepath);
+
+char* fix_broken_fucking_css_path(char* path);
+
 unsigned int hash_int(int key);
 
 unsigned long hash_string(const char *str);
@@ -54,5 +60,11 @@ GtkWidget* create_textview(const char* text, bool editable);
 void print_cursor_location(CXSourceLocation loc);
 
 void add_right_click_action(GtkWidget* widget, right_click_callback_type callback, gpointer user_data);
+
+char* execute_command_and_get_result(char* command);
+
+char* read_file_contents(char* filepath);
+
+void append_text_to_file(char* filepath, char* text);
 
 #endif

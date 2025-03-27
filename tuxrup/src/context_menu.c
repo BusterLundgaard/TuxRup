@@ -63,6 +63,13 @@ void initialize_right_click_context_menu(){
 //Callback that is called when right-clicking a widget
 void open_right_click_context_menu(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data){
     GtkWidget* widget = (GtkWidget*)user_data;
+    if(GTK_IS_WIDGET(widget)){
+        g_print("widget is in fact a widget!\n");
+    }
+    if(GTK_IS_WIDGET(application_root)){
+        g_print("The application root is a widget!\n");
+    }
+
     active_widget = widget;
 
     // Create context menu if it does not exist
@@ -73,7 +80,7 @@ void open_right_click_context_menu(GtkGestureClick *gesture, gint n_press, gdoub
 
     // Set position to the current widget you right clicked on
     graphene_rect_t bounds;
-    gtk_widget_compute_bounds(widget, application_root, &bounds);
+    gtk_widget_compute_bounds(active_widget, application_root, &bounds);
     GdkRectangle rect = { bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height };
     gtk_popover_set_pointing_to(GTK_POPOVER(context_menu_popover), &rect);
 

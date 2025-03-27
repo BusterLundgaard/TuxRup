@@ -6,31 +6,20 @@
 #include "pointer_name_conversion.h"
 #include "modify_callback.h"
 #include "context_menu.h"
+#include <sys/stat.h>
 
-void on_right_click(GtkWidget* widget){
-    callback_identifier cb_id = {widget, "clicked"};
-    gpointer value = g_hash_table_lookup(widget_callback_table, &cb_id);
-    if(value == NULL){
-        g_print("Couldn't find the callback information for the widget you just right-clicked..\n");
-        return;
+void our_gtk_css_provider_load_from_file(GFile* file){
+    gchar *content = NULL;
+    gsize length = 0;
+    GError *error = NULL;
+    if (g_file_load_contents(file, NULL, &content, &length, NULL, &error)) {
+        append_text_to_file("./all_css.css", content);
+        g_free(content);
+    } else {
+        g_print("Error reading the file: %s\n", error->message);
+        g_error_free(error);
     }
-    callback_info* cb_info = (callback_info*)value;
-    
-    char* callback_name = "clicked"; // This is just hard-coded for now, can be generalized later
-    callback_code_information* code_info = get_callback_code_information(cb_info->original_function_pointer, "clicked");
-    
-    create_code_editing_menu(widget, callback_name, code_info);
 }
-
-#ifdef USE_GTK3
-void on_right_click_gtk3(GtkWidget *widget, GdkEventButton *event, gpointer user_data){
-    on_right_click(widget);
-}
-#else
-void on_right_click_gtk4(GtkGestureClick *gesture,int, double x, double y, gpointer* self){
-    on_right_click(GTK_WIDGET(self));
-}
-#endif
 
 void on_added_to_dom(GtkWidget* widget, gpointer data){
     guint* hash = malloc(sizeof(guint));  
@@ -122,7 +111,6 @@ GConnectFlags connect_flags){
     enum widget_type_category widget_category = get_widget_type_category(widget);
     if(widget_category == GTK_CATEGORY_UNDEFINED)
     {return 0;}
-
         
     // // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
     // // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
@@ -133,27 +121,11 @@ GConnectFlags connect_flags){
         add_right_click_action(widget, open_right_click_context_menu, widget);
     }
 
-    printf("This recognized widget type is: %s, detailed_signal = %s\n", get_widget_type_category_str(widget_category), detailed_signal);
-
-    // if(strcmp(detailed_signal, "clicked") == 0){
-    //     printf("Adding callback with detailed_signal = %s\n", detailed_signal);
-    //     char* function_name = get_identifier_from_pointer(c_handler);
-    //     add_callback_to_table(widget, detailed_signal, c_handler, function_name);
-
-    //     GtkGesture* gesture = gtk_gesture_click_new();
-    //     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
-    //     gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
-    //     g_signal_connect(gesture, "pressed", G_CALLBACK(on_right_click_gtk4), widget);
-    // }
-
-
     enum gtk_callback_category callback_category = get_callback_category_from_connect_signal(instance, detailed_signal);
-    
     if(callback_category == GTK_CALLBACK_UNDEFINED)
     {return 0;}
     
     if(is_callback_remapable(widget_category, callback_category)){
-        printf("adding callback for widget category: %s, with signal type = %s\n", get_widget_type_category_str(widget_category), detailed_signal);
         char* function_name = get_identifier_from_pointer(c_handler);
         add_callback_to_table(widget, detailed_signal, c_handler, function_name);
     }
@@ -161,10 +133,14 @@ GConnectFlags connect_flags){
     return 0;
 }
 
+static bool first_window_present = true;
 
 void on_gtk_window_present(GtkWindow *window)
 {
-    application_root = (GtkWidget*)window;
+    if(first_window_present){
+        application_root = (GtkWidget*)window;
+        first_window_present=false;
+    }
 }
 
 static bool initialized = false;
@@ -178,9 +154,17 @@ void on_init(){
             printf("Hello from GTK 4\n");
         #endif
 
-        printf("I was initialized yay! What's up with you though?\n");
+        // Get executable metadata like working directory and debug symbols
         working_directory = get_working_directory();
+        executable_path = get_executable_directory();
+
+        // Initialize global maps
         widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
         widget_callback_table = g_hash_table_new_full(callback_key_hash, callback_key_equal, callback_key_free, callback_value_free);
+        widget_to_css_filepath_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+        // Clear temporary files
+        FILE *file = fopen("all_css.css", "w"); 
+        if (file) {fclose(file);} 
     }
 }

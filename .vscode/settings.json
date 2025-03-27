@@ -12,6 +12,7 @@
         "function_dispatcher.h": "c",
         "index.h": "c",
         "edit_properties_window.h": "c",
-        "ios": "c"
+        "ios": "c",
+        "gtk_events.h": "c"
     }
 }

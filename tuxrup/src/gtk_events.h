@@ -25,4 +25,6 @@ GConnectFlags connect_flags);
 void on_gtk_window_present(GtkWindow *window);
 void on_init();
 
+void our_gtk_css_provider_load_from_file(GFile* file);
+
 #endif
