@@ -9,6 +9,13 @@
     #include <gtk-4.0/gtk/gtk.h>
 #endif
 
+enum gtk_version {
+    UNKNOWN = 0,
+    GTK_VERSION_4,
+    GTK_VERSION_3,
+    GTK_VERSION_2
+};
+
 enum gtk_callback_category {
     GTK_CALLBACK_UNDEFINED,
 
@@ -57,8 +64,8 @@ enum gtk_callback_category {
 };
 
 enum widget_type_category {
+    GTK_CATEGORY_UNDEFINED = 0,
     GTK_CATEGORY_ANY, 
-    GTK_CATEGORY_UNDEFINED,
 
     GTK_CATEGORY_Button, 
     
@@ -76,6 +83,8 @@ enum widget_type_category {
     
     GTK_CATEGORY_Window
 };
+
+enum gtk_version gtk_version;
 
 extern GtkWidget* application_root;
 

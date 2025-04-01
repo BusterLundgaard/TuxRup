@@ -1,1 +1,2 @@
 tuxrup/build/*
+!tuxrup/build/parsethecss.py

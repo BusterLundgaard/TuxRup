@@ -2,6 +2,7 @@
 #include <clang-c/Index.h>
 #include <sys/stat.h>
 #include "globals.h"
+#include "globals.h"
 
 GObjectClass* get_widget_class(GtkWidget* widget){
     GObject* object = G_OBJECT(widget);
@@ -207,6 +208,40 @@ char* get_basename_without_extension(const char *filepath) {
     return basename;
 }
 
+void copy_file(const char* file_path, const char* copied_path){
+    FILE *copied_file = fopen(file_path, "r");
+    if (!copied_file) {
+        g_warning("Failed to open file to copy");
+        g_free(file_path);
+        return;
+    }
+
+    // Create the new file
+    FILE *new_file = fopen(copied_path, "w");
+    if (!new_file) {
+        g_warning("Failed to create new file we are copying: %s", copied_path);
+        fclose(copied_file);
+        g_free(file_path);
+        return;
+    }
+
+    // Copy contents of the template file to the new file
+    char buffer[1024];
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, 1, sizeof(buffer), copied_file)) > 0) {
+        fwrite(buffer, 1, bytes_read, new_file);
+    }
+
+    // Close the files
+    fclose(copied_file);
+    fclose(new_file);
+
+    g_print("Created callback file: %s\n", file_path);
+
+    // Clean up
+    g_free(file_path);
+}
+
 bool is_mappable_action(const gchar* event_name){
     // for(int i = 0; i < MAPPABLE_ACTIONS_LEN; i++){
     //     if(strcmp(event_name, remapable_events[i]) == 0){
@@ -273,11 +308,11 @@ unsigned long hash_string(const char *str) {
     return hash;
 }
 
-void remove_callback (GtkWidget* w, char* callback_name){
+void remove_callback (GtkWidget* w, enum gtk_callback_category callback){
     g_signal_handlers_disconnect_matched(
         w, 
         G_SIGNAL_MATCH_ID, 
-        g_signal_lookup(callback_name, G_OBJECT_TYPE(w)), 
+        g_signal_lookup(get_callback_type_category_str(callback), G_OBJECT_TYPE(w)), 
         0, 
         NULL, 
         NULL, 

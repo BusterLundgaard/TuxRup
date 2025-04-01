@@ -1,7 +1,13 @@
 #ifndef EDIT_CSS_WINDOW_H
 #define EDIT_CSS_WINDOW_H
 
-#include <gtk/gtk.h>
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else 
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
+
 #include "css_utils.h"   // So we can call changeCss(), getCss(), etc. if needed
 
 extern GHashTable *widget_to_css_filepath_map;

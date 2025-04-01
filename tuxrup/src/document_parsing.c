@@ -2,6 +2,19 @@
 #include "modify_callback.h"
 #include "reference_type.h"
 #include "util.h"
+#include <stdio.h>
+
+
+// ==================================================
+// UTILITY? IDK MAN
+// ==================================================
+int get_line(CXCursor c){
+    CXSourceRange range = clang_getCursorExtent(original_function_cursor);
+    CXSourceLocation start = clang_getRangeStart(range);
+    unsigned line;
+    clang_getSpellingLocation(start, NULL, &line, NULL, NULL);
+    return line;
+}
 
 // ==================================================
 // FUNCTIONS TO GET CURSORS
@@ -195,6 +208,7 @@ enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXCli
     CXSourceLocation loc = clang_getCursorLocation(c);
     int cursor_comparison = cursor_compare(loc, args->modified_function_location);
     if(cursor_comparison == 0){
+        *(args->line) = get_line(c); 
         return CXChildVisit_Continue;
     }
     else if(cursor_comparison == -1){
@@ -281,5 +295,39 @@ enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CX
     g_hash_table_insert(undefined, identifier, undefined_ref_type);    
 
     return CXChildVisit_Continue;
+}
+
+
+int create_version_of_document_for_code_editing_and_get_location(callback_info info, bool edited_before, char* output_path);
+    GString* editing_document = g_string_new(g_strdup(info->before_code->str));
+
+    g_string_append(editing_document, "\n //Edit the function inside of here. Don't edit anything else! \n")
+    g_string_append(editing_document, g_strdup_printf("\nvoid %s(%s){\n", info->function_name, info->original_function_args)); 
+    
+    if(edited_before){
+        FILE* modified_code_file = fopen(g_strdup_printf("./runtime_files/%u.c", info->hash))
+        char line[1024];
+        while(fgets(line, sizeof(line), before_buffer)){
+            g_string_append(editing_document, line);
+        }
+    } else {
+        g_string_append(editing_document, info->orignal_function_code->str);
+    }
+
+    g_string_append(editing_document, "}\n\n");
+    g_string_append(editing_document, info->after_code->str);
+    g_file_set_contents(output_path, editing_document->str, strlen(before_buffer->str), NULL);      
+}
+
+char* set_callback_code_information(callback_info info){
+    info->document_path = get_document_path(info->function_name);
+
+    CXCursor c = get_root_cursor(info->document_path);
+    CXCursor c_func = get_function_cursor(c, original_function_name);
+    CXCursor c_func_body = get_function_body_cursor(c_func);
+    
+    set_before_after_code_args args = {.before_code=info->before_code, .after_code=info->after_code, .modified_function_location=&c_func, .line=&info->line};
+    set_before_after_code_args(c, set_before_after_code, &args);
+    set_function_arguments(c_func, info->original_function_args);
 }
 

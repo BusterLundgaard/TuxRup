@@ -143,16 +143,31 @@ void on_gtk_window_present(GtkWindow *window)
     }
 }
 
+// Uhh this doesn't actually do it at runtime, so it's kind of bad!
+void set_gtk_version() {
+    #if GTK_MAJOR_VERSION == 4
+        gtk_version = GTK_VERSION_4
+    #elif GTK_MAJOR_VERSION == 3
+        gtk_version = GTK_VERSION_3 
+    #elif GTK_MAJOR_VERSION == 2
+        gtk_version = GTK_VERSION_2
+    #else
+        printf("Unknown GTK version\n");
+    #endif
+}
+
 static bool initialized = false;
 void on_init(){
     if(!initialized){
         initialized = true;
 
         #ifdef USE_GTK3
-            printf("Hello from GTK 3\n");
+            printf("lo from GTK 3\n");
         #else
             printf("Hello from GTK 4\n");
         #endif
+
+        set_gtk_version();
 
         // Get executable metadata like working directory and debug symbols
         working_directory = get_working_directory();
