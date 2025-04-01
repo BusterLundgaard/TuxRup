@@ -13,6 +13,9 @@
         "index.h": "c",
         "edit_properties_window.h": "c",
         "ios": "c",
-        "gtk_events.h": "c"
+        "gtk_events.h": "c",
+        "random": "c",
+        "queue": "c",
+        "stack": "c"
     }
 }

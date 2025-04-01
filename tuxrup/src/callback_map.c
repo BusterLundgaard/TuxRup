@@ -37,6 +37,7 @@ void callback_map_add_original(GtkWidget* widget, enum gtk_callback_category cal
     cb_key->callback = callback_category;
 
     callback_info* cb_info = malloc(sizeof(callback_info));
+    cb_info->id = cb_key;
     cb_info->original_function_pointer = (callback_type)original_pointer;
     cb_info->function_name = original_function_name;
     cb_info->dl_handle = NULL;

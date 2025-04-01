@@ -1,7 +1,6 @@
 #ifndef REFERENCE_TYPE_H
 #define REFERENCE_TYPE_H
 
-
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
     #include <gdk/gdk.h>

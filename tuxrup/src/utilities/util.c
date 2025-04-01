@@ -434,3 +434,14 @@ void append_text_to_file(char* filepath, char* text){
     fclose(output_file);
 }
 
+//[MEMLEAK]
+void iterate_hash_table(GHashTable* table, hash_table_iter_function iter_function, gpointer user_data){
+    GHashTableIter iter;
+    g_hash_table_iter_init(&iter, table);
+    gpointer key, value;
+    int i = 0;
+    for(; g_hash_table_iter_next(&iter, &key, &value); i++){
+        iter_function(key, value, i, user_data);
+    }
+}
+

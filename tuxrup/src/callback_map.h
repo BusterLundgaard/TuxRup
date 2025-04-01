@@ -18,18 +18,23 @@ typedef struct {
 } callback_identifier;
 
 typedef struct {
+    callback_identifier* id;
+
     callback_type original_function_pointer;
     gchar* function_name;
     void* dl_handle;
     void** identifier_pointers;
     int identifier_pointers_n;
 
+    guint hash;
+    char modified_code_path; // path to the C file containing the modified code
+    char shared_library_path; // path to the shared library with the compiled new callback
     char* original_document_path;
     GString* original_function_code;
     GString* original_function_args;
-    int original_function_code_location;
+    int original_function_location;
     GString* original_before_code;
-    GString* original_before_code_removed_symbols;
+    GString* original_definitions_code;
     GString* original_after_code;
 } callback_info;
 
