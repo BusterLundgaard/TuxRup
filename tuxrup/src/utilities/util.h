@@ -13,6 +13,8 @@
 #include <clang-c/Index.h>
 #include <stdbool.h>
 
+void set_gtk_version();
+
 enum widget_type_category get_widget_type_category(GtkWidget* w);
 
 GObjectClass* get_widget_class(GtkWidget* widget);

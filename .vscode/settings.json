@@ -16,6 +16,10 @@
         "gtk_events.h": "c",
         "random": "c",
         "queue": "c",
-        "stack": "c"
+        "stack": "c",
+        "stat.h": "c",
+        "events_util.h": "c",
+        "__locale": "c",
+        "hooks.h": "c"
     }
 }

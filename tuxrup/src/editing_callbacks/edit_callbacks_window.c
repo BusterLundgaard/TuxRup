@@ -1,15 +1,17 @@
-#include <dlfcn.h>
-
 #include "edit_callbacks_window.h"
-#include "globals.h"
-#include "util.h"
-#include "callback_map.h"
-#include "hashing.h"
+
 #include "document_parsing.h"
 #include "fix_function_body.h"
-#include "function_dispatcher.h"
 #include "reference_type.h"
 
+#include "../globals.h"
+#include "../callback_map.h"
+#include "../function_dispatcher.h"
+
+#include "../utilities/util.h"
+#include "../utilities/hashing.h"
+
+#include <dlfcn.h>
 // =====================================================
 // GLOBALS AND TYPEDEFS
 // =====================================================

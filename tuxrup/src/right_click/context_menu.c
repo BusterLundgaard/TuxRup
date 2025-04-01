@@ -1,7 +1,8 @@
 #include "context_menu.h"
-#include "globals.h"
-#include "edit_properties_window.h"
-#include "edit_css_window.h"
+
+#include "../globals.h"
+#include "../editing_properties/edit_properties_window.h"
+#include "../editing_css/edit_css_window.h"
 
 static GtkWidget* context_menu_popover = NULL;
 static GtkWidget* active_widget = NULL;

@@ -1,8 +1,21 @@
 #include "util.h"
+
+#include "../globals.h"
+
 #include <clang-c/Index.h>
 #include <sys/stat.h>
-#include "globals.h"
-#include "globals.h"
+
+void set_gtk_version() {
+    #if GTK_MAJOR_VERSION == 4
+        gtk_version = GTK_VERSION_4;
+    #elif GTK_MAJOR_VERSION == 3
+        gtk_version = GTK_VERSION_3;
+    #elif GTK_MAJOR_VERSION == 2
+        gtk_version = GTK_VERSION_2;
+    #else
+        printf("Unknown GTK version\n");
+    #endif
+}
 
 GObjectClass* get_widget_class(GtkWidget* widget){
     GObject* object = G_OBJECT(widget);

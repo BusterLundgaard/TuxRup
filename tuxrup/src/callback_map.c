@@ -1,8 +1,9 @@
-#include <dlfcn.h>
-
 #include "callback_map.h"
-#include "util.h"
+
+#include "utilities/util.h"
 #include "globals.h"
+
+#include <dlfcn.h>
 
 guint callback_key_hash(gconstpointer key) {
     const callback_identifier* k = key;

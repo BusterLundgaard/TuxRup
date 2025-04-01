@@ -8,7 +8,7 @@
     #include <gtk-4.0/gtk/gtk.h>
 #endif
 
-#include "globals.h"
+#include "../globals.h"
 
 guint compute_widget_hash(GtkWidget* widget);
 

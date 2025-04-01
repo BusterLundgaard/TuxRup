@@ -1,8 +1,11 @@
+#include "../callback_map.h"
+#include "../utilities/util.h"
+
 #include "document_parsing.h"
 #include "reference_type.h"
-#include "util.h"
+
 #include <stdio.h>
-#include "callback_map.h"
+
 
 // ==================================================
 // UTILITY

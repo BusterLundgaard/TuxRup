@@ -1,6 +1,8 @@
 #include "edit_properties_window.h"
-#include "globals.h"
-#include "util.h"
+
+#include "../globals.h"
+#include "../utilities/util.h"
+
 #include <limits.h>
 
 // The widget we are changing

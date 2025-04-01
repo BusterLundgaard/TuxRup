@@ -1,9 +1,11 @@
 #include "css_utils.h"
+
+#include "../utilities/util.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "util.h"
 
 /* 
  * Calls an external Python script via popen to retrieve 
