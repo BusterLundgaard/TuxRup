@@ -116,33 +116,33 @@ char* get_widget_type_category_str(enum widget_type_category c){
 }
 char* get_callback_type_category_str(enum gtk_callback_category c){
     switch(c) {
-    case GTK_CALLBACK_left_click: return "GTK_CALLBACK_left_click";
-    case GTK_CALLBACK_right_click: return "GTK_CALLBACK_right_click";
-    case GTK_CALLBACK_middle_click: return "GTK_CALLBACK_middle_click";
-    case GTK_CALLBACK_motion: return "GTK_CALLBACK_motion";
-    case GTK_CALLBACK_enter: return "GTK_CALLBACK_enter";
-    case GTK_CALLBACK_leave: return "GTK_CALLBACK_leave";
-    case GTK_CALLBACK_motion_after: return "GTK_CALLBACK_motion_after";
-    case GTK_CALLBACK_end: return "GTK_CALLBACK_end";
-    case GTK_CALLBACK_key_pressed: return "GTK_CALLBACK_key_pressed";
-    case GTK_CALLBACK_key_release: return "GTK_CALLBACK_key_release";
-    case GTK_CALLBACK_clicked: return "GTK_CALLBACK_clicked";
-    case GTK_CALLBACK_activate: return "GTK_CALLBACK_activate";
-    case GTK_CALLBACK_toggled: return "GTK_CALLBACK_toggled";
-    case GTK_CALLBACK_value_changed: return "GTK_CALLBACK_value_changed";
-    case GTK_CALLBACK_changed: return "GTK_CALLBACK_changed";
-    case GTK_CALLBACK_notify_property: return "GTK_CALLBACK_notify_property";
-    case GTK_CALLBACK_pressed: return "GTK_CALLBACK_pressed";
-    case GTK_CALLBACK_insert_text: return "GTK_CALLBACK_insert_text";
-    case GTK_CALLBACK_delete_text: return "GTK_CALLBACK_delete_text";
-    case GTK_CALLBACK_backspace: return "GTK_CALLBACK_backspace";
-    case GTK_CALLBACK_size_allocate: return "GTK_CALLBACK_size_allocate";
-    case GTK_CALLBACK_map: return "GTK_CALLBACK_map";
-    case GTK_CALLBACK_unmap: return "GTK_CALLBACK_unmap";
-    case GTK_CALLBACK_drag_begin: return "GTK_CALLBACK_drag_begin";
-    case GTK_CALLBACK_drag_drop: return "GTK_CALLBACK_drag_drop";
-    case GTK_CALLBACK_drag_data_recieved: return "GTK_CALLBACK_drag_data_recieved";
-    case GTK_CALLBACK_configure_event: return "GTK_CALLBACK_configure_even";
+    case GTK_CALLBACK_left_click: return "left-click";
+    case GTK_CALLBACK_right_click: return "right-click";
+    case GTK_CALLBACK_middle_click: return "middle-click";
+    case GTK_CALLBACK_motion: return "motion";
+    case GTK_CALLBACK_enter: return "enter";
+    case GTK_CALLBACK_leave: return "leave";
+    case GTK_CALLBACK_motion_after: return "motion-after";
+    case GTK_CALLBACK_end: return "end";
+    case GTK_CALLBACK_key_pressed: return "key-pressed";
+    case GTK_CALLBACK_key_release: return "key-release";
+    case GTK_CALLBACK_clicked: return "clicked";
+    case GTK_CALLBACK_activate: return "activate";
+    case GTK_CALLBACK_toggled: return "toggled";
+    case GTK_CALLBACK_value_changed: return "value-changed";
+    case GTK_CALLBACK_changed: return "changed";
+    case GTK_CALLBACK_notify_property: return "notify-property";
+    case GTK_CALLBACK_pressed: return "pressed";
+    case GTK_CALLBACK_insert_text: return "insert-text";
+    case GTK_CALLBACK_delete_text: return "delete-text";
+    case GTK_CALLBACK_backspace: return "backspace";
+    case GTK_CALLBACK_size_allocate: return "size-allocate";
+    case GTK_CALLBACK_map: return "map";
+    case GTK_CALLBACK_unmap: return "unmap";
+    case GTK_CALLBACK_drag_begin: return "drag-begin";
+    case GTK_CALLBACK_drag_drop: return "drag-drop";
+    case GTK_CALLBACK_drag_data_recieved: return "drag-data-recieved";
+    case GTK_CALLBACK_configure_event: return "configure-even";
     case GTK_CALLBACK_UNDEFINED: return "UNDEFINED";
     }
 }
@@ -251,9 +251,6 @@ void copy_file(const char* file_path, const char* copied_path){
     fclose(new_file);
 
     g_print("Created callback file: %s\n", file_path);
-
-    // Clean up
-    g_free(file_path);
 }
 
 bool is_mappable_action(const gchar* event_name){

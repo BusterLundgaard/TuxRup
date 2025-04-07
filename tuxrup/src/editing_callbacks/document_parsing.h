@@ -42,4 +42,6 @@ void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool ne
 
 enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data);
 
+enum CXChildVisitResult print_everything(CXCursor c, CXCursor parent, CXClientData data);
+
 #endif

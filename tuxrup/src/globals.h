@@ -17,50 +17,50 @@ enum gtk_version {
 };
 
 enum gtk_callback_category {
-    GTK_CALLBACK_UNDEFINED,
+    GTK_CALLBACK_UNDEFINED=0,
 
     // Mouse input
-    GTK_CALLBACK_left_click,
-    GTK_CALLBACK_right_click,
-    GTK_CALLBACK_middle_click,
+    GTK_CALLBACK_left_click=1,
+    GTK_CALLBACK_right_click=2,
+    GTK_CALLBACK_middle_click=3,
     
     // Mouse movement
-    GTK_CALLBACK_motion,
-    GTK_CALLBACK_enter,
-    GTK_CALLBACK_leave,
-    GTK_CALLBACK_motion_after,
-    GTK_CALLBACK_end,
+    GTK_CALLBACK_motion=4,
+    GTK_CALLBACK_enter=5,
+    GTK_CALLBACK_leave=6,
+    GTK_CALLBACK_motion_after=7,
+    GTK_CALLBACK_end=8,
 
     // Keyboard input
-    GTK_CALLBACK_key_pressed,
-    GTK_CALLBACK_key_release,
+    GTK_CALLBACK_key_pressed=9,
+    GTK_CALLBACK_key_release=10,
 
     // General events
-    GTK_CALLBACK_clicked,
-    GTK_CALLBACK_activate,
-    GTK_CALLBACK_toggled,
-    GTK_CALLBACK_value_changed,
-    GTK_CALLBACK_changed,
-    GTK_CALLBACK_notify_property,
-    GTK_CALLBACK_pressed,
+    GTK_CALLBACK_clicked=11,
+    GTK_CALLBACK_activate=12,
+    GTK_CALLBACK_toggled=13,
+    GTK_CALLBACK_value_changed=14,
+    GTK_CALLBACK_changed=15,
+    GTK_CALLBACK_notify_property=16,
+    GTK_CALLBACK_pressed=17,
 
     // Text events
-    GTK_CALLBACK_insert_text,
-    GTK_CALLBACK_delete_text,
-    GTK_CALLBACK_backspace,
+    GTK_CALLBACK_insert_text=18,
+    GTK_CALLBACK_delete_text=19,
+    GTK_CALLBACK_backspace=20,
 
     // Resize, show, hide
-    GTK_CALLBACK_size_allocate,
-    GTK_CALLBACK_map,
-    GTK_CALLBACK_unmap,
+    GTK_CALLBACK_size_allocate=21,
+    GTK_CALLBACK_map=22,
+    GTK_CALLBACK_unmap=23,
 
     // Drag and drop
-    GTK_CALLBACK_drag_begin,
-    GTK_CALLBACK_drag_drop,
-    GTK_CALLBACK_drag_data_recieved,
+    GTK_CALLBACK_drag_begin=24,
+    GTK_CALLBACK_drag_drop=25,
+    GTK_CALLBACK_drag_data_recieved=26,
 
     // Move or resize window
-    GTK_CALLBACK_configure_event
+    GTK_CALLBACK_configure_event=27
 };
 
 enum widget_type_category {

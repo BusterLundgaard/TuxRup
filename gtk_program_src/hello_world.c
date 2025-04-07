@@ -33,8 +33,8 @@ button_A_callback
  gpointer   data)
 {
     some_original_variable++;
-    my_own_int local_var = some_original_variable;
-    some_original_function(local_var);
+    my_own_int local_var_fuck_you = some_original_variable;
+    some_original_function(local_var_fuck_you);
 }
 
 static void
@@ -206,6 +206,11 @@ void apply_css_globally(const gchar *css_file_path)
     g_object_unref(css_file);
 }
 
+
+void on_added_to_dom(GtkWidget* widget, gpointer data){
+  printf("yiha!\n");
+}
+
 static void
 activate (GtkApplication *app,
           gpointer        user_data)
@@ -213,6 +218,7 @@ activate (GtkApplication *app,
   GtkWidget *window;
   GtkWidget *button_A;
   GtkWidget *button_B;
+  GtkWidget* button_C;
 
   window = gtk_application_window_new (app);
   gtk_window_set_title (GTK_WINDOW (window), "HelloWorldGtkApplication");
@@ -226,6 +232,10 @@ activate (GtkApplication *app,
   button_B = gtk_button_new_with_label ("Button_B");
   gtk_widget_set_name(button_B, "button_B");
   g_signal_connect (button_B, "clicked", G_CALLBACK (button_B_callback), NULL);
+
+  button_C = gtk_button_new_with_label ("Button_C");
+  g_signal_connect (button_C, "notify::root", G_CALLBACK (on_added_to_dom), NULL);
+  gtk_widget_set_name(button_C, "button_C");
   
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_halign(box, GTK_ALIGN_CENTER);
@@ -233,6 +243,7 @@ activate (GtkApplication *app,
 
   gtk_box_append(GTK_BOX(box), button_A);
   gtk_box_append(GTK_BOX(box), button_B);
+  gtk_box_append(GTK_BOX(box), button_C);
 
   create_and_add_input_items(box);
 

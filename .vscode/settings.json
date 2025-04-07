@@ -22,6 +22,7 @@
         "__locale": "c",
         "hooks.h": "c",
         "context_menu.h": "c",
-        "overrides.h": "c"
+        "overrides.h": "c",
+        "edit_callbacks_window.h": "c"
     }
 }

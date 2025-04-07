@@ -90,7 +90,9 @@ GConnectFlags connect_flags){
     
     if(is_callback_remapable(widget_category, callback_category)){
         char* function_name = get_identifier_from_pointer(c_handler);
-        callback_map_add_new(widget, callback_category);
+        char* callback_name = get_callback_type_category_str(callback_category);
+        printf("Added callback %s on widget %p to function name %s\n", callback_name, widget, function_name);
+        callback_map_add_original(widget, callback_category, c_handler);
     }
 
     call_original:

@@ -24,12 +24,12 @@ guint compute_widget_hash(GtkWidget* widget){
     hash ^= hash_int(child_number);
 
     guint* parent_hash;
-    if(g_hash_table_contains(widget_hashes, parent)){
-        parent_hash = (guint*)g_hash_table_lookup(widget_hashes, parent);
-    } else {
+    if(!g_hash_table_contains(widget_hashes, parent) || (g_hash_table_lookup(widget_hashes, parent) == NULL)){
         parent_hash = malloc(sizeof(guint));
         *parent_hash = compute_widget_hash(parent);
-        g_hash_table_insert(widget_hashes, parent, parent_hash); 
+        g_hash_table_insert(widget_hashes, parent, parent_hash);
+    } else {
+        parent_hash = (guint*)g_hash_table_lookup(widget_hashes, parent);
     }
 
     return hash ^ (*parent_hash);

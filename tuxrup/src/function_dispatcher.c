@@ -7,13 +7,14 @@
 
 void function_dispatcher(GtkWidget* widget, gpointer data){
     // Something something computing a hash and loading a file if DL-handle doesn't exist
-    callback_identifier cb_id = {widget, (enum gtk_callback_category)data};
+    callback_identifier cb_id = {widget, *((enum gtk_callback_category*)data)};
     callback_info* cb_info = (callback_info*)g_hash_table_lookup(widget_callback_table, &cb_id);
     if(cb_info == NULL){return;}
 
-    callback_type their_foo = (callback_type) dlsym(cb_info->dl_handle, cb_info->function_name);
+    callback_type their_foo = (callback_type) dlsym(cb_info->dl_handle, "customfunction");
     if(their_foo == NULL){
-        g_print("it's null god damant!\n");
+        g_print("Could not find function in function_dispatcher!\n");
+        return;
     }
 
     their_foo(widget, cb_info->identifier_pointers);

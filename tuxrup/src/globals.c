@@ -8,7 +8,7 @@ GHashTable *widget_to_css_filepath_map = NULL;
 
 const char* working_directory = "";
 const char* executable_path = "";
-const char* program_src_folder = "../../gtk_program_src";
+const char* program_src_folder = "../../gtk_program_src/"; //We need to fix this now! it should not be relative!
 
 const action remapable_events[MAPPABLE_ACTIONS_LEN] = {
     {GTK_CALLBACK_clicked,               {GTK_CATEGORY_Button}},

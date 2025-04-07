@@ -14,7 +14,7 @@
                 }
             ],
             "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/tuxrup/build",
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

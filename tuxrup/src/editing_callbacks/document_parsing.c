@@ -23,9 +23,13 @@ int get_line(CXCursor c){
 // FUNCTIONS TO GET CURSORS
 // ==================================================
 CXCursor get_root_cursor(char* filepath){
+    const char *args[] = {
+        "-I/usr/include/gtk-4",
+        "-D_GNU_SOURCE"
+    };
     CXIndex index = clang_createIndex(0,0);
     CXTranslationUnit unit = clang_parseTranslationUnit(
-        index, filepath, NULL, 0, NULL, 0, 
+        index, filepath, args, 0, NULL, 0, 
         CXTranslationUnit_DetailedPreprocessingRecord);
     if (!unit) {
         CXCursor empty = {};
@@ -63,6 +67,7 @@ CXCursor get_function_cursor(CXCursor c, char* function_name){
 enum CXChildVisitResult visit_next_compound_stmt(CXCursor c, CXCursor parent, CXClientData data){
     CXCursor* next_compound = (CXCursor*)data;
     enum CXCursorKind kind = clang_getCursorKind(c);
+
     if(kind == CXCursor_CompoundStmt){
         *next_compound = c;
         return CXChildVisit_Break;
@@ -262,6 +267,13 @@ reference_type* create_identifier_type_info(CXCursor identifier_cursor){
     return identifier_info;
 }
 
+enum CXChildVisitResult print_everything(CXCursor c, CXCursor parent, CXClientData data){
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    GString* this_ass = g_string_new("");
+    write_cursor_element(&c, this_ass, true, true);
+    clang_visitChildren(c, print_everything, NULL);
+    return CXChildVisit_Continue;
+}
 
 enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){
     find_undefined_references_args* args = (find_undefined_references_args*)data;
@@ -269,34 +281,29 @@ enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CX
     GHashTable* declared = args->declared_identifiers;
 
     enum CXCursorKind kind = clang_getCursorKind(c);
-
+    
     // Add declarations 
-    if(kind == CXCursor_DeclStmt){
+    if(kind == CXCursor_VarDecl || kind == CXCursor_FieldDecl){
+        char* identifier_name = clang_getCString(clang_getCursorSpelling(c));
         g_hash_table_add(declared, g_strdup(clang_getCString(clang_getCursorSpelling(c))));
         return CXChildVisit_Recurse;
     }
 
-    // Check it is a reference to something undeclared we haven't seen before:
     if(kind != CXCursor_DeclRefExpr)
     {return CXChildVisit_Recurse;}
 
     CXCursor referenced_cursor = clang_getCursorReferenced(c);
-
     enum CXCursorKind referenced_kind = clang_getCursorKind(referenced_cursor);
+    
     char* identifier = clang_getCString(clang_getCursorSpelling(referenced_cursor));
     if(g_hash_table_contains(declared, identifier) || g_hash_table_contains(undefined, identifier))
-    {return CXChildVisit_Continue;}
+    {return CXChildVisit_Recurse;}
 
-    if(clang_equalCursors(referenced_cursor, clang_getNullCursor())){
-    return CXChildVisit_Continue;}
-
-    // Build the type information
-    g_print("in parsing, adding the undeclared identifier: %s\n", identifier);
     reference_type* undefined_ref_type = create_identifier_type_info(referenced_cursor);
     undefined_ref_type->number = g_hash_table_size(undefined);
     g_hash_table_insert(undefined, identifier, undefined_ref_type);    
 
-    return CXChildVisit_Continue;
+    return CXChildVisit_Recurse;
 }
 
 

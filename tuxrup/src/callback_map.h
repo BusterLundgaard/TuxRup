@@ -38,8 +38,8 @@ typedef struct {
     GString* original_after_code;
 } callback_info;
 
-void callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer, char* original_function_name);
-void callback_map_add_new(GtkWidget* widget, enum gtk_callback_category callback_category);
+callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer);
+callback_info* callback_map_add_new(GtkWidget* widget, enum gtk_callback_category callback_category);
 
 callback_info* callback_map_get(GtkWidget* widget, enum gtk_callback_category callback_category);
 bool callback_map_exists(GtkWidget* widget, enum gtk_callback_category callback_category);

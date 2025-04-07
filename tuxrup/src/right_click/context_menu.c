@@ -4,7 +4,7 @@
 #include "../globals.h"
 #include "../editing_properties/edit_properties_window.h"
 #include "../editing_css/edit_css_window.h"
-
+#include "../editing_callbacks/edit_callbacks_window.h"
 
 static GtkWidget* context_menu_popover = NULL;
 static GtkWidget* active_widget = NULL;
@@ -21,7 +21,7 @@ static void on_open_edit_styling_window(GSimpleAction *action, GVariant *paramet
 
 static void on_open_edit_callbacks_window(GSimpleAction *action, GVariant *parameter, gpointer user_data){
     if(!active_widget){return;}
-    g_print("Opened edit callbacks window! TODO");
+    open_edit_callbacks_window(active_widget);
 }
 
 static void on_remove_widget(GSimpleAction *action, GVariant *parameter, gpointer user_data){
@@ -66,13 +66,6 @@ void initialize_right_click_context_menu(){
 //Callback that is called when right-clicking a widget
 void open_right_click_context_menu(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data){
     GtkWidget* widget = (GtkWidget*)user_data;
-    if(GTK_IS_WIDGET(widget)){
-        g_print("widget is in fact a widget!\n");
-    }
-    if(GTK_IS_WIDGET(application_root)){
-        g_print("The application root is a widget!\n");
-    }
-
     active_widget = widget;
 
     // Create context menu if it does not exist
