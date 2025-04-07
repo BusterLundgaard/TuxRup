@@ -1,7 +1,6 @@
 #ifndef FIX_FUNCTION_BODY_H
 #define FIX_FUNCTION_BODY_H
 
-
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
     #include <gdk/gdk.h>

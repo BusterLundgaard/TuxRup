@@ -239,7 +239,7 @@ activate (GtkApplication *app,
   //list_button_properties(button_B);
   //list_enum_properties(button_B);
 
-  apply_css_globally("./example_css.css");
+  apply_css_globally("example_css.css");
 
   gtk_window_set_child(GTK_WINDOW(window), box);
 

@@ -84,7 +84,7 @@ enum widget_type_category {
     GTK_CATEGORY_Window
 };
 
-enum gtk_version gtk_version;
+extern enum gtk_version gtk_ver;
 
 extern GtkWidget* application_root;
 
@@ -103,14 +103,6 @@ typedef struct {
 
 #define MAPPABLE_ACTIONS_LEN 17
 extern const action remapable_events[MAPPABLE_ACTIONS_LEN];
-
-typedef gulong (*g_signal_connect_data_t)(gpointer instance,
-                                          const gchar *detailed_signal,
-                                          GCallback c_handler,
-                                          gpointer data,
-                                          GClosureNotify destroy_data,
-                                          GConnectFlags connect_flags);
-extern g_signal_connect_data_t normal_g_signal_connect_data;
 
 typedef void(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
 typedef void(*menu_action_callback_type)(GSimpleAction* action, GVariant* parameter, gpointer user_data);

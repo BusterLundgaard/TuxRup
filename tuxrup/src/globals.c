@@ -1,8 +1,5 @@
 #include "globals.h"
-
-g_signal_connect_data_t normal_g_signal_connect_data = NULL;
-
-enum gtk_version gtk_version = 0;
+enum gtk_version gtk_ver = 0;
 
 GtkWidget* application_root = NULL;
 GHashTable *widget_callback_table = NULL;

@@ -20,6 +20,8 @@
         "stat.h": "c",
         "events_util.h": "c",
         "__locale": "c",
-        "hooks.h": "c"
+        "hooks.h": "c",
+        "context_menu.h": "c",
+        "overrides.h": "c"
     }
 }

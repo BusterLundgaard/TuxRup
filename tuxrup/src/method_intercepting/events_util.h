@@ -1,3 +1,6 @@
+#ifndef EVENTS_UTIL_H
+#define EVENTS_UTIL_H
+
 #include "../globals.h"
 
 #ifdef USE_GTK3
@@ -10,3 +13,5 @@
 enum gtk_callback_category get_callback_category_from_connect_signal(gpointer instance, const gchar* detailed_signal);
 GtkWidget* get_widget_from_connect_signal(gpointer instance);
 bool widget_seen_before(GtkWidget* widget);
+
+#endif

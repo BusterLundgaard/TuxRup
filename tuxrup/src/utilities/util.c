@@ -1,17 +1,18 @@
 #include "util.h"
 
 #include "../globals.h"
+#include "../method_intercepting/hooks.h"
 
 #include <clang-c/Index.h>
 #include <sys/stat.h>
 
 void set_gtk_version() {
     #if GTK_MAJOR_VERSION == 4
-        gtk_version = GTK_VERSION_4;
-    #elif GTK_MAJOR_VERSION == 3
-        gtk_version = GTK_VERSION_3;
+        gtk_ver = GTK_VERSION_4;
+    #elif GTK_MAJOR_VEDIT_CALLBACKS_WINDOW_HERSION == 3
+        gtk_ver = GTK_VERSION_3;
     #elif GTK_MAJOR_VERSION == 2
-        gtk_version = GTK_VERSION_2;
+        gtk_ver = GTK_VERSION_2;
     #else
         printf("Unknown GTK version\n");
     #endif
@@ -374,7 +375,7 @@ void add_right_click_action(GtkWidget* widget, right_click_callback_type callbac
     GtkGesture* gesture = gtk_gesture_click_new();
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
     gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
-    normal_g_signal_connect_data(gesture, "pressed", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(gesture, "pressed", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
 }
 
 char* execute_command_and_get_result(char* command){

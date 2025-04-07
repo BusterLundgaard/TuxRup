@@ -1,8 +1,10 @@
 #include "context_menu.h"
 
+#include "../method_intercepting/hooks.h"
 #include "../globals.h"
 #include "../editing_properties/edit_properties_window.h"
 #include "../editing_css/edit_css_window.h"
+
 
 static GtkWidget* context_menu_popover = NULL;
 static GtkWidget* active_widget = NULL;
@@ -51,10 +53,10 @@ void initialize_right_click_context_menu(){
     GSimpleAction* edit_styling_action = g_simple_action_new("editstyling", NULL);
     GSimpleAction* edit_callbacks_action = g_simple_action_new("editcallbacks", NULL);
     GSimpleAction* delete_widget_action = g_simple_action_new("deletewidget", NULL);
-    normal_g_signal_connect_data(edit_properties_action, "activate", G_CALLBACK(on_open_edit_properties_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(edit_styling_action, "activate", G_CALLBACK(on_open_edit_styling_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(edit_callbacks_action, "activate", G_CALLBACK(on_open_edit_callbacks_window), NULL, NULL, (GConnectFlags)0);
-    normal_g_signal_connect_data(delete_widget_action, "activate", G_CALLBACK(on_remove_widget), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(edit_properties_action, "activate", G_CALLBACK(on_open_edit_properties_window), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(edit_styling_action, "activate", G_CALLBACK(on_open_edit_styling_window), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(edit_callbacks_action, "activate", G_CALLBACK(on_open_edit_callbacks_window), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(delete_widget_action, "activate", G_CALLBACK(on_remove_widget), NULL, NULL, (GConnectFlags)0);
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_properties_action));
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_styling_action));
     g_action_map_add_action(G_ACTION_MAP(action_group), G_ACTION(edit_callbacks_action));

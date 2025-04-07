@@ -10,6 +10,9 @@
 
 #include "../utilities/util.h"
 #include "../utilities/hashing.h"
+#include "../utilities/pointer_name_conversion.h"
+
+#include "../method_intercepting/hooks.h"
 
 #include <dlfcn.h>
 // =====================================================
@@ -57,12 +60,12 @@ static FILE* open_file_vscode(char* path, int line){
 static void compile_callback_file(char* c_file_path, char* shared_library_path){
     // Determine the GTK version and corresponding compile command
     const char *gtk_pkg_config = NULL; 
-    switch (gtk_version) {
+    switch (gtk_ver) {
         case GTK_VERSION_4: gtk_pkg_config = "gtk4"; break;
         case GTK_VERSION_3: gtk_pkg_config = "gtk+-3.0"; break;
         case GTK_VERSION_2: gtk_pkg_config = "gtk+-2.0"; break;
         default:
-            g_warning("Unknown GTK version: %d", gtk_version);
+            g_warning("Unknown GTK version: %d", gtk_ver);
             return;
     }
 
@@ -88,13 +91,17 @@ static void compile_callback_file(char* c_file_path, char* shared_library_path){
 // =======================================================
 static void set_widget_callback(callback_info* info){
     remove_callback(info->id->widget, info->id->callback);
-    normal_g_signal_connect_data(info->id->widget, info->id->callback, G_CALLBACK(function_dispatcher), NULL, NULL, (GConnectFlags)0); 
-    callback_info* info = callback_map_get(info->id->widget, info->id->callback);
+    g_signal_connect_data_ORIGINAL(
+        info->id->widget, 
+        get_widget_type_category_str(info->id->callback),
+        G_CALLBACK(function_dispatcher), 
+        NULL, 
+        NULL, (GConnectFlags)0);
     info->dl_handle = dlopen(info->shared_library_path, RTLD_LAZY);
 }
 
 char* set_callback_code_information(callback_info* info){
-    *(info->original_document_path) = get_document_path(info->function_name);
+    info->original_document_path = get_document_path(info->function_name);
 
     CXCursor c = get_root_cursor(info->original_document_path);
     CXCursor c_func = get_function_cursor(c, info->function_name);
@@ -126,7 +133,7 @@ int create_version_of_document_for_code_editing(callback_info* info, bool edited
     g_string_append(editing_document, g_strdup_printf("\nvoid %s(%s){\n", info->function_name, info->original_function_args)); 
     
     if(edited_before){
-        FILE* modified_code_file = fopen(info->modified_code_path, 'r');
+        FILE* modified_code_file = fopen(info->modified_code_path, "r");
         char line[1024];
         while(fgets(line, sizeof(line), modified_code_file)){
             g_string_append(editing_document, line);
@@ -148,7 +155,7 @@ static void on_edit_callback_button(GtkWidget *widget, gpointer data){
     if(callback_map_exists(widget, callback)){
         copy_file("../templates/new_callback.c", info->modified_code_path);
         callback_map_add_new(widget, callback);
-        open_callback_file_vscode(info->modified_code_path, 5);
+        open_file_vscode(info->modified_code_path, 5);
     } 
     else if(info->original_function_pointer != NULL ){
         bool has_been_modified = (info->dl_handle != NULL);
@@ -222,7 +229,7 @@ static void set_undefined_identifiers_iter(gpointer key, gpointer value, int i, 
 static void set_undefined_identifiers(callback_info* info, GHashTable* undefined_identifiers){
     info->identifier_pointers_n = g_hash_table_size(undefined_identifiers);
     info->identifier_pointers = malloc(sizeof(void*)*info->identifier_pointers_n);
-    iterate_hash_table(undefined_identifiers, set_undefined_identifiers_iter);
+    iterate_hash_table(undefined_identifiers, set_undefined_identifiers_iter, info);
 }
 
 static void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
@@ -244,7 +251,7 @@ static void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
         set_undefined_identifiers(info, undefined_identifiers);
 
         // ... Construct the shared library by fixing the modified function with required pointers
-        isolate_modified_function(info, function_code, undefined_identifiers, "./temp.c");
+        isolate_modified_function(info, function_code->str, undefined_identifiers, "./temp.c");
         compile_callback_file("./temp.c", info->shared_library_path);
         remove("./temp.c");
 
@@ -261,8 +268,8 @@ GtkWidget* create_edit_callback_field(enum gtk_callback_category callback){
     GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);;
     gtk_widget_set_halign(hbox, GTK_ALIGN_END);
 
-    GtkWidget* edit_button = gtk_button_new_with_label(callback_exists(active_widget, callback) ? "Edit" : "Create");
-    normal_g_signal_connect_data(edit_button, "clicked", on_edit_callback_button, callback, NULL, (GConnectFlags)0);
+    GtkWidget* edit_button = gtk_button_new_with_label(callback_map_exists(active_widget, callback) ? "Edit" : "Create");
+    g_signal_connect_data_ORIGINAL(edit_button, "clicked", G_CALLBACK(on_edit_callback_button), (enum gtk_callback_category*)callback, NULL, (GConnectFlags)0);
     add_widget_to_box(hbox, edit_button);
     
     GtkWidget* label = gtk_label_new(get_callback_type_category_str(callback));
@@ -296,6 +303,6 @@ void open_edit_callbacks_window(GtkWidget* widget) {
     
     build_edit_callbacks_window(window); 
    
-    normal_g_signal_connect_data(window, "destroy", G_CALLBACK(cleanup_callback_editor_window), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_callback_editor_window), NULL, NULL, (GConnectFlags)0);
     gtk_window_present(GTK_WINDOW(window));
 }

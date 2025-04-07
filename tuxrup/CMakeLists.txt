@@ -41,22 +41,23 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -shared -fPIC -Wno-discarded-qualifiers")
 
 # Source files
 set(SOURCES
-    src/intercept_gtk_functions.c
-    src/callback_information.c
     src/callback_map.c
-    src/compute_widget_hash.c
-    src/document_parsing.c
-    src/fix_function_body.c
+    src/editing_properties/edit_properties_window.c
     src/function_dispatcher.c
+    src/utilities/hashing.c
+    src/utilities/pointer_name_conversion.c
+    src/utilities/util.c
+    src/method_intercepting/gtk_events.c
+    src/method_intercepting/events_util.c
+    src/method_intercepting/hooks.c
+    src/method_intercepting/overrides.c
+    src/right_click/context_menu.c
     src/globals.c
-    src/gtk_events.c
-    src/modify_callback.c
-    src/pointer_name_conversion.c
-    src/util.c
-    src/context_menu.c
-    src/edit_properties_window.c
-    src/edit_css_window.c
-    src/css_utils.c
+    src/editing_css/css_utils.c
+    src/editing_css/edit_css_window.c
+    src/editing_callbacks/document_parsing.c
+    src/editing_callbacks/edit_callbacks_window.c
+    src/editing_callbacks/fix_function_body.c
 )
 
 # Add the shared library target

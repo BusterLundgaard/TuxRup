@@ -1,3 +1,6 @@
+#ifndef HOOKS_H
+#define HOOKS_H
+
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
     #include <gdk/gdk.h>
@@ -10,20 +13,16 @@
 // Initialization hooks
 typedef GtkApplication* (*gtk_application_new_t)(const char* application_id, GApplicationFlags flags);
 extern gtk_application_new_t gtk_application_new_ORIGINAL;
-extern gtk_application_new_t gtk_application_new_OVERRIDE;
 
 typedef int (*g_application_run_t)(GApplication* application, int argc, char** argv);
 extern g_application_run_t g_application_run_ORIGINAL;
-extern g_application_run_t g_application_run_OVERRIDE;
 
 typedef void (*gtk_window_present_t)(GtkWindow *window);
 extern gtk_window_present_t gtk_window_present_ORIGINAL;
-extern gtk_window_present_t gtk_window_present_OVERRIDE;
 
 // CSS hooks
 typedef void(*gtk_css_provider_load_from_file_t)(GtkCssProvider* provider, GFile* file);
 extern gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_ORIGINAL;
-extern gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_OVERRIDE;
 
 // Signal hooks
 typedef gulong (*g_signal_connect_data_t)(gpointer instance,
@@ -33,4 +32,5 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
 extern g_signal_connect_data_t g_signal_connect_data_ORIGINAL;
-extern g_signal_connect_data_t g_signal_connect_data_OVERRIDE;
+
+#endif

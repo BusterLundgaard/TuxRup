@@ -9,7 +9,7 @@
     #include <gtk-4.0/gtk/gtk.h>
 #endif
 
-#include "globals.h"
+#include "../globals.h"
 #include <clang-c/Index.h>
 #include <stdbool.h>
 
@@ -72,6 +72,6 @@ char* read_file_contents(char* filepath);
 void append_text_to_file(char* filepath, char* text);
 
 typedef void(*hash_table_iter_function)(gpointer key, gpointer value, int i, gpointer user_data);
-void iterate_hash_table(GHashTable* table, hash_table_iter_function iter_function);
+void iterate_hash_table(GHashTable* table, hash_table_iter_function iter_function, gpointer user_data);
 
 #endif

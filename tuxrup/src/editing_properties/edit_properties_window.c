@@ -2,6 +2,7 @@
 
 #include "../globals.h"
 #include "../utilities/util.h"
+#include "../method_intercepting/hooks.h"
 
 #include <limits.h>
 
@@ -40,7 +41,7 @@ GtkWidget* create_boolean_editor(gchar* property_name){
 
     GtkWidget* check = gtk_check_button_new();
     gtk_check_button_set_active(GTK_CHECK_BUTTON(check), current_boolean);
-    normal_g_signal_connect_data(check, "toggled", G_CALLBACK(on_check_button_changed), property_name, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(check, "toggled", G_CALLBACK(on_check_button_changed), property_name, NULL, (GConnectFlags)0);
 
     return check;
 }
@@ -67,7 +68,7 @@ GtkWidget* create_number_editor(gchar* property_name, GType number_type){
     GtkWidget* spin = gtk_spin_button_new_with_range(min, max, step);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), current_number);
 
-    normal_g_signal_connect_data(spin, "changed", G_CALLBACK(on_spin_button_changed), property_name, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(spin, "changed", G_CALLBACK(on_spin_button_changed), property_name, NULL, (GConnectFlags)0);
 
     return spin;
 }
@@ -93,7 +94,7 @@ GtkWidget* create_string_editor(gchar* property_name){
     GtkEntryBuffer* buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
     gtk_entry_buffer_set_text(buffer, current_string, strlen(current_string));
     
-    normal_g_signal_connect_data(entry, "changed", G_CALLBACK(on_text_entry_changed), property_name, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(entry, "changed", G_CALLBACK(on_text_entry_changed), property_name, NULL, (GConnectFlags)0);
 
     return entry;
 }
@@ -121,7 +122,7 @@ GtkWidget* create_enum_editor(gchar* property_name, GType typ){
     GtkWidget* dropdown = gtk_drop_down_new_from_strings(dropdown_items);
     gtk_drop_down_set_selected(GTK_DROP_DOWN(dropdown), current_enum_value);
     
-    normal_g_signal_connect_data(dropdown, "notify::selected", G_CALLBACK(on_dropdown_menu_changed), property_name, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(dropdown, "notify::selected", G_CALLBACK(on_dropdown_menu_changed), property_name, NULL, (GConnectFlags)0);
     
     g_type_class_unref(enum_class);
     free(dropdown_items);
@@ -183,6 +184,6 @@ void open_edit_properties_window(GtkWidget* widget){
         create_and_add_property_editor(vbox, properties[i]);
     } 
 
-    normal_g_signal_connect_data(window, "destroy", G_CALLBACK(cleanup_property_editor_window), properties, NULL, (GConnectFlags)0);
+    g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_property_editor_window), properties, NULL, (GConnectFlags)0);
     gtk_window_present(GTK_WINDOW(window));
 }

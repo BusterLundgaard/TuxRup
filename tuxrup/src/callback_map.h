@@ -27,8 +27,8 @@ typedef struct {
     int identifier_pointers_n;
 
     guint hash;
-    char modified_code_path; // path to the C file containing the modified code
-    char shared_library_path; // path to the shared library with the compiled new callback
+    char* modified_code_path; // path to the C file containing the modified code
+    char* shared_library_path; // path to the shared library with the compiled new callback
     char* original_document_path;
     GString* original_function_code;
     GString* original_function_args;

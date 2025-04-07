@@ -1,3 +1,6 @@
+#ifndef OVERRIDES_H
+#define OVERRIDES_H
+
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
     #include <gdk/gdk.h>
@@ -22,3 +25,4 @@ gulong g_signal_connect_data_OVERRIDE(gpointer instance,
                                           gpointer data,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
+#endif

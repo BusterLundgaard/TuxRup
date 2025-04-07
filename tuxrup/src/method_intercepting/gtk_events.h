@@ -1,15 +1,14 @@
 #ifndef GTK_EVENTS_H
 #define GTK_EVENTS_H
 
-
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
     #include <gdk/gdk.h>
 #else 
     #include <gtk-4.0/gtk/gtk.h>
 #endif
-#include "globals.h"
-#include "callback_map.h"
+#include "../globals.h"
+#include "../callback_map.h"
 
 void on_added_to_dom(GtkWidget* widget, gpointer data);
 
