@@ -376,9 +376,6 @@ void add_right_click_action(GtkWidget* widget, right_click_callback_type callbac
 }
 
 char* execute_command_and_get_result(char* command){
-
-    printf("The command we are executing is: %s\n", command);
-
     FILE *fp = popen(command, "r");
     if (!fp) {
         perror("Failed to run command");

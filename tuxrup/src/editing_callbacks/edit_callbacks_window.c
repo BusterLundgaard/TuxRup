@@ -110,6 +110,14 @@ char* set_callback_code_information(callback_info* info){
     info->modified_code_path = g_strdup_printf("./runtime_files/%u.c", info->hash);
     info->shared_library_path = g_strdup_printf("./runtime_files/%u.so", info->hash);
 
+    if(has_debug_symbols() || (debug_symbols_path != NULL)){
+        info->function_name = get_identifier_from_pointer(info->original_function_pointer);
+        g_print("set function name to %s\n", info->function_name);
+    } else {
+        printf("Not enough debug information in executable to be able to edit callbacks!\n");
+        return NULL;
+    }
+
     if(info->original_function_pointer != NULL){
         info->original_document_path = get_document_path(info->function_name);
         
@@ -165,6 +173,7 @@ int create_version_of_document_for_code_editing(callback_info* info, bool edited
     g_file_set_contents(output_path, editing_document->str, strlen(editing_document->str), NULL);      
 }
 
+
 static void on_edit_callback_button(GtkWidget* widget, gpointer data){
     enum gtk_callback_category callback = *(enum gtk_callback_category*)data;
     
@@ -179,6 +188,9 @@ static void on_edit_callback_button(GtkWidget* widget, gpointer data){
 
     callback_info* info = callback_map_get(active_widget, callback);
     set_callback_code_information(info);
+
+    g_print("you are editing a callback with the pointer %p\n", info->original_function_pointer);
+    g_print("name of function at this pointer is %s \n", info->function_name);
 
     if(info->original_function_pointer != NULL){
         bool has_been_modified = (info->dl_handle != NULL);
@@ -297,6 +309,23 @@ GtkWidget* create_edit_callback_field(enum gtk_callback_category* callback){
 }
 
 
+void set_source_code_location(GtkEntry* entry, gpointer user_data){
+    GtkEntryBuffer* buffer = gtk_entry_get_buffer(entry);
+    const char* current_text = gtk_entry_buffer_get_text(buffer);
+    program_src_folder = current_text;
+}
+void set_debug_location(GtkEntry* entry, gpointer user_data){
+    GtkEntryBuffer* buffer = gtk_entry_get_buffer(entry);
+    const char* current_text = gtk_entry_buffer_get_text(buffer);
+    debug_symbols_path = current_text;
+}
+
+void do_my_dumb_test(
+    GtkWidget *widget,
+    gpointer   data){
+        g_print("pointer to button_A_callback is %p\n", get_pointer_from_identifier("button_A_callback"));
+    }
+
 void build_edit_callbacks_window(GtkWidget* window){
     GtkWidget* vbox = create_and_add_scrollable_item_list(window, 200, 750);
     set_applicable_callbacks_from_active_widget();
@@ -305,6 +334,30 @@ void build_edit_callbacks_window(GtkWidget* window){
         GtkWidget* edit_callback_field = create_edit_callback_field(&applicable_callbacks.callbacks[i]);
         gtk_box_append(GTK_BOX(vbox), edit_callback_field);
     }
+
+    GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(hbox, GTK_ALIGN_CENTER);
+    GtkWidget* source_code_location_entry = gtk_entry_new();
+    GtkWidget* source_code_label = gtk_label_new("source code location");
+    g_signal_connect_data_ORIGINAL(source_code_location_entry, "changed", G_CALLBACK(set_source_code_location), NULL, NULL, (GConnectFlags)0);
+    gtk_box_append(GTK_BOX(hbox), source_code_label);
+    gtk_box_append(GTK_BOX(hbox), source_code_location_entry);
+    gtk_box_append(GTK_BOX(vbox), hbox);
+
+    GtkWidget* hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_halign(hbox2, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(hbox2, GTK_ALIGN_CENTER);
+    GtkWidget* debug_location_entry = gtk_entry_new();
+    GtkWidget* debug_label = gtk_label_new("debug symbols location");
+    g_signal_connect_data_ORIGINAL(debug_location_entry, "changed", G_CALLBACK(set_debug_location), NULL, NULL, (GConnectFlags)0);
+    gtk_box_append(GTK_BOX(hbox2), debug_label);
+    gtk_box_append(GTK_BOX(hbox2), debug_location_entry);
+    gtk_box_append(GTK_BOX(vbox), hbox2);
+
+    GtkWidget* dumb_test = gtk_button_new_with_label("fuck off");
+    g_signal_connect_data_ORIGINAL(dumb_test, "clicked", G_CALLBACK(do_my_dumb_test), NULL, NULL, (GConnectFlags)0);
+    gtk_box_append(GTK_BOX(vbox), dumb_test);
 }
 
 
@@ -318,7 +371,7 @@ gboolean cleanup_callback_editor_window(GtkWidget* closed_window, gpointer user_
 void open_edit_callbacks_window(GtkWidget* widget) {
     active_widget = widget;   
     GtkWidget* window = create_window(widget, "Edit widget properties", 200, 800);
-    
+
     build_edit_callbacks_window(window); 
    
     g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_callback_editor_window), NULL, NULL, (GConnectFlags)0);

@@ -53,8 +53,6 @@ void on_spin_button_changed(GtkSpinButton* spin_button, gpointer user_data){
     set_value(property_name, G_TYPE_DOUBLE, &spin_button_value);
 }
 GtkWidget* create_number_editor(gchar* property_name, GType number_type){
-    printf("Creating number editor for the property: %s\n", property_name);
-    
     GValue current_value = get_current_value(property_name, number_type);
     
     gdouble current_number;

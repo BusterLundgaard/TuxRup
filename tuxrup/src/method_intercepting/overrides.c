@@ -49,7 +49,15 @@ void gtk_window_present_OVERRIDE(GtkWindow *window){
         application_root = (GtkWidget*)window;
         first_window_present=false;
     }
-    return gtk_window_present_ORIGINAL(window);
+
+    gtk_window_present_ORIGINAL(window);
+
+    // Testing
+    //program_src_folder = "/home/buster/Documents/TuxRup/gtk_program_src/";
+    //debug_symbols_path = "/home/buster/Documents/TuxRup/gtk_program_src/hw.debug";
+    //g_print("pointer to button_A_callback is %p\n", get_pointer_from_identifier("button_A_callback"));
+
+    ////
 }
 
 // ===================================================================
@@ -89,9 +97,6 @@ GConnectFlags connect_flags){
     {goto call_original;}
     
     if(is_callback_remapable(widget_category, callback_category)){
-        char* function_name = get_identifier_from_pointer(c_handler);
-        char* callback_name = get_callback_type_category_str(callback_category);
-        printf("Added callback %s on widget %p to function name %s\n", callback_name, widget, function_name);
         callback_map_add_original(widget, callback_category, c_handler);
     }
 

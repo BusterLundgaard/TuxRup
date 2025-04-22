@@ -92,9 +92,10 @@ extern GHashTable *widget_callback_table;
 extern GHashTable *widget_hashes;
 extern GHashTable *widget_to_css_filepath_map;
 
-extern const char* working_directory;
-extern const char* executable_path;
-extern const char* program_src_folder;
+extern char* working_directory;
+extern char* executable_path;
+extern char* program_src_folder;
+extern char* debug_symbols_path;
 
 typedef struct {
     enum gtk_callback_category action_name; // A string with the name of the action

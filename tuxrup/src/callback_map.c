@@ -43,7 +43,6 @@ callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_ca
     *cb_info = (callback_info) {};
     cb_info->id = cb_key;
     cb_info->original_function_pointer = original_pointer;
-    cb_info->function_name = (original_pointer == NULL) ? NULL : get_identifier_from_pointer(original_pointer);
     
     g_hash_table_insert(widget_callback_table, cb_key, cb_info);
     return cb_info;
