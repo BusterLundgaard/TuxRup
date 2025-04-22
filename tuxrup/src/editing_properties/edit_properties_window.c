@@ -17,7 +17,7 @@ GValue get_current_value(gchar* property_name, GType value_type){
 }
 
 void set_value(gchar* property_name, GType value_type, gpointer new_value){
-    GValue value = G_VALUE_INIT;
+    GValue value = G_VALUE_INIT; //let me just add a little comment here:
     g_value_init(&value, value_type); 
     switch(value_type){
         case G_TYPE_INT: g_value_set_int(&value, *(gint*)new_value); break;
@@ -107,7 +107,8 @@ void on_dropdown_menu_changed(GtkDropDown* dropdown, GParamSpec *pspec, gpointer
 GtkWidget* create_enum_editor(gchar* property_name, GType typ){
     GEnumClass* enum_class = g_type_class_ref(typ);
 
-    GValue current_value = get_current_value(property_name, G_TYPE_ENUM);
+    GValue current_value = get_current_value(property_name, G_TYPE_ENUM); //i
+									  //am making a comment to test my keyboard yay 
     gint current_enum_value = g_value_get_enum(&current_value);
 
     const gchar** dropdown_items = malloc((enum_class->n_values+1)*sizeof(gchar*));
