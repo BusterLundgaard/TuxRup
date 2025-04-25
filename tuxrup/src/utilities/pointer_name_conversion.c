@@ -186,7 +186,8 @@ void get_debug_symbols() {
         return;
     }
 
-    FILE* pipe = popen(g_strdup_printf("source get_debug_symbols %s %s", dir, program_name), 'r');
+    const char* command = g_strdup_printf("source get_debug_symbols %s %s", dir, program_name);
+    FILE* pipe = popen(command, "r");
 
     char buffer[1024];
     if(fgets(buffer, sizeof(buffer), pipe) == NULL){}

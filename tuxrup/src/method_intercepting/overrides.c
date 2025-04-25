@@ -34,30 +34,60 @@ void gtk_css_provider_load_from_file_OVERRIDE(GtkCssProvider* provider, GFile* f
 // =============================================================
 // INTIAILIZATION OVERRIDES
 // ============================================================
+static bool initialized = false;
+
+void register_all_children(GtkWidget* widget){
+    enum widget_type_category widget_category = get_widget_type_category(widget);
+    if(widget_category != GTK_CATEGORY_UNDEFINED && !widget_seen_before(widget)){
+        g_hash_table_insert(widget_hashes, widget, NULL);
+        on_added_to_dom(widget, NULL);
+        add_right_click_action(widget, open_right_click_context_menu, widget);
+    }
+
+    if (GTK_IS_WIDGET(widget)) {
+        GtkWidget *child = NULL;
+        GtkWidget *next_child = gtk_widget_get_first_child(widget);
+        while (next_child) {
+            child = next_child;
+            register_all_children(child);
+            next_child = gtk_widget_get_next_sibling(child);
+        }
+    }
+}
+
 GtkApplication* gtk_application_new_OVERRIDE(const char* application_id, GApplicationFlags flags){
+    if(!initialized){
+        initialized = true;
+        on_init();    
+    }
+
     return gtk_application_new_ORIGINAL(application_id, flags);
 }
 
 int g_application_run_OVERRIDE(GApplication* application, int argc, char** argv){
-    int res = g_application_run_ORIGINAL(application, argc, argv);
-    return res;
+    if(!initialized){
+        initialized = true;
+        on_init();    
+    }
+
+    return g_application_run_ORIGINAL(application, argc, argv);
 }
 
 static bool first_window_present = true;
 void gtk_window_present_OVERRIDE(GtkWindow *window){
+    if(!initialized){
+        initialized = true;
+        on_init();    
+    }
+
+    register_all_children(window);
+
     if(first_window_present){
         application_root = (GtkWidget*)window;
         first_window_present=false;
     }
 
     gtk_window_present_ORIGINAL(window);
-
-    // Testing
-    //program_src_folder = "/home/buster/Documents/TuxRup/gtk_program_src/";
-    //debug_symbols_path = "/home/buster/Documents/TuxRup/gtk_program_src/hw.debug";
-    //g_print("pointer to button_A_callback is %p\n", get_pointer_from_identifier("button_A_callback"));
-
-    ////
 }
 
 // ===================================================================
@@ -72,6 +102,11 @@ gpointer data,
 GClosureNotify destroy_data,
 GConnectFlags connect_flags){
 
+    if(!initialized){
+        initialized = true;
+        on_init();    
+    }
+
     if(instance == NULL || widget_hashes == NULL)
     {goto call_original;}
 
@@ -82,7 +117,7 @@ GConnectFlags connect_flags){
     enum widget_type_category widget_category = get_widget_type_category(widget);
     if(widget_category == GTK_CATEGORY_UNDEFINED)
     {goto call_original;}
-        
+
     // // If this is the first time we see this widget, add it to the map of widget hashes, and add a "on_added_to_dom" signal for it
     // // We have to do this because there is no general "add_to_dom" function from a shared library we can overwrite
     if(!widget_seen_before(widget)){

@@ -13,6 +13,7 @@
 
 static bool initialized = false;
 void on_init(){
+    g_print("on init was called!\n");
     if(!initialized){
         initialized = true;
 
