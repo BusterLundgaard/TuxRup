@@ -1,0 +1,12 @@
+button {
+    background: yellow;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 10px;
+    margin-left: 20px;
+}
+.text-button {
+    padding: 5px;
+    margin: 10px;
+}

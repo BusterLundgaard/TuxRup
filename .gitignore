@@ -1,2 +1,5 @@
-tuxrup/build/*
-!tuxrup/build/parsethecss.py
+tuxrup/build/CMakeFiles/*
+tuxrup/build/CMakeCache.txt
+tuxrup/build/cmake_install.cmake
+tuxrup/build/__pycache__/*
+tuxrup/build/runtime_files/*
