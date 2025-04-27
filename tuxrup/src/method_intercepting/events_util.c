@@ -1,8 +1,10 @@
 #include "events_util.h"
 
 GtkWidget* get_widget_from_connect_signal(gpointer instance){
+	// This is going wrong probably because there's some GTK4 exlusive features here...
     if(GTK_IS_WIDGET(instance)){return instance;}
 
+    #ifndef USE_GTK3
     if(GTK_IS_GESTURE_CLICK(instance)){
         GtkGesture* gesture = (GtkGesture*)instance;
         //gtk_event_controller_key_new()
@@ -12,6 +14,7 @@ GtkWidget* get_widget_from_connect_signal(gpointer instance){
         GtkEventController* controller = (GtkEventController*)instance;
         return gtk_event_controller_get_widget(controller);
     }
+    #endif
 
     return NULL;
 }
@@ -32,9 +35,11 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
         (0 == strcmp(detailed_signal, "drag-begin"))          { return GTK_CALLBACK_drag_begin;         } else if
         (0 == strcmp(detailed_signal, "drag-drop"))           { return GTK_CALLBACK_drag_drop;          } else if
         (0 == strcmp(detailed_signal, "drag-recieved"))       { return GTK_CALLBACK_drag_data_recieved; } else if
-        (0 == strcmp(detailed_signal, "configure-event"))     { return GTK_CALLBACK_configure_event;    } 
+        (0 == strcmp(detailed_signal, "configure-event"))     { return GTK_CALLBACK_configure_event;    } else if
+        (0 == strcmp(detailed_signal, "button-press-event"))     { return GTK_CALLBACK_left_click; }
     }
 
+#ifndef USE_GTK3
     if(GTK_IS_GESTURE_CLICK(instance)){
         GtkGestureSingle* gesture = (GtkGestureSingle*)instance;
         guint clicked_mouse_button = gtk_gesture_single_get_button(gesture);
@@ -57,6 +62,7 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
         if(0 == strcmp(detailed_signal, "key-press-event"))   { return GTK_CALLBACK_key_pressed;}
         if(0 == strcmp(detailed_signal, "key-release-event")) { return GTK_CALLBACK_key_release;}
     }
+#endif
 
     return GTK_CALLBACK_UNDEFINED;
 }

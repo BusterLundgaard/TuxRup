@@ -33,10 +33,4 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data);
  */
 void open_css_editor(GtkWidget *widget);
 
-/*
- * A convenience function to attach a right-click gesture to a given widget,
- * so that if the user right-clicks, it calls open_text_editor().
- */
-void on_right_click(GtkGestureClick *gesture, int n_press, double x, double y, gpointer user_data);
-
 #endif /* EDITOR_UTILS_H */

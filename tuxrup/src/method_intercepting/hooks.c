@@ -25,11 +25,19 @@ void set_original_function(gpointer* fun_pointer, char* name){
 // CSS
 // =====================================
 gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_ORIGINAL = NULL;
+#ifdef USE_GTK3
+gboolean gtk_css_provider_load_from_file(GtkCssProvider *provider, GFile *file, GError** err)
+{   
+    set_original_function((gpointer*)&gtk_css_provider_load_from_file_ORIGINAL, "gtk_css_provider_load_from_file");
+    return gtk_css_provider_load_from_file_OVERRIDE(provider, file, err);
+}
+#else
 void gtk_css_provider_load_from_file(GtkCssProvider *provider, GFile *file)
 {   
     set_original_function((gpointer*)&gtk_css_provider_load_from_file_ORIGINAL, "gtk_css_provider_load_from_file");
     return gtk_css_provider_load_from_file_OVERRIDE(provider, file);
 }
+#endif
 
 // ====================================
 // Initialization
@@ -37,13 +45,14 @@ void gtk_css_provider_load_from_file(GtkCssProvider *provider, GFile *file)
 gtk_application_new_t gtk_application_new_ORIGINAL = NULL;
 
 GtkApplication *gtk_application_new(const char *application_id, GApplicationFlags flags){
-    on_init();
+	g_print("WAAAAAAAAAAAAAAAAAA\n");
     set_original_function((gpointer*)&gtk_application_new_ORIGINAL, "gtk_application_new");
     return gtk_application_new_OVERRIDE(application_id, flags);
 }
 
 g_application_run_t g_application_run_ORIGINAL = NULL;
 int g_application_run(GApplication* application, int argc, char** argv){
+	g_print("TEEEEEEEEEST\n");
     set_original_function((gpointer*)&g_application_run_ORIGINAL, "g_application_run");
     return g_application_run_OVERRIDE(application,argc,argv);
 }
@@ -53,6 +62,13 @@ void gtk_window_present(GtkWindow *window)
 {
     set_original_function((gpointer*)&gtk_window_present_ORIGINAL, "gtk_window_present");
     return gtk_window_present_OVERRIDE(window);
+}
+
+gtk_widget_show_all_t gtk_widget_show_all_ORIGINAL = NULL;
+void gtk_widget_show_all(GtkWidget *widget)
+{
+    set_original_function((gpointer*)&gtk_widget_show_all_ORIGINAL, "gtk_widget_show_all");
+    return gtk_widget_show_all_OVERRIDE(widget);
 }
 
 // =======================================

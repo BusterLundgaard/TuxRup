@@ -14,9 +14,14 @@
 GtkApplication* gtk_application_new_OVERRIDE(const char* application_id, GApplicationFlags flags);
 int g_application_run_OVERRIDE(GApplication* application, int argc, char** argv);
 void gtk_window_present_OVERRIDE(GtkWindow *window);
+void gtk_widget_show_all_OVERRIDE(GtkWidget* widget);
 
 // CSS hooks
+#ifdef USE_GTK3
+gboolean gtk_css_provider_load_from_file_OVERRIDE(GtkCssProvider* provider, GFile* file, GError** err);
+#else
 void gtk_css_provider_load_from_file_OVERRIDE(GtkCssProvider* provider, GFile* file);
+#endif
 
 // Signal hooks
 gulong g_signal_connect_data_OVERRIDE(gpointer instance,

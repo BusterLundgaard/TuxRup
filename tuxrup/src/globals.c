@@ -42,3 +42,12 @@ const action remapable_events[MAPPABLE_ACTIONS_LEN] = {
 
     {GTK_CALLBACK_configure_event,       {GTK_CATEGORY_Window}}
  };
+
+const source_code_info source_code_paths[30] = {
+	{"hw", "../../gtk_program_src"},
+	{"gnome-clocks", "/src/tuxrup_testing_applications_src/gnome-clocks"},
+	{"fctix-configtool", "/src/tuxrup_testing_applications_src/fcitx-configtool"},
+	{"quodlibet", "/src/tuxrup_testing_applications_src/quodlibet"},
+	{"totem", "/src/tuxrup_testing_applications_src/totem"},
+	{"xzgv", "/src/tuxrup_testing_applications_src/xzgv"}
+};

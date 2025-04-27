@@ -5,6 +5,7 @@
 #include "../utilities/util.h"
 
 #include "edit_css_window.h"
+#include "../method_intercepting/hooks.h"
 
 /* "Done" button callback */
 void on_done_clicked(GtkWidget *widget, gpointer user_data)
@@ -37,20 +38,46 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
             g_hash_table_remove(widget_to_css_filepath_map, modified_widget);
         }
         g_free(text);
+        #ifdef USE_GTK3
+        gtk_widget_destroy(data->editor_window);
+        #else
         gtk_window_destroy(GTK_WINDOW(data->editor_window));
+        #endif
         g_free(data);
         return;
     } 
 
     // Clean up and close the editor window
     g_free(text);
+    #ifdef USE_GTK3
+    gtk_widget_destroy(data->editor_window);
+    #else
     gtk_window_destroy(GTK_WINDOW(data->editor_window));
+    #endif
     g_free(data);
 }
 
 EditorData* build_css_editor_window(GtkWidget* widget){
     GtkWidget* window = create_window(widget, "Edit widget styling", 400, 800);
 
+    #ifdef USE_GTK3
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_hexpand(scrolled, TRUE);
+    gtk_widget_set_vexpand(scrolled, TRUE);
+
+    GtkWidget *text_view = gtk_text_view_new();
+    gtk_widget_set_hexpand(text_view, TRUE);
+    gtk_widget_set_vexpand(text_view, TRUE);
+    gtk_container_add(GTK_CONTAINER(scrolled), text_view);
+
+    GtkWidget *done_button = gtk_button_new_with_label("Done");
+
+    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), done_button, FALSE, FALSE, 0);
+
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+    #else
     GtkWidget *vbox     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     GtkWidget *scrolled = gtk_scrolled_window_new();
     gtk_widget_set_hexpand(scrolled, TRUE);
@@ -66,7 +93,8 @@ EditorData* build_css_editor_window(GtkWidget* widget){
     gtk_box_append(GTK_BOX(vbox), scrolled);
     gtk_box_append(GTK_BOX(vbox), done_button);
     gtk_window_set_child(GTK_WINDOW(window), vbox);
-    
+    #endif
+
     EditorData *data       = g_malloc(sizeof(EditorData));
     data->text_view        = text_view;
     data->done_button      = done_button;
@@ -106,6 +134,10 @@ void open_css_editor(GtkWidget *widget)
 
     g_signal_connect(editor_data->done_button, "clicked", G_CALLBACK(on_done_clicked), editor_data);
 
-    gtk_window_present(GTK_WINDOW(editor_data->editor_window));
+#ifdef USE_GTK3
+	gtk_widget_show_all_ORIGINAL(editor_data->editor_window);
+#else
+	gtk_window_present_ORIGINAL(GTK_WINDOW(editor_data->editor_window));
+#endif
 }
 

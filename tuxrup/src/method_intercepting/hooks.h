@@ -20,8 +20,15 @@ extern g_application_run_t g_application_run_ORIGINAL;
 typedef void (*gtk_window_present_t)(GtkWindow *window);
 extern gtk_window_present_t gtk_window_present_ORIGINAL;
 
+typedef void (*gtk_widget_show_all_t)(GtkWidget* widget);
+extern gtk_widget_show_all_t gtk_widget_show_all_ORIGINAL;
+
 // CSS hooks
+#ifdef USE_GTK3
+typedef gboolean(*gtk_css_provider_load_from_file_t)(GtkCssProvider* provider, GFile* file, GError** err);
+#else
 typedef void(*gtk_css_provider_load_from_file_t)(GtkCssProvider* provider, GFile* file);
+#endif
 extern gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_ORIGINAL;
 
 // Signal hooks

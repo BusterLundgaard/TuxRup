@@ -35,7 +35,18 @@
     return execute_command_and_get_result(command);
 }
 
-
+#ifdef USE_GTK3
+// TODO
+// This does not work properly in Gtk3
+// We need to make a function that converts between the GObject Type name like "GtkButton" and the css-class name like "button"
+void get_css_name(GtkWidget* widget, CssProps* result){
+    GObject *object = G_OBJECT(widget);
+    GType type = G_OBJECT_TYPE (object);
+	result->css_name = g_type_name(type);
+	result->css_name = "button";
+	g_print("css_name was %s\n", result->css_name);
+}
+#else
 void get_css_name(GObject* object, CssProps* result){
     GValue val_name = G_VALUE_INIT;
     g_value_init(&val_name, G_TYPE_STRING);
@@ -47,7 +58,22 @@ void get_css_name(GObject* object, CssProps* result){
     result->css_name = g_strdup(css_name);
     g_value_unset(&val_name);
 }
+#endif
 
+#ifdef USE_GTK3
+void get_css_classes(GtkWidget* widget, CssProps* result){
+	GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(widget));
+	GList *classes = gtk_style_context_list_classes(context);
+
+	result->num_classes = g_list_length(classes);
+	result->css_classes = malloc(sizeof(gchar*)*result->num_classes);
+
+	int i = 0;
+	for (GList *l = classes; l != NULL; l = l->next, i++) {
+		result->css_classes[i] = (const char *)l->data;
+	}
+}
+#else
 void get_css_classes(GObject* object, CssProps* result){
     GValue val_classes = G_VALUE_INIT;
     g_value_init(&val_classes, G_TYPE_STRV);
@@ -61,14 +87,20 @@ void get_css_classes(GObject* object, CssProps* result){
     }
     g_value_unset(&val_classes);
 }
+#endif
 
 /* 
  * Gets all attributes about css of a given GtkWidget
  */
 CssProps get_css_class_information_of_widget(GtkWidget* widget){
     CssProps result = {NULL, NULL, 0};
+#ifdef USE_GTK3
+    get_css_name(widget, &result);
+    get_css_classes(widget, &result);
+#else
     get_css_name(G_OBJECT(widget), &result);
     get_css_classes(G_OBJECT(widget), &result);
+#endif
     return result;
 }
 
@@ -77,15 +109,25 @@ CssProps get_css_class_information_of_widget(GtkWidget* widget){
  * by creating a new GtkCssProvider and binding it at 
  * priority GTK_STYLE_PROVIDER_PRIORITY_APPLICATION.
  */
+// TODO Radically change this function so that it works with GTK3 - there is no add_provier function in GTK3 that only targets a specific widget. 
+// We need to instead put all the css into a single custom class unique to the widget, then add that custom class to the widget
+// The custom class could just be its hash
 void apply_css_to_widget(GtkWidget *widget, const char *css_data)
 {
     GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, css_data, -1);
+    gtk_css_provider_load_from_data(css_provider, css_data, -1, NULL);
 
     GtkStyleContext *style_context = gtk_widget_get_style_context(widget);
+    #ifdef USE_GTK3
+    GdkScreen *screen = gtk_widget_get_screen(widget);
+    gtk_style_context_add_provider_for_screen(screen,
+                                   GTK_STYLE_PROVIDER(css_provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    #else
     gtk_style_context_add_provider(style_context,
                                    GTK_STYLE_PROVIDER(css_provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    #endif
     g_object_unref(css_provider);
 }
 
@@ -98,6 +140,9 @@ void apply_css_globally(const gchar *css_file_path)
     GtkCssProvider *css_provider = gtk_css_provider_new();
     GFile *css_file = g_file_new_for_path(css_file_path);
 
+    #ifdef USE_GTK3
+    gtk_css_provider_load_from_file(css_provider, css_file, NULL);
+    #else
     gtk_css_provider_load_from_file(css_provider, css_file);
     GdkDisplay *display = gdk_display_get_default();
     gtk_style_context_add_provider_for_display(display,
@@ -106,4 +151,5 @@ void apply_css_globally(const gchar *css_file_path)
 
     g_object_unref(css_provider);
     g_object_unref(css_file);
+    #endif
 }

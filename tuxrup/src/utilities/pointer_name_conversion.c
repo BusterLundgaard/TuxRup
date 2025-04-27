@@ -174,21 +174,42 @@ void *get_pointer_from_identifier(const char *name){
     return scan_elf(ELF_FIND_IDENTIFIER, name);
 }
 
-void get_debug_symbols() {
-    char *dir = dirname(executable_path);              
-    char *program_name = basename(executable_path);  
+void get_source_code_location(char* executable_name){
+	for(int i = 0; i < source_code_paths_LEN; i++){
+		if(source_code_paths[i].executable_name == NULL){break;}
+		if(strcmp(source_code_paths[i].executable_name, executable_name) == 0){
+			program_src_folder = source_code_paths[i].source_code_path;
+			g_print("set program_src_folder to %s\n", program_src_folder);
+		}
+	}
+}
+
+void get_debug_symbols_and_source_code_location() {
+	char *executable_path_copy1 = g_strdup(executable_path);
+	char *executable_path_copy2 = g_strdup(executable_path);
+    char *dir = dirname(executable_path_copy1);              
+    char *program_name = basename(executable_path_copy2);  
+	g_print("executable_path = %s, dir = %s, program_name = %s\n", executable_path, dir, program_name);
+	get_source_code_location(program_name);
     
-    char* symbols_path = g_strdup_printf("./%s_symbols", program_name);
-    debug_symbols_path = symbols_path;
-    
+	// Check if program already has debug symbols
     struct stat st;
     if (stat(program_name, &st) == 0 && S_ISREG(st.st_mode)) {
         return;
     }
 
-    const char* command = g_strdup_printf("source get_debug_symbols %s %s", dir, program_name);
+    const char* command = g_strdup_printf("source ./get_debug_symbols.sh %s %s", dir, program_name);
     FILE* pipe = popen(command, "r");
 
     char buffer[1024];
     if(fgets(buffer, sizeof(buffer), pipe) == NULL){}
+
+	char* symbols_path = g_strdup_printf("./symbols/%s_symbols", program_name);
+	if(access(symbols_path, F_OK) == 0) {
+		g_print("Succesfully downloaded debug symbols!\n");
+		debug_symbols_path = symbols_path;
+	}
+	else{
+		g_print("Could not succesfully download debug symbols\n");
+	}
 }

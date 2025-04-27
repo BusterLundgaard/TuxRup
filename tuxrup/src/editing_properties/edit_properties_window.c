@@ -32,7 +32,11 @@ void set_value(gchar* property_name, GType value_type, gpointer new_value){
 
 void on_check_button_changed(GtkCheckButton* check_button, gpointer user_data){
     gchar* property_name = (gchar*)user_data;
+	#ifdef USE_GTK3
+	gboolean current_boolean = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button));
+	#else
     gboolean current_boolean = gtk_check_button_get_active(check_button);
+	#endif
     set_value(property_name, G_TYPE_BOOLEAN, &current_boolean);
 }
 GtkWidget* create_boolean_editor(gchar* property_name){
@@ -40,7 +44,11 @@ GtkWidget* create_boolean_editor(gchar* property_name){
     gboolean current_boolean = g_value_get_boolean(&current_value);
 
     GtkWidget* check = gtk_check_button_new();
+	#ifdef USE_GTK3
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check), current_boolean);
+	#else
     gtk_check_button_set_active(GTK_CHECK_BUTTON(check), current_boolean);
+	#endif
     g_signal_connect_data_ORIGINAL(check, "toggled", G_CALLBACK(on_check_button_changed), property_name, NULL, (GConnectFlags)0);
 
     return check;
@@ -97,13 +105,19 @@ GtkWidget* create_string_editor(gchar* property_name){
     return entry;
 }
 
-
+#ifdef USE_GTK3
+void on_dropdown_menu_changed(GtkComboBox* dropdown, GParamSpec* pspec, gpointer user_data){
+	
+}
+#else
 void on_dropdown_menu_changed(GtkDropDown* dropdown, GParamSpec *pspec, gpointer user_data){
     gchar* property_name = (gchar*)user_data;
 
     gint current_selected = gtk_drop_down_get_selected(dropdown);
     set_value(property_name, G_TYPE_ENUM, &current_selected);
 }
+#endif
+
 GtkWidget* create_enum_editor(gchar* property_name, GType typ){
     GEnumClass* enum_class = g_type_class_ref(typ);
 
@@ -118,11 +132,19 @@ GtkWidget* create_enum_editor(gchar* property_name, GType typ){
         dropdown_items[i] = value->value_nick;
     }
   
+    #ifdef USE_GTK3
+    GtkWidget *dropdown = gtk_combo_box_text_new();
+    for (int i = 0; dropdown_items[i] != NULL; i++) {
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(dropdown), dropdown_items[i]);
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdown), current_enum_value);
+    g_signal_connect(dropdown, "changed", G_CALLBACK(on_dropdown_menu_changed), property_name);
+    #else
     GtkWidget* dropdown = gtk_drop_down_new_from_strings(dropdown_items);
     gtk_drop_down_set_selected(GTK_DROP_DOWN(dropdown), current_enum_value);
-    
     g_signal_connect_data_ORIGINAL(dropdown, "notify::selected", G_CALLBACK(on_dropdown_menu_changed), property_name, NULL, (GConnectFlags)0);
-    
+    #endif
+
     g_type_class_unref(enum_class);
     free(dropdown_items);
 
@@ -184,5 +206,9 @@ void open_edit_properties_window(GtkWidget* widget){
     } 
 
     g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_property_editor_window), properties, NULL, (GConnectFlags)0);
-    gtk_window_present(GTK_WINDOW(window));
+#ifdef USE_GTK3
+	gtk_widget_show_all_ORIGINAL(window);
+#else
+	gtk_window_present_ORIGINAL(GTK_WINDOW(window));
+#endif
 }

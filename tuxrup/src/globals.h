@@ -15,6 +15,9 @@ enum gtk_version {
     GTK_VERSION_3,
     GTK_VERSION_2
 };
+extern enum gtk_version gtk_ver;
+
+//---------------------------------------
 
 enum gtk_callback_category {
     GTK_CALLBACK_UNDEFINED=0,
@@ -84,7 +87,25 @@ enum widget_type_category {
     GTK_CATEGORY_Window
 };
 
-extern enum gtk_version gtk_ver;
+typedef struct {
+	enum gtk_callback_category action_name; // A string with the name of the action
+	enum widget_type_category valid_widget_types[5]; // The widgets you can apply this action to. No callback has more than 5 categories applying, so it's kind of just an arbitrary number to avoid a dynamically-sized array
+} action;
+
+#define MAPPABLE_ACTIONS_LEN 17
+extern const action remapable_events[MAPPABLE_ACTIONS_LEN];
+
+//---------------------------------------
+
+typedef struct {
+	char* executable_name;
+	char* source_code_path;
+} source_code_info;
+
+#define source_code_paths_LEN 30
+extern const source_code_info source_code_paths[30];
+
+//---------------------------------------
 
 extern GtkWidget* application_root;
 
@@ -94,17 +115,17 @@ extern GHashTable *widget_to_css_filepath_map;
 
 extern char* working_directory;
 extern char* executable_path;
-extern char* program_src_folder;
 extern char* debug_symbols_path;
+extern char* program_src_folder;
 
-typedef struct {
-    enum gtk_callback_category action_name; // A string with the name of the action
-    enum widget_type_category valid_widget_types[5]; // The widgets you can apply this action to. No callback has more than 5 categories applying, so it's kind of just an arbitrary number to avoid a dynamically-sized array
-} action;
+//---------------------------------------
 
-#define MAPPABLE_ACTIONS_LEN 17
-extern const action remapable_events[MAPPABLE_ACTIONS_LEN];
+#ifdef USE_GTK3
+typedef gboolean(*right_click_callback_type)(GtkWidget* widget, GdkEventButton* event, gpointer user_data);
+#else
+typedef gboolean(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
+#endif
 
-typedef void(*right_click_callback_type)(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data);
 typedef void(*menu_action_callback_type)(GSimpleAction* action, GVariant* parameter, gpointer user_data);
+
 #endif

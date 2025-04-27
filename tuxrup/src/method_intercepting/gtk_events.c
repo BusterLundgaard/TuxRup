@@ -13,12 +13,11 @@
 
 static bool initialized = false;
 void on_init(){
-    g_print("on init was called!\n");
     if(!initialized){
         initialized = true;
 
         #ifdef USE_GTK3
-            printf("lo from GTK 3\n");
+            printf("Hello from GTK 3\n");
         #else
             printf("Hello from GTK 4\n");
         #endif
@@ -26,8 +25,9 @@ void on_init(){
         set_gtk_version();
 
         // Get executable metadata like working directory and debug symbols
-        working_directory = get_working_directory();
         executable_path = get_executable_directory();
+		working_directory = get_working_directory();
+		g_print("executable_path = %s\n", executable_path);
 
         // Initialize global maps
         widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -37,6 +37,9 @@ void on_init(){
         // Clear temporary files
         FILE *file = fopen("all_css.css", "w"); 
         if (file) {fclose(file);} 
+
+		// Get debug symbols (takes quite some time)
+	    get_debug_symbols_and_source_code_location();
     }
 }
 

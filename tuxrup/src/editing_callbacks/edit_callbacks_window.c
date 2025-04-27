@@ -27,6 +27,7 @@ typedef struct {
 
 static callbacks_list applicable_callbacks;
 
+
 // ======================================================
 // GENERAL UTILITY METHODS
 // ======================================================
@@ -296,7 +297,7 @@ GtkWidget* create_edit_callback_field(enum gtk_callback_category* callback){
     GtkWidget* edit_button = gtk_button_new_with_label(callback_map_exists(active_widget, *callback) ? "Edit" : "Create");
     g_signal_connect_data_ORIGINAL(edit_button, "clicked", G_CALLBACK(on_edit_callback_button), callback, NULL, (GConnectFlags)0);
 
-    GtkWidget* edit_done_button = gtk_button_new_with_label("done editing (but don't click before you idiot!)");
+    GtkWidget* edit_done_button = gtk_button_new_with_label("done editing");
     g_signal_connect_data_ORIGINAL(edit_done_button, "clicked", G_CALLBACK(on_edit_callback_done_button), callback, NULL, (GConnectFlags)0);
 
     add_widget_to_box(hbox, edit_button);
@@ -332,32 +333,36 @@ void build_edit_callbacks_window(GtkWidget* window){
 
     for(int i = 0; i < applicable_callbacks.size; i++){
         GtkWidget* edit_callback_field = create_edit_callback_field(&applicable_callbacks.callbacks[i]);
+        #ifdef USE_GTK3
+        gtk_container_add(GTK_CONTAINER(vbox), edit_callback_field);
+        #else
         gtk_box_append(GTK_BOX(vbox), edit_callback_field);
+        #endif
     }
 
-    GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(hbox, GTK_ALIGN_CENTER);
-    GtkWidget* source_code_location_entry = gtk_entry_new();
-    GtkWidget* source_code_label = gtk_label_new("source code location");
-    g_signal_connect_data_ORIGINAL(source_code_location_entry, "changed", G_CALLBACK(set_source_code_location), NULL, NULL, (GConnectFlags)0);
-    gtk_box_append(GTK_BOX(hbox), source_code_label);
-    gtk_box_append(GTK_BOX(hbox), source_code_location_entry);
-    gtk_box_append(GTK_BOX(vbox), hbox);
+    /* GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); */
+    /* gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER); */
+    /* gtk_widget_set_valign(hbox, GTK_ALIGN_CENTER); */
+    /* GtkWidget* source_code_location_entry = gtk_entry_new(); */
+    /* GtkWidget* source_code_label = gtk_label_new("source code location"); */
+    /* g_signal_connect_data_ORIGINAL(source_code_location_entry, "changed", G_CALLBACK(set_source_code_location), NULL, NULL, (GConnectFlags)0); */
+    /* gtk_box_append(GTK_BOX(hbox), source_code_label); */
+    /* gtk_box_append(GTK_BOX(hbox), source_code_location_entry); */
+    /* gtk_box_append(GTK_BOX(vbox), hbox); */
 
-    GtkWidget* hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_halign(hbox2, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(hbox2, GTK_ALIGN_CENTER);
-    GtkWidget* debug_location_entry = gtk_entry_new();
-    GtkWidget* debug_label = gtk_label_new("debug symbols location");
-    g_signal_connect_data_ORIGINAL(debug_location_entry, "changed", G_CALLBACK(set_debug_location), NULL, NULL, (GConnectFlags)0);
-    gtk_box_append(GTK_BOX(hbox2), debug_label);
-    gtk_box_append(GTK_BOX(hbox2), debug_location_entry);
-    gtk_box_append(GTK_BOX(vbox), hbox2);
+    /* GtkWidget* hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); */
+    /* gtk_widget_set_halign(hbox2, GTK_ALIGN_CENTER); */
+    /* gtk_widget_set_valign(hbox2, GTK_ALIGN_CENTER); */
+    /* GtkWidget* debug_location_entry = gtk_entry_new(); */
+    /* GtkWidget* debug_label = gtk_label_new("debug symbols location"); */
+    /* g_signal_connect_data_ORIGINAL(debug_location_entry, "changed", G_CALLBACK(set_debug_location), NULL, NULL, (GConnectFlags)0); */
+    /* gtk_box_append(GTK_BOX(hbox2), debug_label); */
+    /* gtk_box_append(GTK_BOX(hbox2), debug_location_entry); */
+    /* gtk_box_append(GTK_BOX(vbox), hbox2); */
 
-    GtkWidget* dumb_test = gtk_button_new_with_label("fuck off");
-    g_signal_connect_data_ORIGINAL(dumb_test, "clicked", G_CALLBACK(do_my_dumb_test), NULL, NULL, (GConnectFlags)0);
-    gtk_box_append(GTK_BOX(vbox), dumb_test);
+    /* GtkWidget* dumb_test = gtk_button_new_with_label("fuck off"); */
+    /* g_signal_connect_data_ORIGINAL(dumb_test, "clicked", G_CALLBACK(do_my_dumb_test), NULL, NULL, (GConnectFlags)0); */
+    /* gtk_box_append(GTK_BOX(vbox), dumb_test); */
 }
 
 

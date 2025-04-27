@@ -7,14 +7,10 @@
 #include <sys/stat.h>
 
 void set_gtk_version() {
-    #if GTK_MAJOR_VERSION == 4
-        gtk_ver = GTK_VERSION_4;
-    #elif GTK_MAJOR_VEDIT_CALLBACKS_WINDOW_HERSION == 3
+	#ifdef USE_GTK3
         gtk_ver = GTK_VERSION_3;
-    #elif GTK_MAJOR_VERSION == 2
-        gtk_ver = GTK_VERSION_2;
-    #else
-        printf("Unknown GTK version\n");
+    #else 
+        gtk_ver = GTK_VERSION_4;
     #endif
 }
 
@@ -26,7 +22,7 @@ GObjectClass* get_widget_class(GtkWidget* widget){
 GtkWidget* create_window(GtkWidget* any_widget_from_current_application, const char* title, guint width, guint height){
     // Get the parent window
     #ifdef USE_GTK3
-    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_toplevel(widget));  // Get the parent window
+    GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_toplevel(any_widget_from_current_application));  // Get the parent window
     #else
     GtkWindow *parent_window = GTK_WINDOW(gtk_widget_get_native(any_widget_from_current_application));  
     #endif
@@ -93,7 +89,11 @@ enum widget_type_category get_widget_type_category(GtkWidget* w){
     if(GTK_IS_SPIN_BUTTON(w))   {return GTK_CATEGORY_SpinButton;}
     if(GTK_IS_SCALE(w))         {return GTK_CATEGORY_Scale;}
     if(GTK_IS_COMBO_BOX_TEXT(w)){return GTK_CATEGORY_ComboBoxText;}
+    #ifdef USE_GTK3
+    if(GTK_IS_COMBO_BOX(w))      {return GTK_CATEGORY_DropDown;}
+    #else
     if(GTK_IS_DROP_DOWN(w))     {return GTK_CATEGORY_DropDown;}
+    #endif
     if(GTK_IS_WINDOW(w))        {return GTK_CATEGORY_Window;}
     return GTK_CATEGORY_UNDEFINED;
 }
@@ -274,13 +274,13 @@ char* get_working_directory(){
 
 char* get_executable_directory() {
     char* buffer = malloc(sizeof(char)*1024);
-    size_t size = 100000;
     ssize_t len = readlink("/proc/self/exe", buffer, 1024 - 1);
     if(len == -1){
         return NULL;
     }
 
     buffer[len] = '\0';
+	g_print("get_executable_directory returned: %s\n", buffer);
     return g_strdup(buffer);
 }
 
@@ -369,10 +369,15 @@ void print_cursor_location(CXSourceLocation loc){
 }
 
 void add_right_click_action(GtkWidget* widget, right_click_callback_type callback, gpointer user_data) {
+    #ifdef USE_GTK3
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect_data_ORIGINAL(widget, "button-press-event", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
+    #else
     GtkGesture* gesture = gtk_gesture_click_new();
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(gesture),3); 
     gtk_widget_add_controller(GTK_WIDGET(widget), GTK_EVENT_CONTROLLER(gesture));
     g_signal_connect_data_ORIGINAL(gesture, "pressed", G_CALLBACK(callback), user_data, NULL, (GConnectFlags)0);
+    #endif
 }
 
 char* execute_command_and_get_result(char* command){

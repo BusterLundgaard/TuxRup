@@ -7,6 +7,7 @@
 #else 
     #include <gtk-4.0/gtk/gtk.h>
 #endif
+#include <stdbool.h>
 
 #include "globals.h"
 
