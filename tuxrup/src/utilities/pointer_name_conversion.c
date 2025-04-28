@@ -193,10 +193,10 @@ void get_debug_symbols_and_source_code_location() {
 	get_source_code_location(program_name);
     
 	// Check if program already has debug symbols
-    struct stat st;
-    if (stat(program_name, &st) == 0 && S_ISREG(st.st_mode)) {
-        return;
-    }
+	if(has_debug_symbols()){
+		g_print("Program already has debug symbols embedded, won't look for seperate symbols file. Test: %p.\n", get_pointer_from_identifier("button_A_callback"));
+		return;
+	}
 
     const char* command = g_strdup_printf("source ./get_debug_symbols.sh %s %s", dir, program_name);
     FILE* pipe = popen(command, "r");

@@ -1,33 +1,36 @@
 #define _GNU_SOURCE
-#include <gtk/gtk.h>
+#include <gtk-4.0/gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define stupid_ass_macro char**
+#define mymacrotype(t) t**
+#define mymacroexp(varname) varname+2
+typedef int my_own_int;
+typedef int(*foo_type)(int);
 struct {
-  int wow;
-  long int more_wow;
+  my_own_int some_int;
+  mymacrotype(char) some_char_pointer;
 };
 typedef struct {
-  int wow;
-  long int more_wow;
-} my_epic_struct;
-typedef int my_own_int;
+  my_own_int some_int;
+  mymacrotype(char) some_char_pointer;
+} my_struct;
  
  void customfunction(GtkWidget *widget, gpointer   data){
  //PREFIX: 
 void** _data = (void**)data; 
-    typedef void(*some_original_function_t)(int);
-    some_original_function_t some_original_function = (some_original_function_t)(_data[1]);
-    typedef int some_original_variable_t;
-    some_original_variable_t some_original_variable = *((some_original_variable_t*)(_data[0]));
+    typedef int(*some_function_t)(int);
+    some_function_t some_function = (some_function_t)(_data[0]);
+    typedef my_own_int some_int_t;
+    some_int_t some_int = *((some_int_t*)(_data[1]));
 
  //THEIR FUNCTION: 
-    some_original_variable--;
-    my_own_int local_var_fuck_you = some_original_variable;;
+    foo_type foo = &some_function;;
     ;;
-    some_original_function(local_var_fuck_you);
+    int local_var = mymacroexp(some_int);;
+    ;;
+    some_int = foo(local_var)*2;
 
 //POSTFIX: 
-    *((some_original_variable_t*)(_data[0])) = some_original_variable;
+    *((some_int_t*)(_data[1])) = some_int;
  
 }

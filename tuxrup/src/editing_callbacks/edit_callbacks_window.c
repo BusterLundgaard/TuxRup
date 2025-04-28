@@ -379,6 +379,10 @@ void open_edit_callbacks_window(GtkWidget* widget) {
 
     build_edit_callbacks_window(window); 
    
-    g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_callback_editor_window), NULL, NULL, (GConnectFlags)0);
-    gtk_window_present(GTK_WINDOW(window));
+    g_signal_connect_data_ORIGINAL(window, "destroy", G_CALLBACK(cleanup_callback_editor_window), NULL, NULL, (GConnectFlags)0);    gtk_window_present(GTK_WINDOW(window));
+#ifdef USE_GTK3
+	gtk_widget_show_all_ORIGINAL(window);
+#else
+	gtk_window_present_ORIGINAL(GTK_WINDOW(window));
+#endif
 }
