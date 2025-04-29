@@ -1,0 +1,111 @@
+#include <gtk/gtk.h>
+
+static GtkWidget *create_menu_bar(void) {
+    GtkWidget *menu_bar = gtk_menu_bar_new();
+
+    for (int i = 0; i < 7; i++) {
+        char menu_name[10];
+        snprintf(menu_name, sizeof(menu_name), "Menu %d", i + 1);
+        GtkWidget *menu_item = gtk_menu_item_new_with_label(menu_name);
+        GtkWidget *submenu = gtk_menu_new();
+
+        for (int j = 0; j < 3; j++) {
+            char item_name[10];
+            snprintf(item_name, sizeof(item_name), "Item %d", j + 1);
+            GtkWidget *item = gtk_menu_item_new_with_label(item_name);
+            gtk_menu_shell_append(GTK_MENU_SHELL(submenu), item);
+        }
+
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
+    }
+
+    return menu_bar;
+}
+
+static void activate(GtkApplication *app, gpointer user_data) {
+    GtkWidget *window;
+    GtkWidget *vbox;
+    GtkWidget *menu_bar;
+    GtkWidget *main_paned;
+    GtkWidget *left_paned;
+    GtkWidget *partA1;
+    GtkWidget *partA2;
+    GtkWidget *button1, *button2, *button3;
+    GtkWidget *image;
+    GtkWidget *spinbutton;
+
+    window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(window), "GTK4 Layout Example");
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_window_set_child(GTK_WINDOW(window), vbox);
+
+    // Toolbar
+    menu_bar = create_menu_bar();
+    gtk_box_append(GTK_BOX(vbox), menu_bar);
+
+    // Main horizontal split (A and B)
+    main_paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_hexpand(main_paned, TRUE);
+    gtk_widget_set_vexpand(main_paned, TRUE);
+    gtk_box_append(GTK_BOX(vbox), main_paned);
+
+    // Left side (Part A)
+    left_paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+    gtk_widget_set_hexpand(left_paned, TRUE);
+    gtk_widget_set_vexpand(left_paned, TRUE);
+    gtk_paned_set_start_child(GTK_PANED(main_paned), left_paned);
+
+    // Part A1
+    partA1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_vexpand(partA1, TRUE);
+    gtk_paned_set_start_child(GTK_PANED(left_paned), partA1);
+
+    // Part A2
+    partA2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_vexpand(partA2, TRUE);
+    gtk_paned_set_end_child(GTK_PANED(left_paned), partA2);
+
+    // Buttons inside A2
+    button1 = gtk_button_new_with_label("Button 1");
+    button2 = gtk_button_new_with_label("Button 2");
+    button3 = gtk_button_new_with_label("Button 3");
+
+    GtkStyleContext *context = gtk_widget_get_style_context(button1);
+    gtk_style_context_add_class(context, "selected-button");
+
+    gtk_box_append(GTK_BOX(partA2), button1);
+    gtk_box_append(GTK_BOX(partA2), button2);
+    gtk_box_append(GTK_BOX(partA2), button3);
+
+    // Right side (Part B)
+    GtkWidget *right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_hexpand(right_box, TRUE);
+    gtk_widget_set_vexpand(right_box, TRUE);
+    gtk_paned_set_end_child(GTK_PANED(main_paned), right_box);
+
+    // Image at top of B
+    image = gtk_image_new_from_icon_name("image-x-generic");
+    gtk_box_append(GTK_BOX(right_box), image);
+
+    // SpinButton at bottom of B
+    GtkAdjustment *adjustment = gtk_adjustment_new(0, 0, 100, 1, 10, 0);
+    spinbutton = gtk_spin_button_new(adjustment, 1, 0);
+    gtk_box_append(GTK_BOX(right_box), spinbutton);
+
+    gtk_widget_show(window);
+}
+
+int main(int argc, char **argv) {
+    GtkApplication *app;
+    int status;
+
+    app = gtk_application_new("com.example.GTK4Layout", G_APPLICATION_FLAGS_NONE);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
+
+    return status;
+}
