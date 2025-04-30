@@ -1,5 +1,7 @@
-#include <gtk/gtk.h>
+#ifndef LAYERS_H
+#define LAYERS_H
 
-// int layers[3] = {0, 1, 2};
-// GtkWidget* layer_buttons[3] = {};
-// int selected_layer = 0;
+static void on_layer_select(GtkWidget* self, gpointer data);
+GtkWidget* create_layerpicker();
+
+#endif

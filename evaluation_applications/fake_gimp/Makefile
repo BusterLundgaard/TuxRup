@@ -1,5 +1,7 @@
 normal:
-	gcc -g $(shell pkg-config --cflags gtk4) fakegimp.c -o fg $(shell pkg-config --libs gtk4) -lelf -ldl
+	gcc -g $(shell pkg-config --cflags gtk4) \
+	globals.c image_viewer.c layers.c toolbar.c toolpicker.c \
+	fakegimp.c -o fg $(shell pkg-config --libs gtk4) -lelf -ldl
 
 debug:
 	gcc -g $(shell pkg-config --cflags gtk4) fakegimp.c -o fg_stripped $(shell pkg-config --libs gtk4) -lelf -ldl

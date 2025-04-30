@@ -1,7 +1,8 @@
-typedef struct{
-    char* menu_name;
-    char* menu_items[5];
-} Toolbar_menu_data;
+#ifndef TOOLBAR_H
+#define TOOLBAR_H
+#include <gtk/gtk.h>
 
-extern Toolbar_menu_data menus[5];
-extern char* icons[25];
+GMenu* create_toolbar(GApplication* app);
+void enable_toolbar(GtkApplication* app, GtkWindow* win, GMenu* menu_bar);
+
+#endif
