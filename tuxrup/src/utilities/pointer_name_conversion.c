@@ -79,7 +79,7 @@ void *get_base_address()
 
     while (fgets(line, sizeof(line), fp))
     {
-        if (strstr(line, "r--p") && strstr(line, "hw"))
+        if (strstr(line, "r--p") && strstr(line, program_name))
         {
             base_addr = (void *)strtoull(line, NULL, 16);
             break;
@@ -121,6 +121,7 @@ void* scan_elf(enum elf_scan_mode mode, void* comparison_value){
     if (fd < 0) {return NULL;}
 
     void* base_addr = is_pie_executable() ? get_base_address() : 0;
+	g_print("base_addr is %p\n", base_addr);
     
     elf_version(EV_CURRENT);
     Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
@@ -188,13 +189,16 @@ void get_debug_symbols_and_source_code_location() {
 	char *executable_path_copy1 = g_strdup(executable_path);
 	char *executable_path_copy2 = g_strdup(executable_path);
     char *dir = dirname(executable_path_copy1);              
-    char *program_name = basename(executable_path_copy2);  
-	g_print("executable_path = %s, dir = %s, program_name = %s\n", executable_path, dir, program_name);
+    program_name = basename(executable_path_copy2);  
 	get_source_code_location(program_name);
     
 	// Check if program already has debug symbols
 	if(has_debug_symbols()){
-		g_print("Program already has debug symbols embedded, won't look for seperate symbols file. Test: %p.\n", get_pointer_from_identifier("button_A_callback"));
+		void* p = get_pointer_from_identifier("switchAmPm");
+		g_print("pointer is: %p\n", p);
+		char* name = get_identifier_from_pointer(p);
+		g_print("name is %s\n", name);
+		g_print("Program already has debug symbols embedded, won't look for seperate symbols file. Test: %p.\n", get_pointer_from_identifier("switchAmPm"));
 		return;
 	}
 

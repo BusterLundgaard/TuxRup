@@ -45,14 +45,12 @@ void gtk_css_provider_load_from_file(GtkCssProvider *provider, GFile *file)
 gtk_application_new_t gtk_application_new_ORIGINAL = NULL;
 
 GtkApplication *gtk_application_new(const char *application_id, GApplicationFlags flags){
-	g_print("WAAAAAAAAAAAAAAAAAA\n");
     set_original_function((gpointer*)&gtk_application_new_ORIGINAL, "gtk_application_new");
     return gtk_application_new_OVERRIDE(application_id, flags);
 }
 
 g_application_run_t g_application_run_ORIGINAL = NULL;
 int g_application_run(GApplication* application, int argc, char** argv){
-	g_print("TEEEEEEEEEST\n");
     set_original_function((gpointer*)&g_application_run_ORIGINAL, "g_application_run");
     return g_application_run_OVERRIDE(application,argc,argv);
 }

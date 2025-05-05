@@ -49,7 +49,6 @@ static bool window_presented = false;
 void register_all_children(GtkWidget* widget){
     enum widget_type_category widget_category = get_widget_type_category(widget);
     if(widget_category != GTK_CATEGORY_UNDEFINED && widget_category != GTK_CATEGORY_Window && !widget_seen_before(widget)){
-		g_print("widget_category i am adding to is: %s\n", get_widget_type_category_str(widget_category));
         g_hash_table_insert(widget_hashes, widget, NULL);
         on_added_to_dom(widget, NULL);
         add_right_click_action(widget, open_right_click_context_menu, widget);
@@ -69,7 +68,6 @@ void register_all_children(GtkWidget* widget){
 void register_all_children(GtkWidget* widget){
     enum widget_type_category widget_category = get_widget_type_category(widget);
     if(widget_category != GTK_CATEGORY_UNDEFINED && widget_category != GTK_CATEGORY_Window && !widget_seen_before(widget)){
-		g_print("widget_category i am adding to is: %s\n", get_widget_type_category_str(widget_category));
         g_hash_table_insert(widget_hashes, widget, NULL);
         on_added_to_dom(widget, NULL);
         add_right_click_action(widget, open_right_click_context_menu, widget);
@@ -170,7 +168,7 @@ GConnectFlags connect_flags){
     {goto call_original;}
     
     if(is_callback_remapable(widget_category, callback_category)){
-        callback_map_add_original(widget, callback_category, c_handler);
+        callback_map_add_original(widget, callback_category, c_handler, data);
     }
 
     call_original:

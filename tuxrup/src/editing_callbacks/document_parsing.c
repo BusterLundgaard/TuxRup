@@ -177,6 +177,29 @@ char* extract_type(const char* argument) {
     return type;
 }
 
+char* extract_name(const char* argument) {
+    if (!argument) return NULL;
+
+    size_t len = strlen(argument);
+    if (len == 0) return NULL;
+
+    // Find the last space to locate the start of the name
+    int last_space_index = -1;
+    for (int i = len - 1; i >= 0; i--) {
+        if (argument[i] == ' ') {
+            last_space_index = i;
+            break;
+        }
+    }
+
+    // If no spaces found, assume the whole argument is the name
+    const char* name_start = (last_space_index == -1) ? argument : argument + last_space_index + 1;
+
+    // Allocate memory and copy the name
+    char* name = strdup(name_start);
+    return name;
+}
+
 void set_function_argument_types(CXCursor c_func, GString* buffer){
     CXType type = clang_getCursorType(c_func);
     unsigned int num_args = clang_getNumArgTypes(type);
@@ -192,16 +215,19 @@ void set_function_argument_types(CXCursor c_func, GString* buffer){
     }
 }
 
-void set_function_arguments(CXCursor c_func, GString* buffer) {
+void set_function_arguments(CXCursor c_func, function_arguments* args) {
     CXType type = clang_getCursorType(c_func);
-    unsigned int num_args = clang_getNumArgTypes(type);
+    args->n = clang_getNumArgTypes(type);
+	args->args = malloc(sizeof(function_argument)*args->n);
 
-    for (unsigned int i = 0; i < num_args; i++) {
+    for (unsigned int i = 0; i < args->n; i++) {
         CXCursor arg_cursor = clang_Cursor_getArgument(c_func, i);
-        write_cursor_element(&arg_cursor, buffer, false, false);
-        if (i < num_args - 1) {
-            g_string_append(buffer, ", ");
-        }
+		GString* arg_buf = g_string_new("");
+        write_cursor_element(&arg_cursor, arg_buf, false, false);
+		function_argument arg = {extract_name(arg_buf->str), extract_type(arg_buf->str)};
+		args->args[i] = arg;
+		/* args->args[i]->name = extract_name(arg_buf->str); */
+		/* args->args[i]->type = extract_type(arg_buf->str); */
     }
 }
 
@@ -236,36 +262,113 @@ enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClie
     if(kind == CXCursor_VarDecl || kind == CXCursor_MacroExpansion || kind == CXCursor_FunctionDecl || !is_part_of_main_file(c)){
         return CXChildVisit_Continue;
     }
-
+ 	// Skip anonymous structs that are part of a typedef
+    if (kind == CXCursor_StructDecl) {
+        CXString name = clang_getCursorSpelling(c);
+        const char* name_cstr = clang_getCString(name);
+        bool is_anonymous = (name_cstr == NULL || name_cstr[0] == '\0');
+        enum CXCursorKind parent_kind = clang_getCursorKind(parent);
+        clang_disposeString(name);
+        if (is_anonymous && parent_kind == CXCursor_TypedefDecl) {
+            return CXChildVisit_Continue;
+        }
+    }
     write_cursor_element(&c, buffer, true, true);
 
     return CXChildVisit_Continue;
 }
 
 
-reference_type* create_identifier_type_info(CXCursor identifier_cursor){
-    reference_type* identifier_info = malloc(sizeof(reference_type));
+enum CXChildVisitResult write_empty_function(CXCursor c, CXCursor parent, CXClientData data){
+	GString* buffer = (GString*)data;
+    enum CXCursorKind kind = clang_getCursorKind(c);
+	if(kind == CXCursor_CompoundStmt){
+		g_string_append(buffer, "{}");
+		return CXChildVisit_Continue;
+	}
+    write_cursor_element(&c, buffer, true, true);
+    return CXChildVisit_Recurse;
+}
 
-    enum CXCursorKind identifier_kind = clang_getCursorKind(identifier_cursor);
-    if(identifier_kind == CXCursor_VarDecl){
-        identifier_info->is_function = false;
-        identifier_info->args_types = "";
-        identifier_info->return_type = g_strdup(clang_getCString(clang_getTypeSpelling(clang_getCursorType(identifier_cursor))));
-    } 
-    else {
-        identifier_info->is_function=true;
-        
-        CXType type = clang_getCursorType(identifier_cursor);
-        identifier_info->return_type = g_strdup(clang_getCString(clang_getTypeSpelling(clang_getResultType(type))));
-       
-        GString* argstr = g_string_new("");
-        set_function_argument_types(identifier_cursor, argstr);
-        identifier_info->args_types = g_strdup(argstr->str);
-        g_string_free(argstr, TRUE);
+enum CXChildVisitResult empty_all_functions(CXCursor c, CXCursor parent, CXClientData data){
+    GString* buffer = (GString*)data;
+	if(!is_part_of_main_file(c)){
+		return CXChildVisit_Continue;
+	}
+    
+    enum CXCursorKind kind = clang_getCursorKind(c);
+	if(kind == CXCursor_FunctionDecl){
+		clang_visitChildren(c, write_empty_function, buffer);
+		return CXChildVisit_Continue;
+	}
+	
+    write_cursor_element(&c, buffer, true, true);
+    return CXChildVisit_Continue;
+}
+
+enum CXChildVisitResult set_standard_vars_and_functions(CXCursor c, CXCursor parent, CXClientData data){
+	callback_info* info = ((set_standard_vars_and_functions_args*)data)->info;
+	GHashTable* identifiers = ((set_standard_vars_and_functions_args*)data)->identifiers;
+
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    if(is_part_of_main_file(c) && (kind == CXCursor_VarDecl || kind == CXCursor_FunctionDecl)){
+        char* identifier_name = clang_getCString(clang_getCursorSpelling(c));
+		g_hash_table_insert(identifiers, identifier_name, "");
     }
 
-    return identifier_info;
+	return CXChildVisit_Continue;
 }
+
+enum CXChildVisitResult set_definitions_code_ignore_certain(CXCursor c, CXCursor parent, CXClientData data){
+    GString* buffer = ((set_definitions_code_ignore_certain_args*)data)->buffer;
+    GHashTable* ignore = ((set_definitions_code_ignore_certain_args*)data)->ignore;
+    char* function_name = ((set_definitions_code_ignore_certain_args*)data)->function_name;
+    
+    enum CXCursorKind kind = clang_getCursorKind(c);
+    if(kind == CXCursor_VarDecl || kind == CXCursor_FunctionDecl){
+        char* identifier_name = clang_getCString(clang_getCursorSpelling(c));
+		if(!g_hash_table_contains(ignore, identifier_name) && !(strcmp(identifier_name, function_name) == 0)){
+			return CXChildVisit_Continue;
+		}
+    }
+	
+    if (kind == CXCursor_StructDecl) {
+        CXString name = clang_getCursorSpelling(c);
+        const char* name_cstr = clang_getCString(name);
+        bool is_anonymous = (name_cstr == NULL || name_cstr[0] == '\0');
+        enum CXCursorKind parent_kind = clang_getCursorKind(parent);
+        clang_disposeString(name);
+        if (is_anonymous && parent_kind == CXCursor_TypedefDecl) {
+            return CXChildVisit_Continue;
+        }
+    }
+    write_cursor_element(&c, buffer, true, true);
+
+    return CXChildVisit_Continue;
+}
+/* reference_type* create_identifier_type_info(CXCursor identifier_cursor){ */
+/*     reference_type* identifier_info = malloc(sizeof(reference_type)); */
+
+/*     enum CXCursorKind identifier_kind = clang_getCursorKind(identifier_cursor); */
+/*     if(identifier_kind == CXCursor_VarDecl){ */
+/*         identifier_info->is_function = false; */
+/*         identifier_info->args_types = ""; */
+/*         identifier_info->return_type = g_strdup(clang_getCString(clang_getTypeSpelling(clang_getCursorType(identifier_cursor)))); */
+/*     } */ 
+/*     else { */
+/*         identifier_info->is_function=true; */
+        
+/*         CXType type = clang_getCursorType(identifier_cursor); */
+/*         identifier_info->return_type = g_strdup(clang_getCString(clang_getTypeSpelling(clang_getResultType(type)))); */
+       
+/*         GString* argstr = g_string_new(""); */
+/*         set_function_argument_types(identifier_cursor, argstr); */
+/*         identifier_info->args_types = g_strdup(argstr->str); */
+/*         g_string_free(argstr, TRUE); */
+/*     } */
+
+/*     return identifier_info; */
+/* } */
 
 enum CXChildVisitResult print_everything(CXCursor c, CXCursor parent, CXClientData data){
     enum CXCursorKind kind = clang_getCursorKind(c);
@@ -275,36 +378,28 @@ enum CXChildVisitResult print_everything(CXCursor c, CXCursor parent, CXClientDa
     return CXChildVisit_Continue;
 }
 
-enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){
-    find_undefined_references_args* args = (find_undefined_references_args*)data;
-    GHashTable* undefined = args->undefined_identifiers;
-    GHashTable* declared = args->declared_identifiers;
+/* enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data){ */
+/*     find_undefined_references_args* args = (find_undefined_references_args*)data; */
+/*     GHashTable* undefined = args->undefined_identifiers; */
+/*     GHashTable* declared = args->declared_identifiers; */
 
-    enum CXCursorKind kind = clang_getCursorKind(c);
+/*     enum CXCursorKind kind = clang_getCursorKind(c); */
     
-    // Add declarations 
-    if(kind == CXCursor_VarDecl || kind == CXCursor_FieldDecl){
-        char* identifier_name = clang_getCString(clang_getCursorSpelling(c));
-        g_hash_table_add(declared, g_strdup(clang_getCString(clang_getCursorSpelling(c))));
-        return CXChildVisit_Recurse;
-    }
+/*     // Add declarations */ 
+/*     if(kind == CXCursor_VarDecl || kind == CXCursor_FieldDecl){ */
+/*         char* identifier_name = clang_getCString(clang_getCursorSpelling(c)); */
+/*         g_hash_table_add(declared, g_strdup(clang_getCString(clang_getCursorSpelling(c)))); */
+/*         return CXChildVisit_Recurse; */
+/*     } */
 
-    if(kind != CXCursor_DeclRefExpr)
-    {return CXChildVisit_Recurse;}
+/*     if(kind != CXCursor_DeclRefExpr) */
+/*     {return CXChildVisit_Recurse;} */
 
-    CXCursor referenced_cursor = clang_getCursorReferenced(c);
-    enum CXCursorKind referenced_kind = clang_getCursorKind(referenced_cursor);
+/*     CXCursor referenced_cursor = clang_getCursorReferenced(c); */
+/*     enum CXCursorKind referenced_kind = clang_getCursorKind(referenced_cursor); */
     
-    char* identifier = clang_getCString(clang_getCursorSpelling(referenced_cursor));
-    if(g_hash_table_contains(declared, identifier) || g_hash_table_contains(undefined, identifier))
-    {return CXChildVisit_Recurse;}
+/*     if(referenced_kind == CXCursor_MacroExpansion || referenced_kind == CXCursor_MacroInstantiation){ */
+/*     return CXChildVisit_Recurse; */
+/*     } */
 
-    reference_type* undefined_ref_type = create_identifier_type_info(referenced_cursor);
-    undefined_ref_type->number = g_hash_table_size(undefined);
-    g_hash_table_insert(undefined, identifier, undefined_ref_type);    
-
-    return CXChildVisit_Recurse;
-}
-
-
-
+/*     char* identifier = clang_getCString(clang_getCursorSpelling(referenced_cursor)); */

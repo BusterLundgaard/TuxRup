@@ -177,11 +177,11 @@ int get_child_number_gtk3(GtkWidget* widget){
             }
         }
         
-        g_print("Widget not found among parent's children.\n");
+        g_print("get_child_number_gtk3: Widget not found among parent's children.\n");
         g_list_free(children);  
         return -1;
     } else {
-        g_print("Widget has no parent, or at least no parent that is a container.\n");
+        g_print("get_child_number_gtk3: Widget has no parent, or at least no parent that is a container.\n");
         return -1;
     }
 }
@@ -196,10 +196,10 @@ int get_child_number_gtk4(GtkWidget* widget){
                 return index;
             }
         }
-        g_print("Could not find widget child number for some reason\n");
+        g_print("get_child_number_gtk4: Could not find widget child number for some reason\n");
         return -1;
     } else {
-        g_print("Widget has no parent.\n");
+        g_print("get_child_number_gtk4: Widget has no parent.\n");
         return -1;
     }
 }
@@ -341,6 +341,7 @@ char* get_document_path(char* function_name){
     char document_path[1024];
     document_path[0]='\0';
     sscanf(buffer, "%*s %1023s", document_path);
+	g_print("document_path is %s\n", document_path);
 
     return g_strdup(document_path);
 }

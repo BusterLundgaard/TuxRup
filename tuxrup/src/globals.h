@@ -115,6 +115,7 @@ extern GHashTable *widget_to_css_filepath_map;
 
 extern char* working_directory;
 extern char* executable_path;
+extern char* program_name;
 extern char* debug_symbols_path;
 extern char* program_src_folder;
 

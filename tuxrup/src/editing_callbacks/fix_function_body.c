@@ -1,21 +1,21 @@
 #include "reference_type.h"
 #include "fix_function_body.h"
 
-void write_ref_typedef(char* identifier, reference_type* ref, GString* buffer){
-    typedef int my_cooler_int;
+/* void write_ref_typedef(char* identifier, reference_type* ref, GString* buffer){ */
+/*     typedef int my_cooler_int; */
     
-    if(ref->is_function){
-        g_string_append(buffer, g_strdup_printf("typedef %s(*%s_t)(%s);\n", ref->return_type, identifier, ref->args_types));
-    } else {
-        g_string_append(buffer, g_strdup_printf("typedef %s %s_t;\n", ref->return_type, identifier));     
-    }
-}
+/*     if(ref->is_function){ */
+/*         g_string_append(buffer, g_strdup_printf("typedef %s(*%s_t)(%s);\n", ref->return_type, identifier, ref->args_types)); */
+/*     } else { */
+/*         g_string_append(buffer, g_strdup_printf("typedef %s %s_t;\n", ref->return_type, identifier)); */     
+/*     } */
+/* } */
 
 void write_ref_declaration(char* identifier, reference_type* ref, GString* buffer){
     if(ref->is_function){
-        g_string_append(buffer, g_strdup_printf("%s_t %s = (%s_t)(_data[%d]);\n", identifier, identifier, identifier, ref->number));
+        g_string_append(buffer, g_strdup_printf("typeof(%s) *%s = (typeof(%s))(_data[%d]);\n", identifier, identifier, identifier, ref->number+1));
     } else {
-        g_string_append(buffer, g_strdup_printf("%s_t %s = *((%s_t*)(_data[%d]));\n", identifier, identifier, identifier, ref->number));
+        g_string_append(buffer, g_strdup_printf("typeof(%s) %s = *((%s_t*)(_data[%d]));\n", identifier, identifier, identifier, ref->number+1));
     }
     
 }
@@ -24,10 +24,12 @@ void write_var_overwrite(char* identifier, reference_type* ref, GString* buffer)
     g_string_append(buffer, g_strdup_printf("*((%s_t*)(_data[%d])) = %s;\n", identifier, ref->number, identifier));
 }
 
-char* create_fixed_function_body(char* modified_code, GHashTable* undefined_identifiers){
+char* create_fixed_function_body(char* modified_code, GHashTable* undefined_identifiers, function_arguments args){
     // PREFIX
     GString* buffer = g_string_new("//PREFIX: \n");
     g_string_append(buffer, "void** _data = (void**)data; \n");
+	char* user_data_var = g_strdup_printf("%s %s = (gpointer*)(_data[0]);\n", args.args[1].type, args.args[1].name);
+	g_string_append(buffer, user_data_var);
 
     GHashTableIter iter;
     gpointer key, value;
@@ -37,8 +39,6 @@ char* create_fixed_function_body(char* modified_code, GHashTable* undefined_iden
         char* undefined_identifier = (char*)key;
         reference_type* undefined_type = (reference_type*)value;
         
-        g_string_append(buffer, "    ");
-        write_ref_typedef(undefined_identifier, undefined_type, buffer);
         g_string_append(buffer, "    ");
         write_ref_declaration(undefined_identifier, undefined_type, buffer);
     }

@@ -1,0 +1,4 @@
+set breakpoint pending on
+
+# break method_intercepting/gtk_events.c:45
+run

@@ -5,7 +5,7 @@
             "name": "Debug hw with LD_PRELOAD",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/gtk_program_src/hw",
+            "program": "${workspaceFolder/evaluation_applications/clock/clock",
             "args": [],
             "environment": [
                 {

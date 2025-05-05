@@ -11,6 +11,16 @@
 
 #include "globals.h"
 
+typedef struct {
+	char* name;
+	char* type;
+} function_argument;
+
+typedef struct {
+	function_argument* args;
+	int n;
+} function_arguments;
+
 typedef void (*callback_type)(GtkWidget*, gpointer);
 
 typedef struct {
@@ -22,6 +32,7 @@ typedef struct {
     callback_identifier* id;
 
     callback_type original_function_pointer;
+	gpointer original_user_data;
     gchar* function_name;
     void* dl_handle;
     void** identifier_pointers;
@@ -32,14 +43,14 @@ typedef struct {
     char* shared_library_path; // path to the shared library with the compiled new callback
     char* original_document_path;
     GString* original_function_code;
-    GString* original_function_args;
+    function_arguments original_function_args;
     int original_function_location;
     GString* original_before_code;
     GString* original_definitions_code;
     GString* original_after_code;
 } callback_info;
 
-callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer);
+callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer, gpointer original_user_data);
 callback_info* callback_map_add_new(GtkWidget* widget, enum gtk_callback_category callback_category);
 
 callback_info* callback_map_get(GtkWidget* widget, enum gtk_callback_category callback_category);

@@ -87,13 +87,10 @@ gboolean open_right_click_context_menu(GtkGestureClick *gesture, gint n_press, g
 #endif
     if(GTK_IS_WINDOW(user_data)){return true;}
 
-	g_print("user_data = %p\n", user_data);
     #ifndef USE_GTK3
     GtkWidget* widget = (GtkWidget*)user_data;
     #endif
     active_widget = widget;
-
-	/* if(window_open){return;} */
 
 	GtkWidget* window = create_window(widget, "Tuxrup actions", 200, 200);
 	GtkWidget* vbox = create_and_add_scrollable_item_list(window, 200,200);

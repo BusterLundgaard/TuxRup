@@ -40,6 +40,10 @@ void on_init(){
 
 		// Get debug symbols (takes quite some time)
 	    get_debug_symbols_and_source_code_location();
+
+		// Testing stuff:
+		void* p = get_pointer_from_identifier("decHour");
+		g_print("pointer to decHour = %p\n", p);
     }
 }
 

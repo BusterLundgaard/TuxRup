@@ -115,7 +115,7 @@ CssProps get_css_class_information_of_widget(GtkWidget* widget){
 void apply_css_to_widget(GtkWidget *widget, const char *css_data)
 {
     GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, css_data, -1, NULL);
+    gtk_css_provider_load_from_data(css_provider, css_data, -1);
 
     GtkStyleContext *style_context = gtk_widget_get_style_context(widget);
     #ifdef USE_GTK3

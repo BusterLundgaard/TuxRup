@@ -1,0 +1,12 @@
+macros_expanded.c:58667:1: warning: unnamed struct/union that defines no instances
+58667 | };
+      | ^
+macros_expanded.c: In function ‘customfunction’:
+macros_expanded.c:58673:5: error: ‘hour’ undeclared (first use in this function)
+58673 |     hour++;
+      |     ^~~~
+macros_expanded.c:58673:5: note: each undeclared identifier is reported only once for each function it appears in
+macros_expanded.c:58679:98: error: ‘buttonChanged’ undeclared (first use in this function); did you mean ‘buttonClicked’?
+58679 |     gtk_button_set_label(((((GtkButton*) (void *) g_type_check_instance_cast ((GTypeInstance*) ((buttonChanged)), ((gtk_button_get_type ())))))), str);
+      |                                                                                                  ^~~~~~~~~~~~~
+      |                                                                                                  buttonClicked
