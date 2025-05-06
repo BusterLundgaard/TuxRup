@@ -8,7 +8,6 @@ GHashTable *widget_to_css_filepath_map = NULL;
 
 char* working_directory = NULL;
 char* executable_path = NULL;
-char* program_name = NULL;
 char* program_src_folder = "../../gtk_program_src/"; //We need to fix this now! it should not be relative!
 char* debug_symbols_path = NULL;
 

@@ -112,7 +112,7 @@ char* set_callback_code_information(callback_info* info){
     info->modified_code_path = g_strdup_printf("./runtime_files/%u.c", info->hash);
     info->shared_library_path = g_strdup_printf("./runtime_files/%u.so", info->hash);
 
-    if(has_debug_symbols() || (debug_symbols_path != NULL)){
+    if(has_enough_debug_information()){
         info->function_name = get_identifier_from_pointer(info->original_function_pointer);
         g_print("set function name to %s\n", info->function_name);
     } else {
@@ -326,6 +326,21 @@ static void isolate_modified_function(callback_info* info, char* modified_code, 
     g_file_set_contents(output_path, final_document, strlen(final_document), NULL);
 }
 
+enum CXChildVisitResult create_isolated_function(CXCursor c, CXCursor parent, CXClientData data){
+	GString* buffer = (GString*)data;
+	
+	enum CXCursorKind kind = clang_getCursorKind(c);
+	char* identifier = clang_getCString(clang_getCursorSpelling(c));
+
+	// for functions not equal to the one we are modifying
+	if(kind == CXCursor_FunctionDecl && (strcmp(identifier, info->function_name) != 0)){
+		
+	}
+	else if(kind == CXCursor_FunctionDecl){
+		
+	}
+}
+
 static void set_undefined_identifiers_iter(gpointer key, gpointer value, int i, gpointer user_data){
     char* undefined_identifier = (char*)key;
     reference_type* ident_info = (reference_type*)value;
@@ -348,22 +363,29 @@ static void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
         compile_callback_file(info->modified_code_path, info->shared_library_path);
         set_widget_callback(info);
     } else { 
-        // This is an original callback the user has edited
-        // ... Get the modified code from the document the user is editing, save it into modified_code_path file
-        GString* function_code = get_function_code("./runtime_files/edit.c", info->function_name);
-        g_file_set_contents(info->modified_code_path, function_code->str, strlen(function_code->str), NULL);
+		CXCursor c = get_root_cursor("./runtime_files/edit.c");
+		GString* buffer = g_string_new("");
+		clang_visitChildren(c, create_isolated_function, buffer);
 
-        // ... Get the undefined identifiers the user's modified function will need
-        GHashTable* undefined_identifiers = get_undefined_identifiers(info, function_code->str);
-        set_undefined_identifiers_on_info_map(info, undefined_identifiers);
-
-        // ... Construct the shared library by fixing the modified function with required pointers
-        isolate_modified_function(info, function_code->str, undefined_identifiers, "./temp.c");
         compile_callback_file("./temp.c", info->shared_library_path);
-        //remove("./temp.c");
-
-        // ... Update the widget callback
         set_widget_callback(info);
+
+        /* // This is an original callback the user has edited */
+        /* // ... Get the modified code from the document the user is editing, save it into modified_code_path file */
+        /* GString* function_code = get_function_code("./runtime_files/edit.c", info->function_name); */
+        /* g_file_set_contents(info->modified_code_path, function_code->str, strlen(function_code->str), NULL); */
+
+        /* // ... Get the undefined identifiers the user's modified function will need */
+        /* GHashTable* undefined_identifiers = get_undefined_identifiers(info, function_code->str); */
+        /* set_undefined_identifiers_on_info_map(info, undefined_identifiers); */
+
+        /* // ... Construct the shared library by fixing the modified function with required pointers */
+        /* isolate_modified_function(info, function_code->str, undefined_identifiers, "./temp.c"); */
+        /* compile_callback_file("./temp.c", info->shared_library_path); */
+        /* //remove("./temp.c"); */
+
+        /* // ... Update the widget callback */
+        /* set_widget_callback(info); */
     }
 }
 

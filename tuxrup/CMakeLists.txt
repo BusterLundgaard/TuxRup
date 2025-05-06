@@ -6,23 +6,23 @@ project(TuxRup C)
 # write `cmake ..` to build GTK4 version
 option(USE_GTK3 "Use GTK3" OFF)  
 
-# Find required packages
+# FINDING PACKAGES / LIBRARIES
+# ==========================================================
+# GTK
 find_package(PkgConfig REQUIRED)
 if(USE_GTK3)
-    # If GTK3 is selected, find GTK3
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    pkg_check_modules(LIBELF REQUIRED libelf)
     add_definitions(-DUSE_GTK3)
 else()
-    # If GTK3 is not selected, find GTK4
     pkg_check_modules(GTK4 REQUIRED gtk4)
-    pkg_check_modules(LIBELF REQUIRED libelf)
 endif()
 
-# Find LLVM (which includes libclang)
+#LIBELF
+pkg_check_modules(LIBELF REQUIRED libelf)
+
+#LLVM / LIBCLANG
 find_package(LLVM REQUIRED CONFIG)
 
-# Include LLVM directories
 message(STATUS "Found LLVM: ${LLVM_DIR}")
 include_directories(${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_LIBRARY_DIRS})
@@ -33,8 +33,7 @@ if(NOT LIBCLANG_LIBRARY)
 endif()
 
 message(STATUS "Using libclang: ${LIBCLANG_LIBRARY}")
-
-# Add your executable and link libclang
+# ============================================================
 
 # Set compiler flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -shared -fPIC -Wno-discarded-qualifiers")
@@ -45,7 +44,6 @@ set(SOURCES
     src/editing_properties/edit_properties_window.c
     src/function_dispatcher.c
     src/utilities/hashing.c
-    src/utilities/pointer_name_conversion.c
     src/utilities/util.c
     src/method_intercepting/gtk_events.c
     src/method_intercepting/events_util.c
@@ -60,35 +58,18 @@ set(SOURCES
     src/editing_callbacks/fix_function_body.c
 )
 
-# Add the shared library target
-if(USE_GTK3)
-    add_library(tuxrup_gtk3 SHARED ${SOURCES})
-else() 
-    add_library(tuxrup_gtk4 SHARED ${SOURCES})
-endif()
+# Add a shared library for pointer_name_conversion
+add_library(pointer_name_conversion SHARED src/utilities/pointer_name_conversion.c)
 
 # Link libraries based on GTK version
 if(USE_GTK3)
-    target_link_libraries(tuxrup_gtk3 PRIVATE ${GTK3_LIBRARIES})
-    target_include_directories(tuxrup_gtk3 PRIVATE ${GTK3_INCLUDE_DIRS})
-
-    target_link_libraries(tuxrup_gtk3 PRIVATE ${LIBCLANG_LIBRARY})
-    
-    target_include_directories(tuxrup_gtk3 PRIVATE ${LIBELF_INCLUDE_DIRS})
-    target_link_libraries(tuxrup_gtk3 PRIVATE ${LIBELF_LIBRARIES})
+	add_library(tuxrup_gtk3 SHARED ${SOURCES})
+    target_link_libraries(tuxrup_gtk3 PRIVATE ${GTK3_LIBRARIES} ${LIBCLANG_LIBRARY} ${LIBELF_LIBRARIES} pointer_name_conversion)
+    target_include_directories(tuxrup_gtk3 PRIVATE ${GTK3_INCLUDE_DIRS} ${LIBELF_INCLUDE_DIRS})
+	target_compile_options(tuxrup_gtk3 PRIVATE ${GTK3_CFLAGS_OTHER})
 else()
-    target_link_libraries(tuxrup_gtk4 PRIVATE ${GTK4_LIBRARIES})
-    target_include_directories(tuxrup_gtk4 PRIVATE ${GTK4_INCLUDE_DIRS})
-
-    target_link_libraries(tuxrup_gtk4 PRIVATE ${LIBCLANG_LIBRARY})
-
-    target_include_directories(tuxrup_gtk4 PRIVATE ${LIBELF_INCLUDE_DIRS})
-    target_link_libraries(tuxrup_gtk4 PRIVATE ${LIBELF_LIBRARIES})
-endif()
-
-# Add any additional compile options if necessary
-if(USE_GTK3)
-    target_compile_options(tuxrup_gtk3 PRIVATE ${GTK3_CFLAGS_OTHER})
-else()
-    target_compile_options(tuxrup_gtk4 PRIVATE ${GTK4_CFLAGS_OTHER})
+	add_library(tuxrup_gtk4 SHARED ${SOURCES})
+    target_link_libraries(tuxrup_gtk4 PRIVATE ${GTK4_LIBRARIES} ${LIBCLANG_LIBRARY} ${LIBELF_LIBRARIES} pointer_name_conversion)
+    target_include_directories(tuxrup_gtk4 PRIVATE ${GTK4_INCLUDE_DIRS} ${LIBELF_INCLUDE_DIRS})
+	target_compile_options(tuxrup_gtk4 PRIVATE ${GTK4_CFLAGS_OTHER})
 endif()
