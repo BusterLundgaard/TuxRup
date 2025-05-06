@@ -23,46 +23,12 @@ CXCursor get_function_cursor(CXCursor c, char* function_name);
 CXCursor get_function_body_cursor(CXCursor c_func);   
 
 int is_part_of_main_file(CXCursor cursor);
-// void set_function_arguments(CXCursor c_func, function_arguments* args); 
-
-// typedef struct {
-//     GHashTable* undefined_identifiers; 
-//     GHashTable* declared_identifiers;
-// } find_undefined_references_args;
-// enum CXChildVisitResult set_undefined_references(CXCursor c, CXCursor parent, CXClientData data);
-
-// typedef struct {
-//     GString* before_code;
-//     GString* after_code;
-//     CXSourceLocation modified_function_location;
-//     int* line;
-// } set_before_after_code_args;
-// enum CXChildVisitResult set_before_after_code(CXCursor c, CXCursor parent, CXClientData data);
-
-// enum CXChildVisitResult set_definitions_code(CXCursor c, CXCursor parent, CXClientData data);
-
 void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool newline);
-CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data);
+enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data);
 
-// enum CXChildVisitResult print_everything(CXCursor c, CXCursor parent, CXClientData data);
-
-// enum CXChildVisitResult empty_all_functions(CXCursor c, CXCursor parent, CXClientData data);
-
-// typedef struct {
-// 	callback_info* info;
-// 	GHashTable* identifiers;
-// } set_standard_vars_and_functions_args;
-
-// enum CXChildVisitResult set_standard_vars_and_functions(CXCursor c, CXCursor parent, CXClientData data);
-
-// typedef struct {
-// 	GString* buffer;
-// 	GHashTable* ignore;
-// 	char* function_name;
-// } set_definitions_code_ignore_certain_args;
-
-// enum CXChildVisitResult set_definitions_code_ignore_certain(CXCursor c, CXCursor parent, CXClientData data);
 char* get_function_arguments(CXCursor c_func);
 char* get_function_return_type(CXCursor c_func);
 char* get_function_code(CXCursor c);
+char* get_variable_type(CXCursor c_var);
+char* get_variable_type(CXCursor c_var);
 #endif

@@ -4,6 +4,7 @@
 
 #include "callback_map.h"
 #include "globals.h"
+#include "utilities/pointer_name_conversion.h"
 
 void function_dispatcher(GtkWidget* widget, gpointer data){
     // Something something computing a hash and loading a file if DL-handle doesn't exist
@@ -18,5 +19,5 @@ void function_dispatcher(GtkWidget* widget, gpointer data){
         return;
     }
 
-    their_foo(widget, cb_info->original_function_data);
+    their_foo(widget, cb_info->original_user_data);
 }

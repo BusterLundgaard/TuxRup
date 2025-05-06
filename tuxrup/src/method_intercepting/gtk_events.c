@@ -1,3 +1,4 @@
+#include <string.h>
 #include "gtk_events.h"
 #include "hooks.h"
 #include "events_util.h"
@@ -10,6 +11,20 @@
 #include "../right_click/context_menu.h"
 
 #include <sys/stat.h>
+
+void set_program_name(){
+	char* executable_path_copy = g_strdup(executable_path);
+    program_name = g_basename(executable_path_copy);
+}
+void set_program_src_code(){
+	for(int i = 0; i < source_code_paths_LEN; i++){
+		if(source_code_paths[i].executable_name == NULL){break;}
+		if(strcmp(source_code_paths[i].executable_name, program_name) == 0){
+			program_src_folder = source_code_paths[i].source_code_path;
+			g_print("set program_src_folder to %s\n", program_src_folder);
+		}
+	}
+}
 
 static bool initialized = false;
 void on_init(){
@@ -28,6 +43,8 @@ void on_init(){
         executable_path = get_executable_directory();
 		working_directory = get_working_directory();
 		initialize_debugging_symbols(executable_path);
+		set_program_name();
+		set_program_src_code();
 
         // Initialize global maps
         widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -37,13 +54,6 @@ void on_init(){
         // Clear temporary files
         FILE *file = fopen("all_css.css", "w"); 
         if (file) {fclose(file);} 
-
-		// Get debug symbols (takes quite some time)
-	    get_debug_symbols_and_source_code_location();
-
-		// Testing stuff:
-		void* p = get_pointer_from_identifier("decHour");
-		g_print("pointer to decHour = %p\n", p);
     }
 }
 

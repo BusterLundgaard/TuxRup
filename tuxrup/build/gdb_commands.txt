@@ -1,4 +1,7 @@
 set breakpoint pending on
 
-# break method_intercepting/gtk_events.c:45
+# break utilities/pointer_name_conversion.c:107
+# break method_intercepting/gtk_events.c:37
+# break editing_callbacks/document_parsing.c:126
+break editing_callbacks/edit_callbacks_window.c:227
 run

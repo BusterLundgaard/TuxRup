@@ -83,9 +83,7 @@ bool set_has_debugging_symbols_embedded() {
 
 void download_debug_symbols(){
 	char* executable_path_copy = g_strdup(executable_path);
-	char* executable_path_copy2 = g_strdup(executable_path);
-    program_name = basename(executable_path_copy);
-	char* dir = dirname(executable_path_copy2);
+	char* dir = dirname(executable_path_copy);
 
     const char* command = g_strdup_printf("source ./get_debug_symbols.sh %s %s", dir, program_name);
     FILE* pipe = popen(command, "r");
@@ -149,6 +147,7 @@ bool is_pie_executable()
 // Reading ELF files
 // =====================================================================
 void read_main_symbols(){
+	g_print("I am called!!!!\n");
 	// open symbols to read
 	int fd;
 	if(has_debugging_symbols_embedded){
@@ -183,8 +182,7 @@ void read_main_symbols(){
 			int type = GELF_ST_TYPE(sym.st_info);
 
 			// Make sure it is a function or a variable
-			if(type != STT_FUNC && type != STT_OBJECT)
-			{return;}
+			g_print("About to go through this if statement, motherfucker!\n");
 
 			// Read the name and pointer offset
             gelf_getsym(data, i, &sym);
@@ -192,6 +190,7 @@ void read_main_symbols(){
             const char *sym_name = elf_strptr(elf, shdr.sh_link, sym.st_name);
 
 			// Add to hashmap
+			printf("adding symbol %s\n", sym_name);
 			g_hash_table_insert(main_identifiers_to_pointers, sym_name, sym_pointer);
 			g_hash_table_insert(main_pointers_to_identifiers, sym_pointer, sym_name);
         }
@@ -248,6 +247,8 @@ void read_shared_lib_symbols(){
 // ===========================================================
 void initialize_debugging_symbols(char* _executable_path){
 	executable_path = _executable_path;
+	char* executable_path_copy = g_strdup(executable_path);
+    program_name = basename(executable_path_copy);
 	has_debugging_symbols_embedded = set_has_debugging_symbols_embedded();
 	if(!has_debugging_symbols_embedded){
 		download_debug_symbols();	
@@ -268,6 +269,10 @@ void initialize_shared_lib(char* _shared_lib_path, void* _shared_lib_dl_open_poi
 // ==========================================================
 // Public methods
 // =========================================================
+bool has_debugging_symbols(){
+	return has_debugging_symbols_embedded || (debug_symbols_path != NULL);
+}
+
 char* get_identifier_from_pointer(void *pointer){
 	if(g_hash_table_contains(main_pointers_to_identifiers, pointer)){
 		return (char*)(g_hash_table_lookup(main_pointers_to_identifiers, pointer));		
