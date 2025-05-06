@@ -28,6 +28,8 @@ typedef struct {
 
 static callbacks_list applicable_callbacks;
 
+callback_info* cb_info; // since it used everywhere
+bool edited_before;
 
 // ======================================================
 // GENERAL UTILITY METHODS
@@ -54,29 +56,29 @@ static void create_empty_callback_file(guint hash){
     copy_file("../templates/new_callback.c", g_strdup_printf("./runtime_files/%u.c", hash));
 }
 
-static FILE* open_file_vscode(char* path, int line){
+static FILE* open_file_vscode(char* path){
     char* command = g_strdup_printf("nano %s", path);
-    printf("opening with command %s\n", command); 
     system(command);
 }
 
 static void compile_callback_file(char* c_file_path, char* shared_library_path){
     // Determine the GTK version and corresponding compile command
-    const char *gtk_pkg_config = NULL; 
-    switch (gtk_ver) {
-        case GTK_VERSION_4: gtk_pkg_config = "gtk4"; break;
-        case GTK_VERSION_3: gtk_pkg_config = "gtk+-3.0"; break;
-        case GTK_VERSION_2: gtk_pkg_config = "gtk+-2.0"; break;
-        default:
-            g_warning("Unknown GTK version: %d", gtk_ver);
-            return;
-    }
+    /* const char *gtk_pkg_config = NULL; */ 
+    /* switch (gtk_ver) { */
+    /*     case GTK_VERSION_4: gtk_pkg_config = "gtk4"; break; */
+    /*     case GTK_VERSION_3: gtk_pkg_config = "gtk+-3.0"; break; */
+    /*     case GTK_VERSION_2: gtk_pkg_config = "gtk+-2.0"; break; */
+    /*     default: */
+    /*         g_warning("Unknown GTK version: %d", gtk_ver); */
+    /*         return; */
+    /* } */
 
     // Build the compilation command
-    char *compile_command = g_strdup_printf(
-        "gcc %s -fPIC -shared -o %s `pkg-config --cflags --libs %s`", 
-        c_file_path, shared_library_path, gtk_pkg_config
-    );
+    /* char *compile_command = g_strdup_printf( */
+    /*     "gcc %s -fPIC -shared -o %s `pkg-config --cflags --libs %s`", */ 
+    /*     c_file_path, shared_library_path, gtk_pkg_config */
+    /* ); */
+	char* compile_command = g_strdup_printf("gcc %s -g -fPIC -shared -O1 -o %s", c_file_path, shared_library_path);  
 
     // Run the compilation command
     int ret = system(compile_command);
@@ -114,7 +116,6 @@ char* set_callback_code_information(callback_info* info){
 
     if(has_enough_debug_information()){
         info->function_name = get_identifier_from_pointer(info->original_function_pointer);
-        g_print("set function name to %s\n", info->function_name);
     } else {
         printf("Not enough debug information in executable to be able to edit callbacks!\n");
         return NULL;
@@ -122,69 +123,97 @@ char* set_callback_code_information(callback_info* info){
 
     if(info->original_function_pointer != NULL){
         info->original_document_path = get_document_path(info->function_name);
-		g_print("document_path is: %s\n", info->original_document_path);
         
-        CXCursor c = get_root_cursor(info->original_document_path);
-        CXCursor c_func = get_function_cursor(c, info->function_name);
-        CXCursor c_func_body = get_function_body_cursor(c_func);
+        /* CXCursor c = get_root_cursor(info->original_document_path); */
+        /* CXCursor c_func = get_function_cursor(c, info->function_name); */
+        /* CXCursor c_func_body = get_function_body_cursor(c_func); */
         
-        info->original_before_code = g_string_new("");
-        info->original_after_code = g_string_new("");
-        info->original_function_location = 0;
-        info->original_definitions_code = g_string_new("");
-        info->original_function_code = g_string_new("");
-        set_before_after_code_args args = {
-            .before_code=info->original_before_code, 
-            .after_code=info->original_after_code, 
-            .modified_function_location=clang_getCursorLocation(c_func), 
-            .line=&info->original_function_location};
-        clang_visitChildren(c, set_before_after_code, &args);
-        clang_visitChildren(c, set_definitions_code, info->original_definitions_code);
-		write_cursor_element(&c_func_body, info->original_function_code, false, false);
-        clang_visitChildren(c_func_body, write_cursor_to_buffer, info->original_function_code);
-        set_function_arguments(c_func, &info->original_function_args);
+        /* info->original_before_code = g_string_new(""); */
+        /* info->original_after_code = g_string_new(""); */
+        /* info->original_function_location = 0; */
+        /* info->original_definitions_code = g_string_new(""); */
+        /* info->original_function_code = g_string_new(""); */
+        /* set_before_after_code_args args = { */
+        /*     .before_code=info->original_before_code, */ 
+        /*     .after_code=info->original_after_code, */ 
+        /*     .modified_function_location=clang_getCursorLocation(c_func), */ 
+        /*     .line=&info->original_function_location}; */
+        /* clang_visitChildren(c, set_before_after_code, &args); */
+        /* clang_visitChildren(c, set_definitions_code, info->original_definitions_code); */
+		/* write_cursor_element(&c_func_body, info->original_function_code, false, false); */
+        /* clang_visitChildren(c_func_body, write_cursor_to_buffer, info->original_function_code); */
+        /* set_function_arguments(c_func, &info->original_function_args); */
     }
+	cb_info = info;
 }
 
 
 // ==============================================================
 // ON EDITING CALLBACKS
 // ==============================================================
-static char* function_arguments_to_string(function_arguments args){
-	GString* buf = g_string_new("");
-	for(int i = 0; i < args.n; i++){
-		g_string_append(buf, args.args[i].type);
-		g_string_append(buf, " ");
-		g_string_append(buf, args.args[i].name);
-		g_string_append(buf, " ");
-	}
-	return buf->str;
-}
+/* static char* function_arguments_to_string(function_arguments args){ */
+/* 	GString* buf = g_string_new(""); */
+/* 	for(int i = 0; i < args.n; i++){ */
+/* 		g_string_append(buf, args.args[i].type); */
+/* 		g_string_append(buf, " "); */
+/* 		g_string_append(buf, args.args[i].name); */
+/* 		g_string_append(buf, " "); */
+/* 	} */
+/* 	return buf->str; */
+/* } */
 
 // Create a copy of the document containing the function you wish to edit
 // Insert a few comments before the function
 // If function has been edited before, then also insert the edits the user made 
-int create_version_of_document_for_code_editing(callback_info* info, bool edited_before, char* output_path){
-    char* before_code = info->original_before_code->str;
-    GString* editing_document = g_string_new(g_strdup(before_code));
+/* int create_version_of_document_for_code_editing(callback_info* info, bool edited_before, char* output_path){ */
+/*     char* before_code = info->original_before_code->str; */
+/*     GString* editing_document = g_string_new(g_strdup(before_code)); */
 
-    g_string_append(editing_document, "\n //Edit the function inside of here. Don't edit anything else! \n");
-	char* args_str = function_arguments_to_string(info->original_function_args);
-    g_string_append(editing_document, g_strdup_printf("\nvoid %s(%s){\n", info->function_name, args_str)); 
+/*     g_string_append(editing_document, "\n //Edit the function inside of here. Don't edit anything else! \n"); */
+/* 	char* args_str = function_arguments_to_string(info->original_function_args); */
+/*     g_string_append(editing_document, g_strdup_printf("\nvoid %s(%s){\n", info->function_name, args_str)); */ 
     
-    if(edited_before){
-        FILE* modified_code_file = fopen(info->modified_code_path, "r");
-        char line[1024];
-        while(fgets(line, sizeof(line), modified_code_file)){
-            g_string_append(editing_document, line);
-        }
-    } else {
-        g_string_append(editing_document, info->original_function_code->str);
-    }
+/*     if(edited_before){ */
+/*         FILE* modified_code_file = fopen(info->modified_code_path, "r"); */
+/*         char line[1024]; */
+/*         while(fgets(line, sizeof(line), modified_code_file)){ */
+/*             g_string_append(editing_document, line); */
+/*         } */
+/*     } else { */
+/*         g_string_append(editing_document, info->original_function_code->str); */
+/*     } */
 
-    g_string_append(editing_document, "}\n\n");
-    g_string_append(editing_document, info->original_after_code->str);
-    g_file_set_contents(output_path, editing_document->str, strlen(editing_document->str), NULL);      
+/*     g_string_append(editing_document, "}\n\n"); */
+/*     g_string_append(editing_document, info->original_after_code->str); */
+/*     g_file_set_contents(output_path, editing_document->str, strlen(editing_document->str), NULL); */      
+/* } */
+
+enum CXChildVisitResult make_copy_of_document_with_comment(CXCursor c, CXCursor parent, CXClientData data){
+	GString* buffer = (GString*)data;
+
+	enum CXCursorKind kind = clang_getCursorKind(c);
+	char* identifier = clang_getCString(clang_getCursorSpelling(c));
+
+	if(kind == CXCursor_FunctionDecl && strcmp(identifier, cb_info->function_name) == 0){	
+		if(modified_before){
+			char* fun_name = identifier; 
+			char* fun_return_type = get_function_return_type(c);
+			char* fun_args = get_function_arguments(c);
+       		
+		   	g_string_append(buffer, g_strdup_printf("%s %s(%s){\n", fun_return_type, fun_name, fun_args);	
+			FILE* modified_code_file = fopen(info->modified_code_path, "r");
+        	char line[1024];
+        	while(fgets(line, sizeof(line), modified_code_file)){
+           	 	g_string_append(buffer, line);
+        	}
+			return CXChildVisit_Continue;
+		} else {
+			g_string_append(buffer, "// Modify this function! \n\n");
+		}
+	}
+	
+	write_cursor_element(c, buffer, true, true);
+	return CXChildVisit_Continue;
 }
 
 
@@ -207,9 +236,12 @@ static void on_edit_callback_button(GtkWidget* widget, gpointer data){
     g_print("name of function at this pointer is %s \n", info->function_name);
 
     if(info->original_function_pointer != NULL){
-        bool has_been_modified = (info->dl_handle != NULL);
-        create_version_of_document_for_code_editing(info, has_been_modified, "./runtime_files/edit.c");
-        open_file_vscode("./runtime_files/edit.c", info->original_function_location);
+        edited_before = (info->dl_handle != NULL);
+		CXCursor c = get_root_cursor(info->document_path);
+		GString* buffer = g_string_new("");
+		clang_visitChildren(c, make_copy_of_document_with_comment, buffer);
+		g_file_set_contents("./runtime_files/edit.c", buffer->str, strlen(buffer->str), NULL);
+        open_file_vscode("./runtime_files/edit.c");
     } 
     else {
         open_file_vscode(info->modified_code_path, 5);
@@ -222,137 +254,166 @@ static void on_edit_callback_button(GtkWidget* widget, gpointer data){
 // ==============================================================
 
 //[MEMLEAK]
-GString* get_function_code(char* document_path, char* function_name){
-    GString* code_buffer = g_string_new("");
-    clang_visitChildren(  
-        get_function_body_cursor(get_function_cursor(get_root_cursor(document_path), function_name)),
-        write_cursor_to_buffer,
-        code_buffer
-    );
-    return code_buffer;
-}
+/* GString* get_function_code(char* document_path, char* function_name){ */
+/*     GString* code_buffer = g_string_new(""); */
+/*     clang_visitChildren( */  
+/*         get_function_body_cursor(get_function_cursor(get_root_cursor(document_path), function_name)), */
+/*         write_cursor_to_buffer, */
+/*         code_buffer */
+/*     ); */
+/*     return code_buffer; */
+/* } */
 
 //[MEMLEAK]
-static GHashTable* get_undefined_identifiers(callback_info* info, char* function_code){
-	char* grep_command = g_strdup_printf("grep -oP '^#include\s+<\K[^>]+(?=>)' %s", info->original_document_path);
-    FILE* grep_output = popen(grep_command, "r");
+/* static GHashTable* get_undefined_identifiers(callback_info* info, char* function_code){ */
+/* 	char* grep_command = g_strdup_printf("grep -oP '^#include\s+<\K[^>]+(?=>)' %s", info->original_document_path); */
+/*     FILE* grep_output = popen(grep_command, "r"); */
 
-    // Build a new file with just the includes
-    char includes_filename[] = "runtime_files/only_includes.c";
-    int inc_fd = mkstemps(includes_filename, 2);
-    FILE* includes_file = fdopen(inc_fd, "w");
+/*     // Build a new file with just the includes */
+/*     char includes_filename[] = "runtime_files/only_includes.c"; */
+/*     int inc_fd = mkstemps(includes_filename, 2); */
+/*     FILE* includes_file = fdopen(inc_fd, "w"); */
 
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), grep_output)) {
-        buffer[strcspn(buffer, "\n")] = 0;  // strip newline
-        fprintf(includes_file, "#include <%s>\n", buffer);
-    }
+/*     char buffer[256]; */
+/*     while (fgets(buffer, sizeof(buffer), grep_output)) { */
+/*         buffer[strcspn(buffer, "\n")] = 0;  // strip newline */
+/*         fprintf(includes_file, "#include <%s>\n", buffer); */
+/*     } */
 
-    fclose(includes_file);
-    pclose(grep_output);
+/*     fclose(includes_file); */
+/*     pclose(grep_output); */
 
-    // Expand the includes with gcc
-    char* expanded_filename = "runtime_files/includes_expanded.c";
-	char* gcc_command = g_strdup_printf("gcc -E -P %s -o %s", includes_filename, expanded_filename);
-    system(gcc_command);
+/*     // Expand the includes with gcc */
+/*     char* expanded_filename = "runtime_files/includes_expanded.c"; */
+/* 	char* gcc_command = g_strdup_printf("gcc -E -P %s -o %s", includes_filename, expanded_filename); */
+/*     system(gcc_command); */
 
-    // Use libclang to parse identifiers
-	CXCursor c = get_root_cursor(expanded_filename);
-    GHashTable* standard_identifiers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
-	set_standard_vars_and_functions_args args = {info, standard_identifiers};
-    clang_visitChildren(c, set_standard_vars_and_functions, &args);
+/*     // Use libclang to parse identifiers */
+/* 	CXCursor c = get_root_cursor(expanded_filename); */
+/*     GHashTable* standard_identifiers = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL); */
+/* 	set_standard_vars_and_functions_args args = {info, standard_identifiers}; */
+/*     clang_visitChildren(c, set_standard_vars_and_functions, &args); */
 	
-	// Expand original document now 
-	char* edited_file = "./runtime_files/edit.c";
-	char* expanded_edited_file = "./runtime_files/edit_expanded.c";
-	gcc_command = g_strdup_printf("gcc -E -P %s -o %s", edited_file, expanded_edited_file);
-	system(gcc_command);
+/* 	// Expand original document now */ 
+/* 	char* edited_file = "./runtime_files/edit.c"; */
+/* 	char* expanded_edited_file = "./runtime_files/edit_expanded.c"; */
+/* 	gcc_command = g_strdup_printf("gcc -E -P %s -o %s", edited_file, expanded_edited_file); */
+/* 	system(gcc_command); */
 
-	//Construct version with standard library, but only definitions from the local header files included
-	GString* defs = g_string_new("");
-	set_definitions_code_ignore_certain_args args2 = {defs, standard_identifiers, info->function_name};
-	clang_visitChildren(c, set_definitions_code_ignore_certain, &defs);
-	g_file_set_contents("runtime_files/find_undefined.c", defs->str, strlen(defs->str), NULL);
+/* 	//Construct version with standard library, but only definitions from the local header files included */
+/* 	GString* defs = g_string_new(""); */
+/* 	set_definitions_code_ignore_certain_args args2 = {defs, standard_identifiers, info->function_name}; */
+/* 	clang_visitChildren(c, set_definitions_code_ignore_certain, &defs); */
+/* 	g_file_set_contents("runtime_files/find_undefined.c", defs->str, strlen(defs->str), NULL); */
 		
-	//Finally analyze it for undefined identifiers
-	FILE* pipe = popen("gcc $(pkg-config --cflags --libs gtk4) ../runtime_files/find_undefined.c -fsyntax-only 2>&1", "r");
-	char line[512];
-    char name[128];
+/* 	//Finally analyze it for undefined identifiers */
+/* 	FILE* pipe = popen("gcc $(pkg-config --cflags --libs gtk4) ../runtime_files/find_undefined.c -fsyntax-only 2>&1", "r"); */
+/* 	char line[512]; */
+/*     char name[128]; */
 
-	int i = 0;
-	GHashTable* undefined = g_hash_table_new(g_str_hash, g_str_equal);
-    while (fgets(line, sizeof(line), pipe)) {
-		if (strstr(line, "undeclared")) {
-       		 if (sscanf(line, "%*[^‘]‘%[^’]’ undeclared", name) == 1) {
-				 reference_type identifier = {i, true}; 
-				 g_hash_table_insert(undefined, name, &identifier);
-				 i++;
-       		 }
-		}
-    }	
+/* 	int i = 0; */
+/* 	GHashTable* undefined = g_hash_table_new(g_str_hash, g_str_equal); */
+/*     while (fgets(line, sizeof(line), pipe)) { */
+/* 		if (strstr(line, "undeclared")) { */
+/*        		 if (sscanf(line, "%*[^‘]‘%[^’]’ undeclared", name) == 1) { */
+/* 				 reference_type identifier = {i, true}; */ 
+/* 				 g_hash_table_insert(undefined, name, &identifier); */
+/* 				 i++; */
+/*        		 } */
+/* 		} */
+/*     } */	
 
-	// Figure out which identifiers are functions
-    char line2[512];
-    char identifier[128];
+/* 	// Figure out which identifiers are functions */
+/*     char line2[512]; */
+/*     char identifier[128]; */
 
-    while (fgets(line, sizeof(line), stdin)) {
-        if (strstr(line, "called object")) {
-       		 if (sscanf(line, "%*[^‘]‘%127[^’]’", identifier) == 1) {
-	   		 	reference_type* unidentified = (reference_type*)(g_hash_table_lookup(undefined, identifier));
-	   		 	unidentified->is_function = true; 
-       		 }   
-        }   
-    }   
+/*     while (fgets(line, sizeof(line), stdin)) { */
+/*         if (strstr(line, "called object")) { */
+/*        		 if (sscanf(line, "%*[^‘]‘%127[^’]’", identifier) == 1) { */
+/* 	   		 	reference_type* unidentified = (reference_type*)(g_hash_table_lookup(undefined, identifier)); */
+/* 	   		 	unidentified->is_function = true; */ 
+/*        		 } */   
+/*         } */   
+/*     } */   
 
-	return undefined; 	
-}
+/* 	return undefined; */ 	
+/* } */
 
 //[MEMLEAK]
-static void isolate_modified_function(callback_info* info, char* modified_code, GHashTable* undefined_identifiers, char* output_path){
-	CXCursor c = get_root_cursor("runtime_files/edit.c");
-	GString* buffer = g_string_new("");
-	clang_visitChildren(c, empty_all_functions, buffer);
+/* static void isolate_modified_function(callback_info* info, char* modified_code, GHashTable* undefined_identifiers, char* output_path){ */
+/* 	CXCursor c = get_root_cursor("runtime_files/edit.c"); */
+/* 	GString* buffer = g_string_new(""); */
+/* 	clang_visitChildren(c, empty_all_functions, buffer); */
 		
-	char* fixed_function_body = create_fixed_function_body(modified_code, undefined_identifiers, info->original_function_args);
+/* 	char* fixed_function_body = create_fixed_function_body(modified_code, undefined_identifiers, info->original_function_args); */
 
-    char* final_document = g_strdup_printf(
-        "%s \n void %s(%s %s, gpointer data){\n %s \n}", 
-		buffer->str,
-        "customfunction",    
-		info->original_function_args.args[0].type,
-		info->original_function_args.args[0].name,
-        fixed_function_body
-    );
-    g_file_set_contents(output_path, final_document, strlen(final_document), NULL);
-}
+/*     char* final_document = g_strdup_printf( */
+/*         "%s \n void %s(%s %s, gpointer data){\n %s \n}", */ 
+/* 		buffer->str, */
+/*         "customfunction", */    
+/* 		info->original_function_args.args[0].type, */
+/* 		info->original_function_args.args[0].name, */
+/*         fixed_function_body */
+/*     ); */
+/*     g_file_set_contents(output_path, final_document, strlen(final_document), NULL); */
+/* } */
 
+
+GHashTable* all_variables;
 enum CXChildVisitResult create_isolated_function(CXCursor c, CXCursor parent, CXClientData data){
 	GString* buffer = (GString*)data;
 	
 	enum CXCursorKind kind = clang_getCursorKind(c);
 	char* identifier = clang_getCString(clang_getCursorSpelling(c));
 
-	// for functions not equal to the one we are modifying
-	if(kind == CXCursor_FunctionDecl && (strcmp(identifier, info->function_name) != 0)){
+	if(kind == CXCursor_FunctionDecl){
+		char* fun_name = identifier; 
+		char* fun_return_type = get_function_return_type(c);
+		char* fun_args = get_function_arguments(c);
 		
+		// For the modified function
+		if(strcmp(identifier, info->function_name) == 0){
+			char* fun_body = get_function_code(c); 
+			g_string_append(buffer, g_strdup_printf("\
+						%s %s(%s){\n\
+						sync_variables_to_main(false);\n\
+						%s\n\
+						sync_variables_from_main(false);\n\
+						}\n\
+						", fun_return_type, fun_name, fun_args, fun_body));
+		}	
+		// For all other functions
+		else{
+			g_string_append(buffer, g_strdup_printf("\
+						__attribute__((noinline)) static %s %s(%s){\n\
+						typeof(%s) *%s_foo = (typeof(%s))get_pointer_from_identifier(\"%s\");\n\
+						%s_foo(%s);\n
+						}\n\
+						", fun_return_type, fun_name, fun_args, fun_name, fun_name, fun_name, fun_name, fun_args));
+		}
 	}
-	else if(kind == CXCursor_FunctionDecl){
-		
+	else if(kind == CXCursor_VarDecl){
+		char* var_name = 
+		char* var_type = 
+		g_string_append(buffer, g_strdup_printf("\
+					%s %s = 0;\n\
+					", var_type, var_name);
+
 	}
 }
 
-static void set_undefined_identifiers_iter(gpointer key, gpointer value, int i, gpointer user_data){
-    char* undefined_identifier = (char*)key;
-    reference_type* ident_info = (reference_type*)value;
-    callback_info* info = (callback_info*)user_data;
-    info->identifier_pointers[ident_info->number+1] = get_pointer_from_identifier(undefined_identifier);
-}
-static void set_undefined_identifiers_on_info_map(callback_info* info, GHashTable* undefined_identifiers){
-    info->identifier_pointers_n = g_hash_table_size(undefined_identifiers);
-    info->identifier_pointers = malloc(sizeof(void*) * (info->identifier_pointers_n + 1));
-	info->identifier_pointers[0] = info->original_user_data;
-    iterate_hash_table(undefined_identifiers, set_undefined_identifiers_iter, info);
-}
+/* static void set_undefined_identifiers_iter(gpointer key, gpointer value, int i, gpointer user_data){ */
+/*     char* undefined_identifier = (char*)key; */
+/*     reference_type* ident_info = (reference_type*)value; */
+/*     callback_info* info = (callback_info*)user_data; */
+/*     info->identifier_pointers[ident_info->number+1] = get_pointer_from_identifier(undefined_identifier); */
+/* } */
+/* static void set_undefined_identifiers_on_info_map(callback_info* info, GHashTable* undefined_identifiers){ */
+/*     info->identifier_pointers_n = g_hash_table_size(undefined_identifiers); */
+/*     info->identifier_pointers = malloc(sizeof(void*) * (info->identifier_pointers_n + 1)); */
+/* 	info->identifier_pointers[0] = info->original_user_data; */
+/*     iterate_hash_table(undefined_identifiers, set_undefined_identifiers_iter, info); */
+/* } */
 
 static void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
     enum gtk_callback_category callback = *(enum gtk_callback_category*)data;
@@ -363,9 +424,21 @@ static void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
         compile_callback_file(info->modified_code_path, info->shared_library_path);
         set_widget_callback(info);
     } else { 
-		CXCursor c = get_root_cursor("./runtime_files/edit.c");
-		GString* buffer = g_string_new("");
+
+		int res = system("gcc ./runtime_files/edit.c -E -P -o ./runtime_files/edit_expanded.c");
+		CXCursor c = get_root_cursor("./runtime_files/edit_expanded.c");
+		GString* buffer = g_string_new("#include \"pointer_name_conversion.h\"");
+		all_variables = g_hash_table_new(g_str_cmp, g_str_equal);
 		clang_visitChildren(c, create_isolated_function, buffer);
+		
+		GHashTableIter iter;
+		gpointer key;
+		g_hash_table_iter_init(&iter, all_variables);
+		g_string_append(buffer, "void dependency(){\n");
+		while (g_hash_table_iter_next(&iter, &key, NULL)) {
+			g_string_append(buffer, g_strdup_printf("%s = 0;\n", (char*)key);
+		}
+		g_string_append(buffer, "}");
 
         compile_callback_file("./temp.c", info->shared_library_path);
         set_widget_callback(info);

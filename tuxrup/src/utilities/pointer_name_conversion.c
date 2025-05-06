@@ -20,8 +20,7 @@ static char* debug_symbols_path = NULL;
 static char* shared_lib_path = NULL;
 
 // Pointer to shared library (overwritten) function about to be called
-static void* shared_lib_dl_open = NULL;
-
+static void* shared_lib_dl_open_pointer = NULL;
 // Cached results 
 static bool has_debugging_symbols_embedded; 
 static void* base_address;
@@ -30,6 +29,7 @@ GHashTable* main_identifiers_to_pointers;
 GHashTable* main_pointers_to_identifiers;
 GHashTable* shared_lib_identifiers; //from variable names to variable sizes 
 
+char* program_name;
 
 // ========================================================
 // Extracting required supplementary information
@@ -83,7 +83,9 @@ bool set_has_debugging_symbols_embedded() {
 
 void download_debug_symbols(){
 	char* executable_path_copy = g_strdup(executable_path);
-    char* program_name = basename(executable_path_copy);
+	char* executable_path_copy2 = g_strdup(executable_path);
+    program_name = basename(executable_path_copy);
+	char* dir = dirname(executable_path_copy2);
 
     const char* command = g_strdup_printf("source ./get_debug_symbols.sh %s %s", dir, program_name);
     FILE* pipe = popen(command, "r");
@@ -123,8 +125,13 @@ void *get_base_address()
 
 bool is_pie_executable()
 {
-    int fd = open_debug_symbols();
-    if (fd < 0){return false;}
+	int fd;
+	if(has_debugging_symbols_embedded){
+        fd = open("/proc/self/exe", O_RDONLY);
+    } else {
+        fd = open(debug_symbols_path, O_RDONLY);
+	}
+    if (fd < 0) {return NULL;}
 
     Elf64_Ehdr ehdr;
     if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr))
@@ -141,7 +148,7 @@ bool is_pie_executable()
 // =====================================================================
 // Reading ELF files
 // =====================================================================
-void* read_main_symbols(){
+void read_main_symbols(){
 	// open symbols to read
 	int fd;
 	if(has_debugging_symbols_embedded){
@@ -149,7 +156,7 @@ void* read_main_symbols(){
     } else {
         fd = open(debug_symbols_path, O_RDONLY);
 	}
-    if (fd < 0) {return NULL;}
+    if (fd < 0) {return;}
 
 	// compute pointers base address
     void* base_addr = is_pie_executable() ? get_base_address() : 0;
@@ -185,8 +192,8 @@ void* read_main_symbols(){
             const char *sym_name = elf_strptr(elf, shdr.sh_link, sym.st_name);
 
 			// Add to hashmap
-			g_hash_table_add(main_identifiers_to_pointers, sym_name, sym_pointer);
-			g_hash_table_add(main_pointers_to_identifiers, sym_pointer, sym_name);
+			g_hash_table_insert(main_identifiers_to_pointers, sym_name, sym_pointer);
+			g_hash_table_insert(main_pointers_to_identifiers, sym_pointer, sym_name);
         }
     }
 
@@ -195,7 +202,7 @@ void* read_main_symbols(){
 }
 
 void read_shared_lib_symbols(){
-	fd = open(shared_lib_path, O_RDONLY);
+	int fd = open(shared_lib_path, O_RDONLY);
 
     elf_version(EV_CURRENT);
     Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
@@ -227,7 +234,7 @@ void read_shared_lib_symbols(){
 			size_t sym_size = sym.st_size;
 
 			// Add to set
-			g_hash_table_add(shared_lib_identifiers, sym_name, NULL);
+			g_hash_table_insert(shared_lib_identifiers, sym_name, NULL);
         }
     }
 
@@ -239,7 +246,7 @@ void read_shared_lib_symbols(){
 // ===========================================================
 // Initialization
 // ===========================================================
-void initialize_debugging_symbols(char* _executable_path, char* program_name){
+void initialize_debugging_symbols(char* _executable_path){
 	executable_path = _executable_path;
 	has_debugging_symbols_embedded = set_has_debugging_symbols_embedded();
 	if(!has_debugging_symbols_embedded){
@@ -291,8 +298,8 @@ void sync_shared_variables_to_main(bool direction){
 	g_hash_table_iter_init(&iter, shared_lib_identifiers);
 	while(g_hash_table_iter_next(&iter, &key, &value)){
 		char* var_name = (char*)key;
-		size_t var_size = *(size_t*)(value)
-		void* variable_pointer_shared_lib = dlsym(shared_lib_dl_open, var_name);
+		size_t var_size = *(size_t*)(value);
+		void* variable_pointer_shared_lib = dlsym(shared_lib_dl_open_pointer, var_name);
 		if(variable_pointer_shared_lib == NULL){
 			printf("Could not find pointer to a variable in the shared lib with name %s.\n", var_name);
 			exit(1);

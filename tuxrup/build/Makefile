@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/buster/Documents/tuxrup/tuxrup
+CMAKE_SOURCE_DIR = /home/buster/Documents/TuxRup/tuxrup
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/buster/Documents/tuxrup/tuxrup/build
+CMAKE_BINARY_DIR = /home/buster/Documents/TuxRup/tuxrup/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/buster/Documents/tuxrup/tuxrup/build/CMakeFiles /home/buster/Documents/tuxrup/tuxrup/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/buster/Documents/TuxRup/tuxrup/build/CMakeFiles /home/buster/Documents/TuxRup/tuxrup/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/buster/Documents/tuxrup/tuxrup/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/buster/Documents/TuxRup/tuxrup/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -208,24 +208,24 @@ pointer_name_conversion/fast:
 .PHONY : pointer_name_conversion/fast
 
 #=============================================================================
-# Target rules for targets named tuxrup_gtk3
+# Target rules for targets named tuxrup_gtk4
 
 # Build rule for target.
-tuxrup_gtk3: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tuxrup_gtk3
-.PHONY : tuxrup_gtk3
+tuxrup_gtk4: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tuxrup_gtk4
+.PHONY : tuxrup_gtk4
 
 # fast build rule for target.
-tuxrup_gtk3/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/build
-.PHONY : tuxrup_gtk3/fast
+tuxrup_gtk4/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/build
+.PHONY : tuxrup_gtk4/fast
 
 src/callback_map.o: src/callback_map.c.o
 .PHONY : src/callback_map.o
 
 # target to build an object file
 src/callback_map.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/callback_map.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/callback_map.c.o
 .PHONY : src/callback_map.c.o
 
 src/callback_map.i: src/callback_map.c.i
@@ -233,7 +233,7 @@ src/callback_map.i: src/callback_map.c.i
 
 # target to preprocess a source file
 src/callback_map.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/callback_map.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/callback_map.c.i
 .PHONY : src/callback_map.c.i
 
 src/callback_map.s: src/callback_map.c.s
@@ -241,7 +241,7 @@ src/callback_map.s: src/callback_map.c.s
 
 # target to generate assembly for a file
 src/callback_map.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/callback_map.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/callback_map.c.s
 .PHONY : src/callback_map.c.s
 
 src/editing_callbacks/document_parsing.o: src/editing_callbacks/document_parsing.c.o
@@ -249,7 +249,7 @@ src/editing_callbacks/document_parsing.o: src/editing_callbacks/document_parsing
 
 # target to build an object file
 src/editing_callbacks/document_parsing.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/document_parsing.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/document_parsing.c.o
 .PHONY : src/editing_callbacks/document_parsing.c.o
 
 src/editing_callbacks/document_parsing.i: src/editing_callbacks/document_parsing.c.i
@@ -257,7 +257,7 @@ src/editing_callbacks/document_parsing.i: src/editing_callbacks/document_parsing
 
 # target to preprocess a source file
 src/editing_callbacks/document_parsing.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/document_parsing.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/document_parsing.c.i
 .PHONY : src/editing_callbacks/document_parsing.c.i
 
 src/editing_callbacks/document_parsing.s: src/editing_callbacks/document_parsing.c.s
@@ -265,7 +265,7 @@ src/editing_callbacks/document_parsing.s: src/editing_callbacks/document_parsing
 
 # target to generate assembly for a file
 src/editing_callbacks/document_parsing.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/document_parsing.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/document_parsing.c.s
 .PHONY : src/editing_callbacks/document_parsing.c.s
 
 src/editing_callbacks/edit_callbacks_window.o: src/editing_callbacks/edit_callbacks_window.c.o
@@ -273,7 +273,7 @@ src/editing_callbacks/edit_callbacks_window.o: src/editing_callbacks/edit_callba
 
 # target to build an object file
 src/editing_callbacks/edit_callbacks_window.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/edit_callbacks_window.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/edit_callbacks_window.c.o
 .PHONY : src/editing_callbacks/edit_callbacks_window.c.o
 
 src/editing_callbacks/edit_callbacks_window.i: src/editing_callbacks/edit_callbacks_window.c.i
@@ -281,7 +281,7 @@ src/editing_callbacks/edit_callbacks_window.i: src/editing_callbacks/edit_callba
 
 # target to preprocess a source file
 src/editing_callbacks/edit_callbacks_window.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/edit_callbacks_window.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/edit_callbacks_window.c.i
 .PHONY : src/editing_callbacks/edit_callbacks_window.c.i
 
 src/editing_callbacks/edit_callbacks_window.s: src/editing_callbacks/edit_callbacks_window.c.s
@@ -289,7 +289,7 @@ src/editing_callbacks/edit_callbacks_window.s: src/editing_callbacks/edit_callba
 
 # target to generate assembly for a file
 src/editing_callbacks/edit_callbacks_window.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/edit_callbacks_window.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/edit_callbacks_window.c.s
 .PHONY : src/editing_callbacks/edit_callbacks_window.c.s
 
 src/editing_callbacks/fix_function_body.o: src/editing_callbacks/fix_function_body.c.o
@@ -297,7 +297,7 @@ src/editing_callbacks/fix_function_body.o: src/editing_callbacks/fix_function_bo
 
 # target to build an object file
 src/editing_callbacks/fix_function_body.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/fix_function_body.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/fix_function_body.c.o
 .PHONY : src/editing_callbacks/fix_function_body.c.o
 
 src/editing_callbacks/fix_function_body.i: src/editing_callbacks/fix_function_body.c.i
@@ -305,7 +305,7 @@ src/editing_callbacks/fix_function_body.i: src/editing_callbacks/fix_function_bo
 
 # target to preprocess a source file
 src/editing_callbacks/fix_function_body.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/fix_function_body.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/fix_function_body.c.i
 .PHONY : src/editing_callbacks/fix_function_body.c.i
 
 src/editing_callbacks/fix_function_body.s: src/editing_callbacks/fix_function_body.c.s
@@ -313,7 +313,7 @@ src/editing_callbacks/fix_function_body.s: src/editing_callbacks/fix_function_bo
 
 # target to generate assembly for a file
 src/editing_callbacks/fix_function_body.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_callbacks/fix_function_body.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_callbacks/fix_function_body.c.s
 .PHONY : src/editing_callbacks/fix_function_body.c.s
 
 src/editing_css/css_utils.o: src/editing_css/css_utils.c.o
@@ -321,7 +321,7 @@ src/editing_css/css_utils.o: src/editing_css/css_utils.c.o
 
 # target to build an object file
 src/editing_css/css_utils.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/css_utils.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/css_utils.c.o
 .PHONY : src/editing_css/css_utils.c.o
 
 src/editing_css/css_utils.i: src/editing_css/css_utils.c.i
@@ -329,7 +329,7 @@ src/editing_css/css_utils.i: src/editing_css/css_utils.c.i
 
 # target to preprocess a source file
 src/editing_css/css_utils.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/css_utils.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/css_utils.c.i
 .PHONY : src/editing_css/css_utils.c.i
 
 src/editing_css/css_utils.s: src/editing_css/css_utils.c.s
@@ -337,7 +337,7 @@ src/editing_css/css_utils.s: src/editing_css/css_utils.c.s
 
 # target to generate assembly for a file
 src/editing_css/css_utils.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/css_utils.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/css_utils.c.s
 .PHONY : src/editing_css/css_utils.c.s
 
 src/editing_css/edit_css_window.o: src/editing_css/edit_css_window.c.o
@@ -345,7 +345,7 @@ src/editing_css/edit_css_window.o: src/editing_css/edit_css_window.c.o
 
 # target to build an object file
 src/editing_css/edit_css_window.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/edit_css_window.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/edit_css_window.c.o
 .PHONY : src/editing_css/edit_css_window.c.o
 
 src/editing_css/edit_css_window.i: src/editing_css/edit_css_window.c.i
@@ -353,7 +353,7 @@ src/editing_css/edit_css_window.i: src/editing_css/edit_css_window.c.i
 
 # target to preprocess a source file
 src/editing_css/edit_css_window.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/edit_css_window.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/edit_css_window.c.i
 .PHONY : src/editing_css/edit_css_window.c.i
 
 src/editing_css/edit_css_window.s: src/editing_css/edit_css_window.c.s
@@ -361,7 +361,7 @@ src/editing_css/edit_css_window.s: src/editing_css/edit_css_window.c.s
 
 # target to generate assembly for a file
 src/editing_css/edit_css_window.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_css/edit_css_window.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_css/edit_css_window.c.s
 .PHONY : src/editing_css/edit_css_window.c.s
 
 src/editing_properties/edit_properties_window.o: src/editing_properties/edit_properties_window.c.o
@@ -369,7 +369,7 @@ src/editing_properties/edit_properties_window.o: src/editing_properties/edit_pro
 
 # target to build an object file
 src/editing_properties/edit_properties_window.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_properties/edit_properties_window.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_properties/edit_properties_window.c.o
 .PHONY : src/editing_properties/edit_properties_window.c.o
 
 src/editing_properties/edit_properties_window.i: src/editing_properties/edit_properties_window.c.i
@@ -377,7 +377,7 @@ src/editing_properties/edit_properties_window.i: src/editing_properties/edit_pro
 
 # target to preprocess a source file
 src/editing_properties/edit_properties_window.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_properties/edit_properties_window.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_properties/edit_properties_window.c.i
 .PHONY : src/editing_properties/edit_properties_window.c.i
 
 src/editing_properties/edit_properties_window.s: src/editing_properties/edit_properties_window.c.s
@@ -385,7 +385,7 @@ src/editing_properties/edit_properties_window.s: src/editing_properties/edit_pro
 
 # target to generate assembly for a file
 src/editing_properties/edit_properties_window.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/editing_properties/edit_properties_window.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/editing_properties/edit_properties_window.c.s
 .PHONY : src/editing_properties/edit_properties_window.c.s
 
 src/function_dispatcher.o: src/function_dispatcher.c.o
@@ -393,7 +393,7 @@ src/function_dispatcher.o: src/function_dispatcher.c.o
 
 # target to build an object file
 src/function_dispatcher.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/function_dispatcher.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/function_dispatcher.c.o
 .PHONY : src/function_dispatcher.c.o
 
 src/function_dispatcher.i: src/function_dispatcher.c.i
@@ -401,7 +401,7 @@ src/function_dispatcher.i: src/function_dispatcher.c.i
 
 # target to preprocess a source file
 src/function_dispatcher.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/function_dispatcher.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/function_dispatcher.c.i
 .PHONY : src/function_dispatcher.c.i
 
 src/function_dispatcher.s: src/function_dispatcher.c.s
@@ -409,7 +409,7 @@ src/function_dispatcher.s: src/function_dispatcher.c.s
 
 # target to generate assembly for a file
 src/function_dispatcher.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/function_dispatcher.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/function_dispatcher.c.s
 .PHONY : src/function_dispatcher.c.s
 
 src/globals.o: src/globals.c.o
@@ -417,7 +417,7 @@ src/globals.o: src/globals.c.o
 
 # target to build an object file
 src/globals.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/globals.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/globals.c.o
 .PHONY : src/globals.c.o
 
 src/globals.i: src/globals.c.i
@@ -425,7 +425,7 @@ src/globals.i: src/globals.c.i
 
 # target to preprocess a source file
 src/globals.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/globals.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/globals.c.i
 .PHONY : src/globals.c.i
 
 src/globals.s: src/globals.c.s
@@ -433,7 +433,7 @@ src/globals.s: src/globals.c.s
 
 # target to generate assembly for a file
 src/globals.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/globals.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/globals.c.s
 .PHONY : src/globals.c.s
 
 src/method_intercepting/events_util.o: src/method_intercepting/events_util.c.o
@@ -441,7 +441,7 @@ src/method_intercepting/events_util.o: src/method_intercepting/events_util.c.o
 
 # target to build an object file
 src/method_intercepting/events_util.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/events_util.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/events_util.c.o
 .PHONY : src/method_intercepting/events_util.c.o
 
 src/method_intercepting/events_util.i: src/method_intercepting/events_util.c.i
@@ -449,7 +449,7 @@ src/method_intercepting/events_util.i: src/method_intercepting/events_util.c.i
 
 # target to preprocess a source file
 src/method_intercepting/events_util.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/events_util.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/events_util.c.i
 .PHONY : src/method_intercepting/events_util.c.i
 
 src/method_intercepting/events_util.s: src/method_intercepting/events_util.c.s
@@ -457,7 +457,7 @@ src/method_intercepting/events_util.s: src/method_intercepting/events_util.c.s
 
 # target to generate assembly for a file
 src/method_intercepting/events_util.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/events_util.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/events_util.c.s
 .PHONY : src/method_intercepting/events_util.c.s
 
 src/method_intercepting/gtk_events.o: src/method_intercepting/gtk_events.c.o
@@ -465,7 +465,7 @@ src/method_intercepting/gtk_events.o: src/method_intercepting/gtk_events.c.o
 
 # target to build an object file
 src/method_intercepting/gtk_events.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/gtk_events.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/gtk_events.c.o
 .PHONY : src/method_intercepting/gtk_events.c.o
 
 src/method_intercepting/gtk_events.i: src/method_intercepting/gtk_events.c.i
@@ -473,7 +473,7 @@ src/method_intercepting/gtk_events.i: src/method_intercepting/gtk_events.c.i
 
 # target to preprocess a source file
 src/method_intercepting/gtk_events.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/gtk_events.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/gtk_events.c.i
 .PHONY : src/method_intercepting/gtk_events.c.i
 
 src/method_intercepting/gtk_events.s: src/method_intercepting/gtk_events.c.s
@@ -481,7 +481,7 @@ src/method_intercepting/gtk_events.s: src/method_intercepting/gtk_events.c.s
 
 # target to generate assembly for a file
 src/method_intercepting/gtk_events.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/gtk_events.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/gtk_events.c.s
 .PHONY : src/method_intercepting/gtk_events.c.s
 
 src/method_intercepting/hooks.o: src/method_intercepting/hooks.c.o
@@ -489,7 +489,7 @@ src/method_intercepting/hooks.o: src/method_intercepting/hooks.c.o
 
 # target to build an object file
 src/method_intercepting/hooks.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/hooks.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/hooks.c.o
 .PHONY : src/method_intercepting/hooks.c.o
 
 src/method_intercepting/hooks.i: src/method_intercepting/hooks.c.i
@@ -497,7 +497,7 @@ src/method_intercepting/hooks.i: src/method_intercepting/hooks.c.i
 
 # target to preprocess a source file
 src/method_intercepting/hooks.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/hooks.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/hooks.c.i
 .PHONY : src/method_intercepting/hooks.c.i
 
 src/method_intercepting/hooks.s: src/method_intercepting/hooks.c.s
@@ -505,7 +505,7 @@ src/method_intercepting/hooks.s: src/method_intercepting/hooks.c.s
 
 # target to generate assembly for a file
 src/method_intercepting/hooks.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/hooks.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/hooks.c.s
 .PHONY : src/method_intercepting/hooks.c.s
 
 src/method_intercepting/overrides.o: src/method_intercepting/overrides.c.o
@@ -513,7 +513,7 @@ src/method_intercepting/overrides.o: src/method_intercepting/overrides.c.o
 
 # target to build an object file
 src/method_intercepting/overrides.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/overrides.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/overrides.c.o
 .PHONY : src/method_intercepting/overrides.c.o
 
 src/method_intercepting/overrides.i: src/method_intercepting/overrides.c.i
@@ -521,7 +521,7 @@ src/method_intercepting/overrides.i: src/method_intercepting/overrides.c.i
 
 # target to preprocess a source file
 src/method_intercepting/overrides.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/overrides.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/overrides.c.i
 .PHONY : src/method_intercepting/overrides.c.i
 
 src/method_intercepting/overrides.s: src/method_intercepting/overrides.c.s
@@ -529,7 +529,7 @@ src/method_intercepting/overrides.s: src/method_intercepting/overrides.c.s
 
 # target to generate assembly for a file
 src/method_intercepting/overrides.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/method_intercepting/overrides.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/method_intercepting/overrides.c.s
 .PHONY : src/method_intercepting/overrides.c.s
 
 src/right_click/context_menu.o: src/right_click/context_menu.c.o
@@ -537,7 +537,7 @@ src/right_click/context_menu.o: src/right_click/context_menu.c.o
 
 # target to build an object file
 src/right_click/context_menu.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/right_click/context_menu.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/right_click/context_menu.c.o
 .PHONY : src/right_click/context_menu.c.o
 
 src/right_click/context_menu.i: src/right_click/context_menu.c.i
@@ -545,7 +545,7 @@ src/right_click/context_menu.i: src/right_click/context_menu.c.i
 
 # target to preprocess a source file
 src/right_click/context_menu.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/right_click/context_menu.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/right_click/context_menu.c.i
 .PHONY : src/right_click/context_menu.c.i
 
 src/right_click/context_menu.s: src/right_click/context_menu.c.s
@@ -553,7 +553,7 @@ src/right_click/context_menu.s: src/right_click/context_menu.c.s
 
 # target to generate assembly for a file
 src/right_click/context_menu.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/right_click/context_menu.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/right_click/context_menu.c.s
 .PHONY : src/right_click/context_menu.c.s
 
 src/utilities/hashing.o: src/utilities/hashing.c.o
@@ -561,7 +561,7 @@ src/utilities/hashing.o: src/utilities/hashing.c.o
 
 # target to build an object file
 src/utilities/hashing.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/hashing.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/hashing.c.o
 .PHONY : src/utilities/hashing.c.o
 
 src/utilities/hashing.i: src/utilities/hashing.c.i
@@ -569,7 +569,7 @@ src/utilities/hashing.i: src/utilities/hashing.c.i
 
 # target to preprocess a source file
 src/utilities/hashing.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/hashing.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/hashing.c.i
 .PHONY : src/utilities/hashing.c.i
 
 src/utilities/hashing.s: src/utilities/hashing.c.s
@@ -577,7 +577,7 @@ src/utilities/hashing.s: src/utilities/hashing.c.s
 
 # target to generate assembly for a file
 src/utilities/hashing.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/hashing.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/hashing.c.s
 .PHONY : src/utilities/hashing.c.s
 
 src/utilities/pointer_name_conversion.o: src/utilities/pointer_name_conversion.c.o
@@ -609,7 +609,7 @@ src/utilities/util.o: src/utilities/util.c.o
 
 # target to build an object file
 src/utilities/util.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/util.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/util.c.o
 .PHONY : src/utilities/util.c.o
 
 src/utilities/util.i: src/utilities/util.c.i
@@ -617,7 +617,7 @@ src/utilities/util.i: src/utilities/util.c.i
 
 # target to preprocess a source file
 src/utilities/util.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/util.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/util.c.i
 .PHONY : src/utilities/util.c.i
 
 src/utilities/util.s: src/utilities/util.c.s
@@ -625,7 +625,7 @@ src/utilities/util.s: src/utilities/util.c.s
 
 # target to generate assembly for a file
 src/utilities/util.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk3.dir/build.make CMakeFiles/tuxrup_gtk3.dir/src/utilities/util.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tuxrup_gtk4.dir/build.make CMakeFiles/tuxrup_gtk4.dir/src/utilities/util.c.s
 .PHONY : src/utilities/util.c.s
 
 # Help Target
@@ -643,7 +643,7 @@ help:
 	@echo "... intrinsics_gen"
 	@echo "... omp_gen"
 	@echo "... pointer_name_conversion"
-	@echo "... tuxrup_gtk3"
+	@echo "... tuxrup_gtk4"
 	@echo "... src/callback_map.o"
 	@echo "... src/callback_map.i"
 	@echo "... src/callback_map.s"

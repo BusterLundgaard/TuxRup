@@ -27,7 +27,7 @@ void on_init(){
         // Get executable metadata like working directory and debug symbols
         executable_path = get_executable_directory();
 		working_directory = get_working_directory();
-		g_print("executable_path = %s\n", executable_path);
+		initialize_debugging_symbols(executable_path);
 
         // Initialize global maps
         widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);

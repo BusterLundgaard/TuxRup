@@ -8,8 +8,12 @@ option(USE_GTK3 "Use GTK3" OFF)
 
 # FINDING PACKAGES / LIBRARIES
 # ==========================================================
-# GTK
 find_package(PkgConfig REQUIRED)
+
+# GLib
+pkg_check_modules(GLIB REQUIRED glib-2.0)
+
+# GTK
 if(USE_GTK3)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
     add_definitions(-DUSE_GTK3)
@@ -60,6 +64,9 @@ set(SOURCES
 
 # Add a shared library for pointer_name_conversion
 add_library(pointer_name_conversion SHARED src/utilities/pointer_name_conversion.c)
+target_include_directories(pointer_name_conversion PRIVATE ${GLIB_INCLUDE_DIRS})
+target_compile_options(pointer_name_conversion PRIVATE ${GLIB_CFLAGS_OTHER})
+target_link_libraries(pointer_name_conversion PRIVATE ${GLIB_LIBRARIES})
 
 # Link libraries based on GTK version
 if(USE_GTK3)
