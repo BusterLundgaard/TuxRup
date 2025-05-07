@@ -9,5 +9,6 @@
 #endif
 
 void open_edit_callbacks_window(GtkWidget* widget);
+void testing_create_isolated_function();
 
 #endif

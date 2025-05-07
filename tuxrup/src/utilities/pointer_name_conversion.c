@@ -224,8 +224,8 @@ void read_shared_lib_symbols(){
 			int type = GELF_ST_TYPE(sym.st_info);
 
 			// Only store variables (the ones we sync)
-			if(type != STT_OBJECT)
-			{return;}
+			/* if(type != STT_OBJECT) */
+			/* {return;} */
 
 			// Read the variable name 
             gelf_getsym(data, i, &sym);
@@ -261,6 +261,9 @@ void initialize_debugging_symbols(char* _executable_path){
 void initialize_shared_lib(char* _shared_lib_path, void* _shared_lib_dl_open_pointer){
 	shared_lib_path = _shared_lib_path;	
 	shared_lib_dl_open_pointer = _shared_lib_dl_open_pointer;
+	if(shared_lib_identifiers != NULL){
+		g_hash_table_remove_all(shared_lib_identifiers);
+	}
 	shared_lib_identifiers = g_hash_table_new(g_str_hash, g_str_equal);
 	read_shared_lib_symbols();
 }
@@ -271,6 +274,9 @@ void initialize_shared_lib(char* _shared_lib_path, void* _shared_lib_dl_open_poi
 // =========================================================
 bool has_debugging_symbols(){
 	return has_debugging_symbols_embedded || (debug_symbols_path != NULL);
+}
+bool main_contains_symbol(char* symbol){
+	return g_hash_table_contains(main_identifiers_to_pointers, symbol);
 }
 
 char* get_identifier_from_pointer(void *pointer){
@@ -328,3 +334,8 @@ void sync_shared_variables_to_main(bool direction){
 		}
 	}
 }	
+
+GHashTable* get_identifiers(char* symbols_path){
+	initialize_shared_lib(symbols_path, NULL);
+	return shared_lib_identifiers;	
+}

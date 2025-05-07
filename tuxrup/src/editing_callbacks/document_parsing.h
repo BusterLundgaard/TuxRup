@@ -27,6 +27,7 @@ void write_cursor_element(CXCursor* c, GString* buffer, bool semicolons, bool ne
 enum CXChildVisitResult write_cursor_to_buffer(CXCursor c, CXCursor parent, CXClientData data);
 
 char* get_function_arguments(CXCursor c_func);
+char* get_function_argument_names(CXCursor c_func);
 char* get_function_return_type(CXCursor c_func);
 char* get_function_code(CXCursor c);
 char* get_variable_type(CXCursor c_var);

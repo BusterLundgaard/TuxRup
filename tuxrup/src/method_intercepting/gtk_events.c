@@ -9,6 +9,7 @@
 #include "../utilities/util.h"
 #include "../utilities/pointer_name_conversion.h"
 #include "../right_click/context_menu.h"
+#include "../editing_callbacks/edit_callbacks_window.h"
 
 #include <sys/stat.h>
 
@@ -54,6 +55,8 @@ void on_init(){
         // Clear temporary files
         FILE *file = fopen("all_css.css", "w"); 
         if (file) {fclose(file);} 
+
+		testing_create_isolated_function();
     }
 }
 

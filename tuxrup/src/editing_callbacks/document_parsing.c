@@ -163,6 +163,21 @@ char* get_function_arguments(CXCursor c_func){
 	return buffer->str;
 }
 
+char* get_function_argument_names(CXCursor c_func) {
+    int n = clang_Cursor_getNumArguments(c_func);
+    GString* buffer = g_string_new("");
+    for (unsigned int i = 0; i < n; i++) {
+        CXCursor arg_cursor = clang_Cursor_getArgument(c_func, i);
+        CXString arg_name = clang_getCursorSpelling(arg_cursor); // get the argument name
+        g_string_append(buffer, clang_getCString(arg_name));
+        clang_disposeString(arg_name);
+        if (i != n - 1) {
+            g_string_append(buffer, ", ");
+        }
+    }
+    return buffer->str;
+}
+
 char* get_function_return_type(CXCursor c_func){
 	CXType funcType = clang_getCursorType(c_func);
 	return clang_getCString(clang_getTypeSpelling(clang_getResultType(clang_getCursorType(c_func))));
