@@ -47,6 +47,7 @@ const action remapable_events[MAPPABLE_ACTIONS_LEN] = {
 const source_code_info source_code_paths[30] = {
 	{"hw", "../../gtk_program_src"},
 	{"clock", "../../evaluation_applications/clock"},
+	{"ow", "../../evaluation_applications/overwrites"},
 	{"fg", "../../evaluation_applications/fake_gimp"},
 	{"gnome-clocks", "/src/tuxrup_testing_applications_src/gnome-clocks"},
 	{"fctix-configtool", "/src/tuxrup_testing_applications_src/fcitx-configtool"},

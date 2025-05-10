@@ -34,6 +34,7 @@ void callback_value_free(void* data){
 }
 
 callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer, gpointer original_user_data){
+
     callback_identifier* cb_key = malloc(sizeof(callback_identifier));
     *cb_key = (callback_identifier){};
     cb_key->widget = widget;
@@ -60,7 +61,7 @@ bool callback_map_exists(GtkWidget* widget, enum gtk_callback_category callback_
 }
 
 callback_info* callback_map_get(GtkWidget* widget, enum gtk_callback_category callback_category){
-    printf("looking up info for callback for widget %p\n", widget);
+    printf("looking up info for callback for widget %p with category %d\n", widget, (int)callback_category);
     callback_identifier cb_key = {widget, callback_category};
     if(!g_hash_table_contains(widget_callback_table, &cb_key)){
         printf("Warning: Tried to get from the callback_map, but key did not exist! Returning NULL\n");

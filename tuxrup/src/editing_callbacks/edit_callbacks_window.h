@@ -11,4 +11,6 @@
 void open_edit_callbacks_window(GtkWidget* widget);
 void testing_create_isolated_function();
 
+void on_edit_callback_button(GtkWidget* widget, gpointer data);
+void on_edit_callback_done_button(GtkWidget* widget, gpointer data);
 #endif

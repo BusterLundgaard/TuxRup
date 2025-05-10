@@ -11,6 +11,8 @@
 #include <libgen.h>
 #include <unistd.h>
 #include <glib.h>
+#include <ctype.h>
+#include <link.h>
 
 #include "pointer_name_conversion.h"
 
@@ -30,6 +32,10 @@ GHashTable* main_pointers_to_identifiers;
 GHashTable* shared_lib_identifiers; //from variable names to variable sizes 
 
 char* program_name;
+typedef struct {
+	size_t size;
+	void* address;
+} symbol_info;
 
 // ========================================================
 // Extracting required supplementary information
@@ -146,109 +152,124 @@ bool is_pie_executable()
 // =====================================================================
 // Reading ELF files
 // =====================================================================
+bool is_variable(char symbol_type){
+	return
+		symbol_type == 'D' ||
+		symbol_type == 'd' ||
+		symbol_type == 'B' ||
+		symbol_type == 'b' ||
+		symbol_type == 'R' ||
+		symbol_type == 'r' ||
+		symbol_type == 'U' ||
+		symbol_type == 'u' ||
+		symbol_type == 'C' ||
+		symbol_type == 'c';
+}
+/* T: global function in .text */
+/* t: local function in .text */
+/* D: initialized data */
+/* B: uninitialized data */
+/* R: read-only data */
+/* U: undefined (external) symbol */
+/* C: common symbol (old-style uninitialized global) */
+/* so you should check after D, B, R, U, C */
+
 void read_main_symbols(){
-	g_print("I am called!!!!\n");
-	// open symbols to read
-	int fd;
-	if(has_debugging_symbols_embedded){
-        fd = open("/proc/self/exe", O_RDONLY);
-    } else {
-        fd = open(debug_symbols_path, O_RDONLY);
-	}
-    if (fd < 0) {return;}
+    char command[512];
+    snprintf(command, sizeof(command), "nm %s", debug_symbols_path);
 
-	// compute pointers base address
+	FILE *fp = popen(command, "r");
+    char line[1024];
     void* base_addr = is_pie_executable() ? get_base_address() : 0;
-    
-	// initialize reading ELF 
-    elf_version(EV_CURRENT);
-    Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
-    Elf_Scn *scn = NULL;
-    GElf_Shdr shdr;
 
-    // Look through every section of ELF
-    while ((scn = elf_nextscn(elf, scn)) != NULL)
-    {   
-        // Only look at symbol table sections
-        gelf_getshdr(scn, &shdr);
-        if(shdr.sh_type != SHT_SYMTAB){continue;}
+    while (fgets(line, sizeof(line), fp)) {
+		if (!isdigit(line[0])){
+            continue;
+		}
 
-        Elf_Data *data = elf_getdata(scn, NULL);
-        int count = shdr.sh_size / shdr.sh_entsize;
+        unsigned long address;
+        char type;
+        char name[512];
 
-        // Look through every symbol in symbol table section
-        for(int i = 0; i < count; i++){
-            GElf_Sym sym;
-			int type = GELF_ST_TYPE(sym.st_info);
+        if (sscanf(line, "%lx %c %511s", &address, &type, name) == 3) {
+            char *sym_name = g_strdup(name);
 
-			// Make sure it is a function or a variable
-			g_print("About to go through this if statement, motherfucker!\n");
-
-			// Read the name and pointer offset
-            gelf_getsym(data, i, &sym);
-            void *sym_pointer = (void *)((uintptr_t)base_addr + sym.st_value);
-            const char *sym_name = elf_strptr(elf, shdr.sh_link, sym.st_name);
-
-			// Add to hashmap
-			printf("adding symbol %s\n", sym_name);
-			g_hash_table_insert(main_identifiers_to_pointers, sym_name, sym_pointer);
-			g_hash_table_insert(main_pointers_to_identifiers, sym_pointer, sym_name);
+			void* sym_pointer = (void*)((uintptr_t)address + base_addr);
+            g_hash_table_insert(main_pointers_to_identifiers, sym_pointer, sym_name);
+            g_hash_table_insert(main_identifiers_to_pointers, sym_name, sym_pointer);
         }
     }
 
-    elf_end(elf);
-    close(fd);
+    pclose(fp);
 }
 
-void read_shared_lib_symbols(){
-	int fd = open(shared_lib_path, O_RDONLY);
 
-    elf_version(EV_CURRENT);
-    Elf *elf = elf_begin(fd, ELF_C_READ, NULL);
-    Elf_Scn *scn = NULL;
-    GElf_Shdr shdr;
+void read_shared_lib_symbols() {
+    char command[512];
+    snprintf(command, sizeof(command), "nm -C -S %s", shared_lib_path);
 
-    // Look through every section of ELF
-    while ((scn = elf_nextscn(elf, scn)) != NULL)
-    {   
-        // Only look at symbol table sections
-        gelf_getshdr(scn, &shdr);
-        if(shdr.sh_type != SHT_SYMTAB){continue;}
+	FILE *fp = popen(command, "r");
 
-        Elf_Data *data = elf_getdata(scn, NULL);
-        int count = shdr.sh_size / shdr.sh_entsize;
+    char line[1024];
+	char type;
+	char name[512];
+	size_t address;
+	size_t size;
 
-        // Look through every symbol in symbol table section
-        for(int i = 0; i < count; i++){
-            GElf_Sym sym;
-			int type = GELF_ST_TYPE(sym.st_info);
+	void* base_absolute = NULL;
+	void* base_relative = NULL;
+    while (fgets(line, sizeof(line), fp)) {
 
-			// Only store variables (the ones we sync)
-			/* if(type != STT_OBJECT) */
-			/* {return;} */
-
-			// Read the variable name 
-            gelf_getsym(data, i, &sym);
-            const char *sym_name = elf_strptr(elf, shdr.sh_link, sym.st_name);
-			size_t sym_size = sym.st_size;
-
-			// Add to set
-			g_hash_table_insert(shared_lib_identifiers, sym_name, NULL);
-        }
+        // Format: address size type name
+		if(!isdigit(line[0]) || !isdigit(line[18])){
+			continue;
+		}
+        if (!sscanf(line, "%lx %lx %c %511s", &address, &size, &type, name) == 3) {
+			continue;
+		}
+		if(!is_variable(type)){
+			continue;
+		}
+		void* real_address = dlsym(shared_lib_dl_open_pointer, name);
+		if(real_address != NULL){
+			base_absolute = (void*)real_address;
+			base_relative = (void*)address;
+			break;
+		}
     }
+    pclose(fp);
+	
+	fp = popen(command, "r");
+    while (fgets(line, sizeof(line), fp)) {
 
-    elf_end(elf);
-    close(fd);
+        // Format: address size type name
+		if(!isdigit(line[0]) || !isdigit(line[18])){
+			continue;
+		}
+        if (!sscanf(line, "%lx %lx %c %511s", &address, &size, &type, name) == 3) {
+			continue;
+		}
+		if(!is_variable(type)){
+			continue;
+		}
+
+		symbol_info* value = malloc(sizeof(symbol_info));
+		value->size = size;
+		// This address we compute here doesn't appear to be quiiite right
+		value->address = (void*)((uintptr_t)base_absolute + ((uintptr_t)address - (uintptr_t)base_relative)); 	
+		g_hash_table_insert(shared_lib_identifiers, name, value);
+    }
 }
-
-
 // ===========================================================
 // Initialization
 // ===========================================================
 void initialize_debugging_symbols(char* _executable_path){
 	executable_path = _executable_path;
+	debug_symbols_path = executable_path;
+
 	char* executable_path_copy = g_strdup(executable_path);
     program_name = basename(executable_path_copy);
+
 	has_debugging_symbols_embedded = set_has_debugging_symbols_embedded();
 	if(!has_debugging_symbols_embedded){
 		download_debug_symbols();	
@@ -289,6 +310,15 @@ char* get_identifier_from_pointer(void *pointer){
 }
 
 void *get_pointer_from_identifier(const char *name){
+	GHashTableIter iter;
+	gpointer key, value;
+	g_hash_table_iter_init(&iter, main_identifiers_to_pointers);
+	while(g_hash_table_iter_next(&iter, &key, &value)){
+		char* name = (char*)key;
+	}
+
+
+	g_print("size of main_identifiers_to_pointers is %d\n", g_hash_table_size(main_identifiers_to_pointers));
 	if(g_hash_table_contains(main_identifiers_to_pointers, name)){
 		return g_hash_table_lookup(main_identifiers_to_pointers, name);
 	} else{
@@ -309,9 +339,9 @@ void sync_shared_variables_to_main(bool direction){
 	g_hash_table_iter_init(&iter, shared_lib_identifiers);
 	while(g_hash_table_iter_next(&iter, &key, &value)){
 		char* var_name = (char*)key;
-		size_t var_size = *(size_t*)(value);
-		void* variable_pointer_shared_lib = dlsym(shared_lib_dl_open_pointer, var_name);
-		if(variable_pointer_shared_lib == NULL){
+		size_t var_size = ((symbol_info*)(value))->size;
+		void* var_address = ((symbol_info*)(value))->address;
+		if(var_address == NULL){
 			printf("Could not find pointer to a variable in the shared lib with name %s.\n", var_name);
 			exit(1);
 		}
@@ -327,10 +357,11 @@ void sync_shared_variables_to_main(bool direction){
 			exit(1);
 		}
 
+		g_print("syncing the variable %s\n", var_name);	
 		if(direction){
-			memcpy(variable_pointer_shared_lib, variable_pointer_main, var_size);
+			memcpy(var_address, variable_pointer_main, var_size);
 		} else {
-			memcpy(variable_pointer_main, variable_pointer_shared_lib, var_size);
+			memcpy(variable_pointer_main, var_address, var_size);
 		}
 	}
 }	

@@ -112,6 +112,7 @@ void on_window_present(GtkWindow* window){
     if(!window_presented){
         application_root = (GtkWidget*)window;
         window_presented = true;
+		test_function_overwriting2();
     }
 }
 void gtk_window_present_OVERRIDE(GtkWindow *window){
@@ -137,7 +138,6 @@ GCallback c_handler,
 gpointer data,
 GClosureNotify destroy_data,
 GConnectFlags connect_flags){
-
     if(!initialized){
         initialized = true;
         on_init();    

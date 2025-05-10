@@ -1,2 +1,5 @@
-#include "callback_map.h"
-#include "globals.h"
+static int x;
+
+int main(){
+	return x;
+}

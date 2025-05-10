@@ -26,4 +26,8 @@ void on_init();
 
 void our_gtk_css_provider_load_from_file(GFile* file);
 
+void test_function_overwriting();
+void test_function_overwriting2();
+void test_function_overwriting3();
+
 #endif
