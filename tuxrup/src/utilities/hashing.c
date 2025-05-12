@@ -3,12 +3,8 @@
 #include "util.h"
 
 guint compute_callback_hash(GtkWidget* widget, enum gtk_callback_category callback){
-    gpointer widget_hash = g_hash_table_lookup(widget_hashes, widget);
-    if(widget_hash==NULL){
-        g_print("Could not find the widget whose hash of a callback we're trying to compute! Returning mischievious 0 value!\n");
-        return 0;
-    }
-    return *(guint*)widget_hash ^ g_int_hash(&callback);
+    guint widget_hash = widget_hashes_get(widget);
+    return widget_hash ^ g_int_hash(&callback);
 }
 
 guint compute_widget_hash(GtkWidget* widget){
@@ -23,15 +19,16 @@ guint compute_widget_hash(GtkWidget* widget){
     int child_number = get_child_number(widget);
     hash ^= hash_int(child_number);
 
-    guint* parent_hash;
-    if(!g_hash_table_contains(widget_hashes, parent) || (g_hash_table_lookup(widget_hashes, parent) == NULL)){
-        parent_hash = malloc(sizeof(guint));
-        *parent_hash = compute_widget_hash(parent);
-        g_hash_table_insert(widget_hashes, parent, parent_hash);
-    } else {
-        parent_hash = (guint*)g_hash_table_lookup(widget_hashes, parent);
-    }
-
-    return hash ^ (*parent_hash);
+    guint parent_hash = widget_hashes_get(parent);
+    return hash ^ parent_hash;
 }
 
+guint widget_hashes_get(GtkWidget* widget){
+	if(g_hash_table_contains(computed_hashes, widget)){
+		return *(guint*)g_hash_table_lookup(computed_hashes, widget);
+	}
+	guint* hash = malloc(sizeof(guint));
+	*hash = compute_widget_hash(widget);
+	g_hash_table_insert(computed_hashes, widget, hash);
+	return *hash;
+}

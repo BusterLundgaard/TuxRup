@@ -227,9 +227,7 @@ void read_shared_lib_symbols() {
         if (!sscanf(line, "%lx %lx %c %511s", &address, &size, &type, name) == 3) {
 			continue;
 		}
-		if(!is_variable(type)){
-			continue;
-		}
+
 		void* real_address = dlsym(shared_lib_dl_open_pointer, name);
 		if(real_address != NULL){
 			base_absolute = (void*)real_address;
@@ -255,11 +253,11 @@ void read_shared_lib_symbols() {
 
 		symbol_info* value = malloc(sizeof(symbol_info));
 		value->size = size;
-		// This address we compute here doesn't appear to be quiiite right
 		value->address = (void*)((uintptr_t)base_absolute + ((uintptr_t)address - (uintptr_t)base_relative)); 	
-		g_hash_table_insert(shared_lib_identifiers, name, value);
+		g_hash_table_insert(shared_lib_identifiers, g_strdup(name), value);
     }
 }
+
 // ===========================================================
 // Initialization
 // ===========================================================
@@ -317,8 +315,6 @@ void *get_pointer_from_identifier(const char *name){
 		char* name = (char*)key;
 	}
 
-
-	g_print("size of main_identifiers_to_pointers is %d\n", g_hash_table_size(main_identifiers_to_pointers));
 	if(g_hash_table_contains(main_identifiers_to_pointers, name)){
 		return g_hash_table_lookup(main_identifiers_to_pointers, name);
 	} else{
@@ -342,7 +338,7 @@ void sync_shared_variables_to_main(bool direction){
 		size_t var_size = ((symbol_info*)(value))->size;
 		void* var_address = ((symbol_info*)(value))->address;
 		if(var_address == NULL){
-			printf("Could not find pointer to a variable in the shared lib with name %s.\n", var_name);
+			printf("Could not find pointer to a variable in the shared lib with name %s\n", var_name);
 			exit(1);
 		}
 
@@ -353,7 +349,7 @@ void sync_shared_variables_to_main(bool direction){
 			variable_pointer_main = dlsym(RTLD_NEXT, var_name);
 		}
 		if(variable_pointer_main == NULL){
-			printf("Could not find a pointer in main with name %s.\n", var_name);
+			printf("Could not find a pointer in main with name %s\n", var_name);
 			exit(1);
 		}
 

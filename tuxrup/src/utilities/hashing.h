@@ -14,4 +14,5 @@ guint compute_widget_hash(GtkWidget* widget);
 
 guint compute_callback_hash(GtkWidget* widget, enum gtk_callback_category callback);
 
+guint widget_hashes_get(GtkWidget* widget);
 #endif

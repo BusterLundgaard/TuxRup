@@ -67,4 +67,4 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
     return GTK_CALLBACK_UNDEFINED;
 }
 
-bool widget_seen_before(GtkWidget* widget){return g_hash_table_contains(widget_hashes, widget);}
+bool widget_seen_before(GtkWidget* widget){return g_hash_table_contains(known_widgets, widget);}

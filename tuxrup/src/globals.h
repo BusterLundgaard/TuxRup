@@ -109,8 +109,9 @@ extern const source_code_info source_code_paths[30];
 
 extern GtkWidget* application_root;
 
+extern GHashTable *known_widgets;
 extern GHashTable *widget_callback_table;
-extern GHashTable *widget_hashes;
+extern GHashTable *computed_hashes;
 extern GHashTable *widget_to_css_filepath_map;
 
 extern char* working_directory;

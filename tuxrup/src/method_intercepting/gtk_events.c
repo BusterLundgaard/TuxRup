@@ -41,17 +41,18 @@ void on_init(){
 
         set_gtk_version();
 
+		// Initialize global maps
+		known_widgets = g_hash_table_new(g_direct_hash, g_direct_equal);
+		computed_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
+		widget_callback_table = g_hash_table_new_full(callback_key_hash, callback_key_equal, callback_key_free, callback_value_free);
+		widget_to_css_filepath_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+
         // Get executable metadata like working directory and debug symbols
         executable_path = get_executable_directory();
 		working_directory = get_working_directory();
 		initialize_debugging_symbols(executable_path);
 		set_program_name();
 		set_program_src_code();
-
-        // Initialize global maps
-        widget_hashes = g_hash_table_new(g_direct_hash, g_direct_equal);
-        widget_callback_table = g_hash_table_new_full(callback_key_hash, callback_key_equal, callback_key_free, callback_value_free);
-        widget_to_css_filepath_map = g_hash_table_new(g_direct_hash, g_direct_equal);
 
         // Clear temporary files
         FILE *file = fopen("all_css.css", "w"); 
@@ -104,12 +105,4 @@ void test_function_overwriting2(){
 	g_signal_connect_data(button1, "clicked", G_CALLBACK(increment_fun), NULL, NULL, (GConnectFlags)0);
 	g_signal_connect_data(button2, "clicked", G_CALLBACK(show_fun), NULL, NULL, (GConnectFlags)0);
 	g_signal_connect_data(button_change, "clicked", G_CALLBACK(change_button_A), button1, NULL, (GConnectFlags)0);
-}
-
-
-void on_added_to_dom(GtkWidget* widget, gpointer data){
-    guint* hash = malloc(sizeof(guint)); 
-    *hash = compute_widget_hash(widget);
-    const gchar* widget_type = g_type_name(G_OBJECT_TYPE(widget));
-    g_hash_table_insert(widget_hashes, (gpointer)widget, (gpointer)hash);
 }

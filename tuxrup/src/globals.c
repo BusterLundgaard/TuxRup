@@ -3,7 +3,9 @@ enum gtk_version gtk_ver = 0;
 
 GtkWidget* application_root = NULL;
 GHashTable *widget_callback_table = NULL;
-GHashTable *widget_hashes = NULL;
+GHashTable *computed_hashes = NULL;
+GHashTable *known_widgets = NULL;
+
 GHashTable *widget_to_css_filepath_map = NULL;
 
 char* working_directory = NULL;
