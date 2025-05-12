@@ -34,8 +34,6 @@ void callback_value_free(void* data){
 }
 
 callback_info* callback_map_add_original(GtkWidget* widget, enum gtk_callback_category callback_category, gpointer original_pointer, gpointer original_user_data){
-	g_print("i was called with original_pointer = %p\n", original_pointer);
-
     callback_identifier* cb_key = malloc(sizeof(callback_identifier));
     *cb_key = (callback_identifier){};
     cb_key->widget = widget;

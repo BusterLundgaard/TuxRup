@@ -76,19 +76,34 @@ void register_all_children(GtkWidget* widget){
 }
 #endif
 
+#ifdef USE_GTK3
+void debug_add_red_background_class(){
+	GtkCssProvider *provider = gtk_css_provider_new();    
+    gtk_css_provider_load_from_data(provider,    
+        ".known { background: red; }",    
+        -1, NULL);    
+    GdkScreen *screen = gtk_widget_get_screen(application_root);
+    gtk_style_context_add_provider_for_screen(screen,
+                                   GTK_STYLE_PROVIDER(provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(provider); 
+}
+#endif
+
 // Goes through all known widgets and adds right click actions to the ones where it applies
+void on_widget_known(GtkWidget* widget){
+	enum widget_type_category widget_category = get_widget_type_category(widget);
+	if(widget_category != GTK_CATEGORY_UNDEFINED && widget_category != GTK_CATEGORY_Window){
+		gtk_style_context_add_class(gtk_widget_get_style_context(widget), "known");
+		add_right_click_action(widget, open_right_click_context_menu, widget);
+	}
+}
 void add_right_click_actions(){
 	GHashTableIter iter;
 	gpointer key;
 	g_hash_table_iter_init(&iter, known_widgets);
 	for(; g_hash_table_iter_next(&iter, &key, NULL); ){
-		GtkWidget* widget = (GtkWidget*)key;	
-
-		enum widget_type_category widget_category = get_widget_type_category(widget);
-		if(widget_category != GTK_CATEGORY_UNDEFINED && widget_category != GTK_CATEGORY_Window){
-			add_right_click_action(widget, open_right_click_context_menu, widget);
-			g_print("the hash of widget %p is %ld\n", widget, widget_hashes_get(widget));
-		}
+		on_widget_known(key);
 	}
 }
 
@@ -116,13 +131,16 @@ void on_window_present(GtkWindow* window){
 
     register_all_children((GtkWidget*)window);
 	add_right_click_actions();
-
+#ifdef USE_GTK3
+	debug_add_red_background_class();
+#endif
     if(!window_presented){
         application_root = (GtkWidget*)window;
         window_presented = true;
 		/* test_function_overwriting2(); */
     }
 }
+
 void gtk_window_present_OVERRIDE(GtkWindow *window){
 	on_window_present(window);
     gtk_window_present_ORIGINAL(window);
@@ -134,6 +152,17 @@ void gtk_widget_show_all_OVERRIDE(GtkWidget* widget){
 	}
 	gtk_widget_show_all_ORIGINAL(widget);
 }
+
+
+//===================================================================
+// WIDGET APPEND ACTIONS
+// ==================================================================
+#ifdef USE_GTK3
+void gtk_container_add_OVERRIDE(GtkContainer* cont, GtkWidget* widget){
+	g_hash_table_insert(known_widgets, widget, NULL);
+	on_widget_known(widget);
+}
+#endif
 
 // ===================================================================
 // SIGNAL OVERRIDES

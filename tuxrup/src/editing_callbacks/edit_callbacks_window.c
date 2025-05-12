@@ -170,20 +170,6 @@ enum CXChildVisitResult make_copy_of_document_with_comment(CXCursor c, CXCursor 
 			fun_return_type, fun_name, fun_args, fun_body));	
 		goto child_visit_end;
 	}
-
-	// Print variables
-	/* if(kind == CXCursor_VarDecl){ */
-
-	/* 	char* var_name = identifier; */ 
-	/* 	char* var_type = get_variable_type(pc); */ 
-	/* 	GString* prebuffer = g_strdup_printf("static %s %s = 0;\n", var_type, var_name); */
-	/* 	g_string_append(buffer, g_strdup_printf("static %s %s = 0;\n", var_type, var_name)); */
-	/* 	goto child_visit_end; */
-	/* } */
-
-	// Make sure there's not a Typedef already including declaration	
-	// This is just a bug/peculiarity about how LibClang parses struct definitions
-	
 	if(n_kind == CXCursor_TypedefDecl && 
 		(kind == CXCursor_StructDecl ||
 		 kind == CXCursor_EnumDecl || 
@@ -237,8 +223,9 @@ void on_edit_callback_button(GtkWidget* widget, gpointer data){
 
 		first_child = true;
 		clang_visitChildren(c, make_copy_of_document_with_comment, buffer);
-		g_file_set_contents("./runtime_files/edit.c", buffer->str, strlen(buffer->str), NULL);
-        open_file_vscode("./runtime_files/edit.c");
+		char* edit_path = g_strdup_printf("%s/tuxrup_edit.c", program_src_folder);
+		g_file_set_contents(edit_path, buffer->str, strlen(buffer->str), NULL);
+        open_file_vscode(edit_path);
     } 
     else {
         open_file_vscode(info->modified_code_path);
@@ -249,91 +236,91 @@ void on_edit_callback_button(GtkWidget* widget, gpointer data){
 // ==============================================================
 // ON FINALIZING THE EDITED CALLBACK / EDITING DONE
 // ==============================================================
-static enum CXChildVisitResult create_isolated_function(CXCursor c, CXCursor parent, CXClientData data){
-	GString* buffer = (GString*)data;
+/* static enum CXChildVisitResult create_isolated_function(CXCursor c, CXCursor parent, CXClientData data){ */
+/* 	GString* buffer = (GString*)data; */
 
-	if(!is_part_of_main_file(c))
-	{return CXChildVisit_Continue;}
+/* 	if(!is_part_of_main_file(c)) */
+/* 	{return CXChildVisit_Continue;} */
 
-	if(first_child){
-		first_child = false;
-		pc = c;
-		return CXChildVisit_Continue;
-	}
+/* 	if(first_child){ */
+/* 		first_child = false; */
+/* 		pc = c; */
+/* 		return CXChildVisit_Continue; */
+/* 	} */
 	
-	enum CXCursorKind n_kind = clang_getCursorKind(c);
-	enum CXCursorKind kind = clang_getCursorKind(pc);
-	char* identifier = clang_getCString(clang_getCursorSpelling(pc));
+/* 	enum CXCursorKind n_kind = clang_getCursorKind(c); */
+/* 	enum CXCursorKind kind = clang_getCursorKind(pc); */
+/* 	char* identifier = clang_getCString(clang_getCursorSpelling(pc)); */
 
-	if(kind == CXCursor_FunctionDecl){
-		if(!g_hash_table_contains(document_symbols, identifier)){
-			pc = c;
-			return CXChildVisit_Continue;
-		}
-		char* fun_name = identifier; 
-		char* fun_return_type = get_function_return_type(pc);
-		char* fun_args = get_function_arguments(pc);
-		char* fun_arg_names = get_function_argument_names(pc);
+/* 	if(kind == CXCursor_FunctionDecl){ */
+/* 		if(!g_hash_table_contains(document_symbols, identifier)){ */
+/* 			pc = c; */
+/* 			return CXChildVisit_Continue; */
+/* 		} */
+/* 		char* fun_name = identifier; */ 
+/* 		char* fun_return_type = get_function_return_type(pc); */
+/* 		char* fun_args = get_function_arguments(pc); */
+/* 		char* fun_arg_names = get_function_argument_names(pc); */
 		
-		// For the modified function
-		if(strcmp(identifier, cb_info->function_name) == 0){
-			char* fun_body = get_function_code(pc); 
-			g_print("writing the target modified function!!\n");
-			g_string_append(buffer, g_strdup_printf("\
-						%s %s(%s){\n\
-						sync_shared_variables_to_main(false);\n\
-						%s\n\
-						sync_shared_variables_from_main(true);\n\
-						}\n\
-						", fun_return_type, fun_name, fun_args, fun_body));
-		}	
-		// For all other functions
-		else{
-			g_string_append(buffer, g_strdup_printf("\
-						__attribute__((noinline)) static %s %s(%s){\n \
-						typeof(%s) *%s_fucking = get_pointer_from_identifier(\"%s\");\n \
-						%s_fucking(%s);\n \
-						}\n", fun_return_type, fun_name, fun_args, fun_name, fun_name, fun_name, fun_name, fun_arg_names));
-		}
-	}
-	else if(kind == CXCursor_VarDecl){
-		if(!g_hash_table_contains(document_symbols, identifier)){
-			pc = c;
-			return CXChildVisit_Continue;
-		}
-		char* var_name = identifier; 
-		char* var_type = get_variable_type(pc); 
-		g_hash_table_insert(all_variables, var_name, NULL);
-		g_string_append(buffer, g_strdup_printf("\
-					%s %s = 0;\n\
-					", var_type, var_name));
-	}
-	else if((kind == CXCursor_StructDecl ||
-			kind == CXCursor_EnumDecl || 
-			kind == CXCursor_UnexposedDecl ||
-			kind == CXCursor_UnionDecl)
-			){
+/* 		// For the modified function */
+/* 		if(strcmp(identifier, cb_info->function_name) == 0){ */
+/* 			char* fun_body = get_function_code(pc); */ 
+/* 			g_print("writing the target modified function!!\n"); */
+/* 			g_string_append(buffer, g_strdup_printf("\ */
+/* 						%s %s(%s){\n\ */
+/* 						sync_shared_variables_to_main(false);\n\ */
+/* 						%s\n\ */
+/* 						sync_shared_variables_from_main(true);\n\ */
+/* 						}\n\ */
+/* 						", fun_return_type, fun_name, fun_args, fun_body)); */
+/* 		} */	
+/* 		// For all other functions */
+/* 		else{ */
+/* 			g_string_append(buffer, g_strdup_printf("\ */
+/* 						__attribute__((noinline)) static %s %s(%s){\n \ */
+/* 						typeof(%s) *%s_fucking = get_pointer_from_identifier(\"%s\");\n \ */
+/* 						%s_fucking(%s);\n \ */
+/* 						}\n", fun_return_type, fun_name, fun_args, fun_name, fun_name, fun_name, fun_name, fun_arg_names)); */
+/* 		} */
+/* 	} */
+/* 	else if(kind == CXCursor_VarDecl){ */
+/* 		if(!g_hash_table_contains(document_symbols, identifier)){ */
+/* 			pc = c; */
+/* 			return CXChildVisit_Continue; */
+/* 		} */
+/* 		char* var_name = identifier; */ 
+/* 		char* var_type = get_variable_type(pc); */ 
+/* 		g_hash_table_insert(all_variables, var_name, NULL); */
+/* 		g_string_append(buffer, g_strdup_printf("\ */
+/* 					%s %s = 0;\n\ */
+/* 					", var_type, var_name)); */
+/* 	} */
+/* 	else if((kind == CXCursor_StructDecl || */
+/* 			kind == CXCursor_EnumDecl || */ 
+/* 			kind == CXCursor_UnexposedDecl || */
+/* 			kind == CXCursor_UnionDecl) */
+/* 			){ */
 
-		// Make sure there's not a Typedef already including this declaration	
-		if(n_kind == CXCursor_TypedefDecl){
-			CXType typedefType = clang_getTypedefDeclUnderlyingType(c);
-			CXCursor declCursor = clang_getTypeDeclaration(typedefType);
-			enum CXCursorKind declCursorKind = clang_getCursorKind(declCursor);
-			if(declCursorKind == kind){
-				pc = c;
-				return CXChildVisit_Continue;
-			}
-		}	
+/* 		// Make sure there's not a Typedef already including this declaration */	
+/* 		if(n_kind == CXCursor_TypedefDecl){ */
+/* 			CXType typedefType = clang_getTypedefDeclUnderlyingType(c); */
+/* 			CXCursor declCursor = clang_getTypeDeclaration(typedefType); */
+/* 			enum CXCursorKind declCursorKind = clang_getCursorKind(declCursor); */
+/* 			if(declCursorKind == kind){ */
+/* 				pc = c; */
+/* 				return CXChildVisit_Continue; */
+/* 			} */
+/* 		} */	
 		
-		write_cursor_element(&pc, buffer, true, true);	
-	} 
-	else{
-		write_cursor_element(&pc, buffer, true, true);	
-	}	   
+/* 		write_cursor_element(&pc, buffer, true, true); */	
+/* 	} */ 
+/* 	else{ */
+/* 		write_cursor_element(&pc, buffer, true, true); */	
+/* 	} */	   
 
-	pc = c;
-	return CXChildVisit_Continue;
-}
+/* 	pc = c; */
+/* 	return CXChildVisit_Continue; */
+/* } */
 
 
 void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
@@ -346,13 +333,13 @@ void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
         compile_callback_file(info->modified_code_path, info->shared_library_path);
         set_widget_callback(info);
     } else {
-		g_print("compiling this shit to path %s\n", info->shared_library_path);
-		char* command = g_strdup_printf("gcc $(pkg-config --cflags --libs gtk4) ./runtime_files/edit.c -shared -fPIC -g -o %s", info->shared_library_path);
+		char* edit_path = g_strdup_printf("%s/tuxrup_edit.c", program_src_folder);
+		char* command = g_strdup_printf("gcc $(pkg-config --cflags --libs gtk4) %s -shared -fPIC -g -o %s", edit_path, info->shared_library_path);
 		int res = system(command);
 		set_widget_callback(info);
 
 		// save the modified code!
-		CXCursor c = get_root_cursor("./runtime_files/edit.c");
+		CXCursor c = get_root_cursor(edit_path);
 		CXCursor c_func = get_function_cursor(c, info->function_name);
 		char* modified_code = get_function_code(c_func); 
 		g_file_set_contents(info->modified_code_path, modified_code, strlen(modified_code), NULL);
@@ -378,30 +365,30 @@ void on_edit_callback_done_button(GtkWidget* widget, gpointer data){
     }
 }
 
-void testing_create_isolated_function(){
-	system("gcc -g -c ./runtime_files/edit.c $(pkg-config --cflags --libs gtk4) -o ./runtime_files/object.o");
-	document_symbols = get_identifiers("./runtime_files/object.o");
+/* void testing_create_isolated_function(){ */
+/* 	system("gcc -g -c ./runtime_files/edit.c $(pkg-config --cflags --libs gtk4) -o ./runtime_files/object.o"); */
+/* 	document_symbols = get_identifiers("./runtime_files/object.o"); */
 
-	int res = system("gcc $(pkg-config --cflags --libs gtk4) ./runtime_files/edit.c -E -P -o ./runtime_files/edit_expanded.c");
-	CXCursor c = get_root_cursor("./runtime_files/edit_expanded.c");
-	GString* buffer = g_string_new("#include \"../../src/utilities/pointer_name_conversion.h\"\n");
-	all_variables = g_hash_table_new(g_str_hash, g_str_equal);
-	cb_info = malloc(sizeof(callback_info));
-	cb_info->function_name = "button_A_callback";
-	clang_visitChildren(c, create_isolated_function, buffer);
+/* 	int res = system("gcc $(pkg-config --cflags --libs gtk4) ./runtime_files/edit.c -E -P -o ./runtime_files/edit_expanded.c"); */
+/* 	CXCursor c = get_root_cursor("./runtime_files/edit_expanded.c"); */
+/* 	GString* buffer = g_string_new("#include \"../../src/utilities/pointer_name_conversion.h\"\n"); */
+/* 	all_variables = g_hash_table_new(g_str_hash, g_str_equal); */
+/* 	cb_info = malloc(sizeof(callback_info)); */
+/* 	cb_info->function_name = "button_A_callback"; */
+/* 	clang_visitChildren(c, create_isolated_function, buffer); */
 
-	g_print("size of all_variables is %d\n", g_hash_table_size(all_variables));
-	GHashTableIter iter;
-	gpointer key;
-	g_hash_table_iter_init(&iter, all_variables);
-	g_string_append(buffer, "void dependency(){\n");
-	while (g_hash_table_iter_next(&iter, &key, NULL)) {
-		g_string_append(buffer, g_strdup_printf("%s = 0;\n", (char*)key));
-	}
-	g_string_append(buffer, "}");
-	g_file_set_contents("./runtime_files/temp.c", buffer->str, strlen(buffer->str), NULL);
-	g_file_set_contents("./runtime_files/temp.c", buffer->str, strlen(buffer->str), NULL);
-}
+/* 	g_print("size of all_variables is %d\n", g_hash_table_size(all_variables)); */
+/* 	GHashTableIter iter; */
+/* 	gpointer key; */
+/* 	g_hash_table_iter_init(&iter, all_variables); */
+/* 	g_string_append(buffer, "void dependency(){\n"); */
+/* 	while (g_hash_table_iter_next(&iter, &key, NULL)) { */
+/* 		g_string_append(buffer, g_strdup_printf("%s = 0;\n", (char*)key)); */
+/* 	} */
+/* 	g_string_append(buffer, "}"); */
+/* 	g_file_set_contents("./runtime_files/temp.c", buffer->str, strlen(buffer->str), NULL); */
+/* 	g_file_set_contents("./runtime_files/temp.c", buffer->str, strlen(buffer->str), NULL); */
+/* } */
 
 
 // ===========================================================================

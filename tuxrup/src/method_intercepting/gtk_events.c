@@ -60,49 +60,49 @@ void on_init(){
     }
 }
 
-void test_function_overwriting(){
-	GtkWidget* button = gtk_button_new_with_label("Test switchAmPm");
-	void* incHourPointer = get_pointer_from_identifier("switchAmPm");
-	gtk_window_set_child(GTK_WINDOW(application_root), button);
-	g_signal_connect_data(button, "clicked", G_CALLBACK(incHourPointer), NULL, NULL, (GConnectFlags)0);
-	on_added_to_dom(button, NULL);
+/* void test_function_overwriting(){ */
+/* 	GtkWidget* button = gtk_button_new_with_label("Test switchAmPm"); */
+/* 	void* incHourPointer = get_pointer_from_identifier("switchAmPm"); */
+/* 	gtk_window_set_child(GTK_WINDOW(application_root), button); */
+/* 	g_signal_connect_data(button, "clicked", G_CALLBACK(incHourPointer), NULL, NULL, (GConnectFlags)0); */
+/* 	on_added_to_dom(button, NULL); */
 
-	callback_identifier id = {button, GTK_CALLBACK_clicked};
-	on_edit_callback_button(button, &(id.callback)); 
-	on_edit_callback_done_button(button, &(id.callback));
-	function_dispatcher(button, &(id.callback));
-}
+/* 	callback_identifier id = {button, GTK_CALLBACK_clicked}; */
+/* 	on_edit_callback_button(button, &(id.callback)); */ 
+/* 	on_edit_callback_done_button(button, &(id.callback)); */
+/* 	function_dispatcher(button, &(id.callback)); */
+/* } */
 
-void change_button_A(GtkWidget* widget, gpointer data){
-	GtkWidget* button = (GtkWidget*)data;
-	enum gtk_callback_category category = GTK_CALLBACK_clicked;	
-	on_edit_callback_button(button, &category);
-	on_edit_callback_done_button(button, &category);
-}
+/* void change_button_A(GtkWidget* widget, gpointer data){ */
+/* 	GtkWidget* button = (GtkWidget*)data; */
+/* 	enum gtk_callback_category category = GTK_CALLBACK_clicked; */	
+/* 	on_edit_callback_button(button, &category); */
+/* 	on_edit_callback_done_button(button, &category); */
+/* } */
 
-void test_function_overwriting2(){
-	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);	
-    gtk_widget_set_halign(vbox, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(vbox, GTK_ALIGN_CENTER);
+/* void test_function_overwriting2(){ */
+/* 	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); */	
+/*     gtk_widget_set_halign(vbox, GTK_ALIGN_CENTER); */
+/*     gtk_widget_set_valign(vbox, GTK_ALIGN_CENTER); */
 
-	GtkWidget* button1 = gtk_button_new_with_label("A");
-	GtkWidget* button2 = gtk_button_new_with_label("B");
-	GtkWidget* button_change = gtk_button_new_with_label("Change A callback");
+/* 	GtkWidget* button1 = gtk_button_new_with_label("A"); */
+/* 	GtkWidget* button2 = gtk_button_new_with_label("B"); */
+/* 	GtkWidget* button_change = gtk_button_new_with_label("Change A callback"); */
 	
-	gtk_box_append(GTK_BOX(vbox), button1);
-	gtk_box_append(GTK_BOX(vbox), button2);
-	gtk_box_append(GTK_BOX(vbox), button_change);
-	gtk_window_set_child(GTK_WINDOW(application_root), vbox);
-	on_added_to_dom(button1, NULL);	
-	on_added_to_dom(button2, NULL);	
-	on_added_to_dom(button_change, NULL);	
+/* 	gtk_box_append(GTK_BOX(vbox), button1); */
+/* 	gtk_box_append(GTK_BOX(vbox), button2); */
+/* 	gtk_box_append(GTK_BOX(vbox), button_change); */
+/* 	gtk_window_set_child(GTK_WINDOW(application_root), vbox); */
+/* 	on_added_to_dom(button1, NULL); */	
+/* 	on_added_to_dom(button2, NULL); */	
+/* 	on_added_to_dom(button_change, NULL); */	
 
-	void* show_fun = get_pointer_from_identifier("show");
-	char* show_name = get_identifier_from_pointer(show_fun); 
-	void* increment_fun = get_pointer_from_identifier("increment");
-	char* increment_name = get_identifier_from_pointer(increment_fun);
-	g_print("the name of the pointer %p is %s\n", increment_fun, increment_name);
-	g_signal_connect_data(button1, "clicked", G_CALLBACK(increment_fun), NULL, NULL, (GConnectFlags)0);
-	g_signal_connect_data(button2, "clicked", G_CALLBACK(show_fun), NULL, NULL, (GConnectFlags)0);
-	g_signal_connect_data(button_change, "clicked", G_CALLBACK(change_button_A), button1, NULL, (GConnectFlags)0);
-}
+/* 	void* show_fun = get_pointer_from_identifier("show"); */
+/* 	char* show_name = get_identifier_from_pointer(show_fun); */ 
+/* 	void* increment_fun = get_pointer_from_identifier("increment"); */
+/* 	char* increment_name = get_identifier_from_pointer(increment_fun); */
+/* 	g_print("the name of the pointer %p is %s\n", increment_fun, increment_name); */
+/* 	g_signal_connect_data(button1, "clicked", G_CALLBACK(increment_fun), NULL, NULL, (GConnectFlags)0); */
+/* 	g_signal_connect_data(button2, "clicked", G_CALLBACK(show_fun), NULL, NULL, (GConnectFlags)0); */
+/* 	g_signal_connect_data(button_change, "clicked", G_CALLBACK(change_button_A), button1, NULL, (GConnectFlags)0); */
+/* } */

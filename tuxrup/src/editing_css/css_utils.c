@@ -115,15 +115,16 @@ CssProps get_css_class_information_of_widget(GtkWidget* widget){
 void apply_css_to_widget(GtkWidget *widget, const char *css_data)
 {
     GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, css_data, -1);
 
-    GtkStyleContext *style_context = gtk_widget_get_style_context(widget);
     #ifdef USE_GTK3
+	gtk_css_provider_load_from_data(css_provider, css_data, -1, NULL);
     GdkScreen *screen = gtk_widget_get_screen(widget);
     gtk_style_context_add_provider_for_screen(screen,
                                    GTK_STYLE_PROVIDER(css_provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     #else
+	gtk_css_provider_load_from_data(css_provider, css_data, -1);
+	GtkStyleContext *style_context = gtk_widget_get_style_context(widget);
     gtk_style_context_add_provider(style_context,
                                    GTK_STYLE_PROVIDER(css_provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
