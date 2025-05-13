@@ -1,9 +1,11 @@
 #include <gtk/gtk.h>
 #include "globals.h"
 #include "layers.h"
+#include "image_viewer.h"
 
 int layers[3] = {0, 1, 2};
 GtkWidget* layer_buttons[3] = {};
+GtkWidget* opacity_slider;
 
 static void on_layer_select(GtkWidget* self, gpointer data){
     selected_layer = *((int*)data);
@@ -15,6 +17,14 @@ static void on_layer_select(GtkWidget* self, gpointer data){
             gtk_style_context_remove_class(context, "selected");
         }
     }
+}
+
+static void on_opacity_changed(GtkSpinButton* spin, gpointer user_data){
+	opacities[selected_layer] = gtk_spin_button_get_value(spin);		
+}
+
+static void on_make_invisible(GtkWidget* widget, gpointer user_data){
+	gtk_widget_set_visible(images[selected_layer], !gtk_widget_get_visible(images[selected_layer])); 	
 }
 
 GtkWidget* create_layerpicker(){
@@ -33,6 +43,11 @@ GtkWidget* create_layerpicker(){
     gtk_box_append(GTK_BOX(layerpicker), layer_buttons[0]);
     gtk_box_append(GTK_BOX(layerpicker), layer_buttons[1]);
     gtk_box_append(GTK_BOX(layerpicker), layer_buttons[2]);
+
+	//Make invisible button
+	GtkWidget* make_invisible = gtk_button_new_with_label("toggle invisible");
+	gtk_box_append(GTK_BOX(layerpicker), make_invisible);
+	g_signal_connect(make_invisible, "clicked", G_CALLBACK(on_make_invisible), NULL);
 
 	return layerpicker;
 }
