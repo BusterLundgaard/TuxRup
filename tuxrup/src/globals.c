@@ -1,7 +1,10 @@
 #include "globals.h"
 enum gtk_version gtk_ver = 0;
 
+bool initialized = false;
+
 GtkWidget* application_root = NULL;
+GtkWidget* selected_widget = NULL;
 GHashTable *widget_callback_table = NULL;
 GHashTable *computed_hashes = NULL;
 GHashTable *known_widgets = NULL;

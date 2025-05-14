@@ -23,6 +23,31 @@ gboolean gtk_css_provider_load_from_file_OVERRIDE(GtkCssProvider* provider, GFil
 void gtk_css_provider_load_from_file_OVERRIDE(GtkCssProvider* provider, GFile* file);
 #endif
 
+// Widget adding
+#ifdef USE_GTK3
+void gtk_container_add_OVERRIDE(GtkContainer *container, GtkWidget *widget);
+void gtk_box_pack_start_OVERRIDE(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+void gtk_box_pack_end_OVERRIDE(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+void gtk_box_insert_child_after_OVERRIDE(GtkBox *box, GtkWidget *child, GtkWidget *sibling) ;
+void gtk_grid_attach_OVERRIDE(GtkGrid *grid, GtkWidget *child, gint left, gint top, gint width, gint height);
+void gtk_grid_attach_next_to_OVERRIDE(GtkGrid *grid, GtkWidget *child, GtkWidget *sibling, GtkPositionType side, gint width, gint height);
+void gtk_fixed_put_OVERRIDE(GtkFixed *fixed, GtkWidget *widget, gint x, gint y);
+gint gtk_notebook_append_page_OVERRIDE(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label);
+gint gtk_notebook_insert_page_OVERRIDE(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label, gint position);
+void gtk_paned_pack1_OVERRIDE(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink);
+void gtk_paned_pack2_OVERRIDE(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink);
+void gtk_scrolled_window_add_with_viewport_OVERRIDE(GtkScrolledWindow *scrolled_window, GtkWidget *child);
+void gtk_overlay_add_overlay_OVERRIDE(GtkOverlay *overlay, GtkWidget *widget);
+void gtk_stack_add_titled_OVERRIDE(GtkStack *stack, GtkWidget *child, const gchar *name, const gchar *title);
+void gtk_stack_add_named_OVERRIDE(GtkStack *stack, GtkWidget *child, const gchar *name);
+void gtk_header_bar_pack_start_OVERRIDE(GtkHeaderBar *bar, GtkWidget *child);
+void gtk_header_bar_pack_end_OVERRIDE(GtkHeaderBar *bar, GtkWidget *child);
+void gtk_menu_shell_append_OVERRIDE(GtkMenuShell *menu_shell, GtkWidget *child);
+void gtk_menu_shell_prepend_OVERRIDE(GtkMenuShell *menu_shell, GtkWidget *child);
+void gtk_menu_shell_insert_OVERRIDE(GtkMenuShell *menu_shell, GtkWidget *child, gint position);
+
+#endif
+
 // Signal hooks
 gulong g_signal_connect_data_OVERRIDE(gpointer instance,
                                           const gchar *detailed_signal,
@@ -30,4 +55,9 @@ gulong g_signal_connect_data_OVERRIDE(gpointer instance,
                                           gpointer data,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
+
+
+
+
+
 #endif

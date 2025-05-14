@@ -196,7 +196,7 @@ void open_edit_properties_window(GtkWidget* widget){
     active_widget = widget;   
 
     // Get widget properties
-    GObjectClass* klass = get_widget_class(widget);
+	GObjectClass* klass = G_OBJECT_GET_CLASS(widget);
     guint properties_n;
     GParamSpec **properties = g_object_class_list_properties(klass, &properties_n);
 

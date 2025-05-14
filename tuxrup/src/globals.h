@@ -17,6 +17,7 @@ enum gtk_version {
 };
 extern enum gtk_version gtk_ver;
 
+extern bool initialized;
 //---------------------------------------
 
 enum gtk_callback_category {
@@ -108,6 +109,7 @@ extern const source_code_info source_code_paths[30];
 //---------------------------------------
 
 extern GtkWidget* application_root;
+extern GtkWidget* selected_widget;
 
 extern GHashTable *known_widgets;
 extern GHashTable *widget_callback_table;

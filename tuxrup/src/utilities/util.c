@@ -459,3 +459,17 @@ void iterate_hash_table(GHashTable* table, hash_table_iter_function iter_functio
     }
 }
 
+void set_program_name(){
+	char* executable_path_copy = g_strdup(executable_path);
+    program_name = g_basename(executable_path_copy);
+}
+void set_program_src_code(){
+	for(int i = 0; i < source_code_paths_LEN; i++){
+		if(source_code_paths[i].executable_name == NULL){break;}
+		if(strcmp(source_code_paths[i].executable_name, program_name) == 0){
+			program_src_folder = source_code_paths[i].source_code_path;
+			g_print("set program_src_folder to %s\n", program_src_folder);
+		}
+	}
+}
+

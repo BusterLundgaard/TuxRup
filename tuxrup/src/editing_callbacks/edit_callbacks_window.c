@@ -38,7 +38,11 @@ GHashTable* document_symbols;
 // GENERAL UTILITY METHODS
 // ======================================================
 // Gets all the callbacks that can possibly be applied to a given widget (looks at its categories and sees what callbacks we currently support editing for this widget category)
-callbacks_list set_applicable_callbacks_from_active_widget(){
+void set_applicable_callbacks_from_active_widget(){
+	if(active_widget == NULL){
+		g_print("Tried to set callbacks on a widget that was null. Returning empty list\n");
+		return; 
+	}
     enum widget_type_category active_widget_category = get_widget_type_category(active_widget);
     applicable_callbacks = (callbacks_list){.callbacks = {}, .size=0};
    

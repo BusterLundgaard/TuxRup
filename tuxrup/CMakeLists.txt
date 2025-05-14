@@ -49,7 +49,6 @@ set(SOURCES
     src/function_dispatcher.c
     src/utilities/hashing.c
     src/utilities/util.c
-    src/method_intercepting/gtk_events.c
     src/method_intercepting/events_util.c
     src/method_intercepting/hooks.c
     src/method_intercepting/overrides.c

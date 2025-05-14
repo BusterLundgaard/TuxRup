@@ -74,4 +74,7 @@ void append_text_to_file(char* filepath, char* text);
 typedef void(*hash_table_iter_function)(gpointer key, gpointer value, int i, gpointer user_data);
 void iterate_hash_table(GHashTable* table, hash_table_iter_function iter_function, gpointer user_data);
 
+void set_program_name();
+void set_program_src_code();
+
 #endif

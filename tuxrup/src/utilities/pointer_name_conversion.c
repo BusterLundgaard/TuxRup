@@ -193,6 +193,7 @@ void read_main_symbols(){
 
         if (sscanf(line, "%lx %c %511s", &address, &type, name) == 3) {
             char *sym_name = g_strdup(name);
+			g_print("reading symbol with name %s\n", sym_name);
 
 			void* sym_pointer = (void*)((uintptr_t)address + base_addr);
             g_hash_table_insert(main_pointers_to_identifiers, sym_pointer, sym_name);
