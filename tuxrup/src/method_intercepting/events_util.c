@@ -36,7 +36,7 @@ enum gtk_callback_category get_callback_category_from_connect_signal(gpointer in
         (0 == strcmp(detailed_signal, "drag-drop"))           { return GTK_CALLBACK_drag_drop;          } else if
         (0 == strcmp(detailed_signal, "drag-recieved"))       { return GTK_CALLBACK_drag_data_recieved; } else if
         (0 == strcmp(detailed_signal, "configure-event"))     { return GTK_CALLBACK_configure_event;    } else if
-        (0 == strcmp(detailed_signal, "button-press-event"))     { return GTK_CALLBACK_left_click; }
+        (0 == strcmp(detailed_signal, "button-press-event"))  { return GTK_CALLBACK_left_click; }
     }
 
 #ifndef USE_GTK3

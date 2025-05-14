@@ -1,6 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
-
+#include <stdbool.h>
 
 #ifdef USE_GTK3
     #include <gtk-3.0/gtk/gtk.h>
@@ -85,7 +85,11 @@ enum widget_type_category {
     GTK_CATEGORY_ComboBoxText, 
     GTK_CATEGORY_DropDown, 
     
-    GTK_CATEGORY_Window
+    GTK_CATEGORY_Window,
+
+#ifdef USE_GTK3
+	GTK_CATEGORY_ToolButton
+#endif
 };
 
 typedef struct {

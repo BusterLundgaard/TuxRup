@@ -90,7 +90,8 @@ enum widget_type_category get_widget_type_category(GtkWidget* w){
     if(GTK_IS_SCALE(w))         {return GTK_CATEGORY_Scale;}
     if(GTK_IS_COMBO_BOX_TEXT(w)){return GTK_CATEGORY_ComboBoxText;}
     #ifdef USE_GTK3
-    if(GTK_IS_COMBO_BOX(w))      {return GTK_CATEGORY_DropDown;}
+    if(GTK_IS_COMBO_BOX(w))     {return GTK_CATEGORY_DropDown;}
+	if(GTK_IS_TOOL_BUTTON(w))   {g_print("It is a toolbutton!\n"); return GTK_CATEGORY_ToolButton;}
     #else
     if(GTK_IS_DROP_DOWN(w))     {return GTK_CATEGORY_DropDown;}
     #endif

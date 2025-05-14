@@ -37,7 +37,13 @@ static void new_window(GtkWidget* w, gpointer user_data){
   	gtk_widget_show_all(window);
 }
 
+void on_open_clicked(GtkWidget* widget, gpointer user_data){
+	g_print("on open\n");
+}
 
+void on_new_clicked(GtkWidget* widget, gpointer user_data){
+	g_print("on new"\n);
+}
 
 static void
 activate (GtkApplication *app,
@@ -73,6 +79,26 @@ activate (GtkApplication *app,
 	  GtkWidget* new_window_button = gtk_button_new_with_label("make new window");
 	  gtk_container_add(GTK_CONTAINER(box), new_window_button);
 	  g_signal_connect(new_window_button, "clicked", G_CALLBACK(new_window), NULL);
+
+		
+	  // Toolbar
+	  GtkWidget *toolbar;
+	GtkToolItem *new_button, *open_button, *sep;
+
+	toolbar = gtk_toolbar_new();
+
+	new_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
+	g_signal_connect(new_button, "clicked", G_CALLBACK(on_new_clicked), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), new_button, -1);
+
+	open_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	g_signal_connect(open_button, "clicked", G_CALLBACK(on_open_clicked), NULL);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), open_button, -1);
+
+	sep = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
+	gtk_container_add(GTK_CONTAINER(box), toolbar);
+
 
 	  gtk_widget_show_all(window);
 }

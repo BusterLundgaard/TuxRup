@@ -1,5 +1,11 @@
 #include <stddef.h>
-#include <gtk/gtk.h>
+/* #include <gtk/gtk.h> */
+#ifdef USE_GTK3
+    #include <gtk-3.0/gtk/gtk.h>
+    #include <gdk/gdk.h>
+#else
+    #include <gtk-4.0/gtk/gtk.h>
+#endif
 #include "globals.h"
 #include "toolpicker.h"
 

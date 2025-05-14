@@ -18,7 +18,8 @@ char* program_src_folder = ""; //We need to fix this now! it should not be relat
 char* debug_symbols_path = NULL;
 
 const action remapable_events[MAPPABLE_ACTIONS_LEN] = {
-    {GTK_CALLBACK_clicked,               {GTK_CATEGORY_Button}},
+    {GTK_CALLBACK_clicked,               {GTK_CATEGORY_Button,
+										  GTK_CATEGORY_ToolButton}},
     {GTK_CALLBACK_activate,              {GTK_CATEGORY_Button,       
                                           GTK_CATEGORY_Entry}},
     {GTK_CALLBACK_toggled,               {GTK_CATEGORY_CheckButton,  
