@@ -8,7 +8,7 @@
 //------------------------------------
 // GlOBALS
 // -----------------------------------
-GtkApplication* app = NULL;
+GtkWidget* root = NULL;
 GtkWidget* selected_widget = NULL;
 
 // ------------------------------------
@@ -43,11 +43,22 @@ void remove_class_from_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	gtk_style_context_remove_class(context, class);
 }
+bool contains_class(GtkWidget* widget, char* class_name){
+	GtkStyleContext* context = gtk_widget_get_style_context(widget);
+	GList* classes = gtk_style_context_list_classes(context);
+	for(GList* elem = classes; elem; elem = elem->next){
+        if (g_strcmp0(elem->data, class_name) == 0) {
+            return true;
+        }
+    }
+	return false;
+}
 
 void apply_css(char* css_string){
+	g_print("css is applied!\n");
 	GtkCssProvider *provider = gtk_css_provider_new();    
-    gtk_css_provider_load_from_data(provider, css_string); 
-    GdkScreen *screen = gtk_widget_get_screen(application_root);
+    gtk_css_provider_load_from_data(provider, css_string, -1, NULL); 
+    GdkScreen *screen = gtk_widget_get_screen(root);
     gtk_style_context_add_provider_for_screen(screen,
                                    GTK_STYLE_PROVIDER(provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -58,9 +69,13 @@ void apply_css(char* css_string){
 // CATCHING ADDED WIDGETS
 // -----------------------------------------------------------------
 void on_widget_right_click(GtkWidget* widget){
-	remove_class_from_widget(selected_widget, "selected");
+	g_print("widget %p has class selected: %d\n", widget, contains_class(widget, "selected"));
+	if(selected_widget != NULL){
+		remove_class_from_widget(selected_widget, "selected");
+	}
 	selected_widget = widget;
 	add_class_to_widget(selected_widget, "selected");
+	g_print("widget %p has class selected: %d\n", widget, contains_class(widget, "selected"));
 }
 
 gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
@@ -68,15 +83,28 @@ gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user
     if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
         return false;
     }
+	on_widget_right_click(widget);
 }
 
 // Make this widget customizable 
 void make_widget_customizable(GtkWidget* widget){
+	if(!(
+	GTK_IS_BUTTON(widget) ||
+	GTK_IS_ENTRY(widget) ||
+	GTK_IS_TEXT_BUFFER(widget) ||
+	GTK_IS_CHECK_BUTTON(widget) ||
+	GTK_IS_TOGGLE_BUTTON(widget) ||
+	GTK_IS_SPIN_BUTTON(widget) ||
+	GTK_IS_SCALE(widget) ||
+	GTK_IS_COMBO_BOX(widget)
+	)){
+		return;
+	}
 		
 	add_class_to_widget(widget, "modifiable");
 
     gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect_data_ORIGINAL(widget, "button-press-event", G_CALLBACK(on_widget_click), user_data, NULL, (GConnectFlags)0);
+    g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
 
 	g_print("adding widget %p\n", widget);
 }
@@ -151,6 +179,11 @@ void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_cu
 GtkWidget* refresh_button;
 GtkWidget* widgets_overview;
 
+void refresh_widgets_overview(GList* application_windows){
+
+
+}
+
 void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_window), "Tuxrup");	
 
@@ -182,6 +215,7 @@ void pre_init(){
 
 // This function is run right BEFORE the application shows its first window
 void init(){
+	
 }
 
 // This function is called right AFTER the application shows its first window
@@ -195,14 +229,15 @@ void gtk_widget_show_all(GtkWidget *widget)
 
 	initialized = true;
 
-	app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+	root = widget;
+	GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 	gtk_widget_show_all_t gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 	
 	GtkWidget* tuxrup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	refresh(widget, tuxrup_window); 
 	gtk_widget_show_all_original(tuxrup_window);
-	
 	gtk_widget_show_all_original(widget);	
+	post_init();
 }
 
 
