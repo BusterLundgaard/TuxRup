@@ -22,6 +22,16 @@ gpointer* get_original_function_pointer(char* name){
 	return p;
 }
 
+GtkWidget* make_scrolled_window(int width, int height){
+	GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
+	GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
+	GtkWidget* scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
+	gtk_widget_set_size_request(scrolled_window, 200, 500);
+	gtk_scrolled_window_set_policy(
+			GTK_SCROLLED_WINDOW(scrolled_window), 
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	return scrolled_window;
+}
 // ----------------------------------------------------------------
 // CATCHING ADDED WIDGETS
 // -----------------------------------------------------------------
@@ -107,13 +117,8 @@ void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	refresh_button = gtk_button_new_with_label("wow");	
 
-    GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
-    GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
-    GtkWidget* widgets_overview_scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
-    gtk_widget_set_size_request(widgets_overview_scrolled_window, 200, 500);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widgets_overview_scrolled_window), 
-                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
+	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(200, 500); 
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	GtkWidget* label = gtk_label_new("label 1");
 
