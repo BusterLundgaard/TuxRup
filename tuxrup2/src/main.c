@@ -9,6 +9,7 @@
 // GlOBALS
 // -----------------------------------
 GtkApplication* app = NULL;
+GtkWidget* selected_widget = NULL;
 
 // ------------------------------------
 // UTIL
@@ -32,12 +33,51 @@ GtkWidget* make_scrolled_window(int width, int height){
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	return scrolled_window;
 }
+
+// CSS methods
+void add_class_to_widget(GtkWidget* widget, char* class){
+	GtkStyleContext* context = gtk_widget_get_style_context(widget);
+	gtk_style_context_add_class(context, class);
+}
+void remove_class_from_widget(GtkWidget* widget, char* class){
+	GtkStyleContext* context = gtk_widget_get_style_context(widget);
+	gtk_style_context_remove_class(context, class);
+}
+
+void apply_css(char* css_string){
+	GtkCssProvider *provider = gtk_css_provider_new();    
+    gtk_css_provider_load_from_data(provider, css_string); 
+    GdkScreen *screen = gtk_widget_get_screen(application_root);
+    gtk_style_context_add_provider_for_screen(screen,
+                                   GTK_STYLE_PROVIDER(provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(provider); 
+}
+
 // ----------------------------------------------------------------
 // CATCHING ADDED WIDGETS
 // -----------------------------------------------------------------
+void on_widget_right_click(GtkWidget* widget){
+	remove_class_from_widget(selected_widget, "selected");
+	selected_widget = widget;
+	add_class_to_widget(selected_widget, "selected");
+}
+
+gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
+	// Check that it is actually a right click and not just any click
+    if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
+        return false;
+    }
+}
 
 // Make this widget customizable 
 void make_widget_customizable(GtkWidget* widget){
+		
+	add_class_to_widget(widget, "modifiable");
+
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect_data_ORIGINAL(widget, "button-press-event", G_CALLBACK(on_widget_click), user_data, NULL, (GConnectFlags)0);
+
 	g_print("adding widget %p\n", widget);
 }
 
@@ -117,7 +157,6 @@ void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	refresh_button = gtk_button_new_with_label("wow");	
 
-
 	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(200, 500); 
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	GtkWidget* label = gtk_label_new("label 1");
@@ -141,8 +180,13 @@ void pre_init(){
 	g_print("hello there!!!\n");
 }
 
-// This function is run right before the application shows its first window
+// This function is run right BEFORE the application shows its first window
 void init(){
+}
+
+// This function is called right AFTER the application shows its first window
+void post_init(){
+	apply_css(".selected{background: blue} \n .debug{background: red}");
 }
 
 void gtk_widget_show_all(GtkWidget *widget)
