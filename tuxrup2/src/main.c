@@ -98,14 +98,30 @@ void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_cu
 // -----------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 // ----------------------------------------
+GtkWidget* refresh_button;
+GtkWidget* widgets_overview;
+
 void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_window), "Tuxrup");	
 
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	GtkWidget* button = gtk_button_new_with_label("wow");	
-	
+	refresh_button = gtk_button_new_with_label("wow");	
+
+    GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
+    GtkWidget* widgets_overview_scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
+    gtk_widget_set_size_request(widgets_overview_scrolled_window, 200, 500);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widgets_overview_scrolled_window), 
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+	widgets_overview = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* label = gtk_label_new("label 1");
+
 	gtk_container_add_original(GTK_CONTAINER(tuxrup_window), box);
-	gtk_container_add_original(GTK_CONTAINER(box), button);
+	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
+	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview), label);
 }
 
 // --------------------------------------------
