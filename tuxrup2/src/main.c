@@ -12,6 +12,8 @@ GtkWidget* application_root = NULL;
 GtkWidget* tuxrup_root = NULL;
 GtkWidget* selected_widget = NULL;
 
+typedef void(*gtk_widget_show_all_t)(GtkWidget*);
+gtk_widget_show_all_t gtk_widget_show_all_original;
 // ------------------------------------
 // UTIL
 // ------------------------------------
@@ -33,6 +35,15 @@ GtkWidget* make_scrolled_window(int width, int height){
 			GTK_SCROLLED_WINDOW(scrolled_window), 
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	return scrolled_window;
+}
+
+void empty_box(GtkWidget* box){
+	GList *children, *iter;
+    children = gtk_container_get_children(GTK_CONTAINER(box));
+    for (iter = children; iter; iter = g_list_next(iter)) {
+        gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
 }
 
 
@@ -263,35 +274,45 @@ GtkWidget* create_overview_label(char* label_str){
 }
 
 void refresh_widgets_overview(){
+	empty_box(widget_types);
+    empty_box(widget_names);
+    empty_box(widget_labels );
+	empty_box(widget_pointers);
+
 	GList* widgets = find_all_modifiable_widgets();
-	g_print("amount of widgets is %d\n", g_list_length(widgets));
+	g_print("amount of widgets: %d\n", g_list_length(widgets));
 	for(GList* elem = widgets; elem; elem=elem->next){
 		GtkWidget* widget = (GtkWidget*)elem->data;
-		
-		GtkWidget* type_label                      = create_overview_label(get_widget_type_string(widget));
-		GtkWidget* name_label                      = create_overview_label(gtk_widget_get_name(widget));
-		GtkWidget* label_label                     = create_overview_label(get_widget_label(widget));
-		GtkWidget* pointer_label                   = create_overview_label(g_strdup_printf("%p", widget));
-		/* GtkWidget* has_callback_label              = create_overview_label(); */
-		/* GtkWidget* callback_name_label             = create_overview_label(); */
-		/* GtkWidget* callback_function_name_label    = create_overview_label(); */
-		/* GtkWidget* callback_function_pointer_label = create_overview_label(); */
-		gtk_container_add_original(GTK_CONTAINER(widget_types), type_label);
-		gtk_container_add_original(GTK_CONTAINER(widget_names), name_label);
-		gtk_container_add_original(GTK_CONTAINER(widget_labels), label_label);
-		gtk_container_add_original(GTK_CONTAINER(widget_pointers), pointer_label);
+		GtkWidget* label = create_overview_label(get_widget_type_string(widget));
+		gtk_container_add_original(GTK_CONTAINER(widget_types),    label);
+		/* gtk_container_add_original(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget))); */
+		gtk_container_add_original(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
+		gtk_container_add_original(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
+		gtk_container_add_original(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
 	}
 }
 
 
-void refresh(){
+void refresh_tuxrup_window(){
+	refresh_widgets_overview();
+	//other stuff here
+	gtk_widget_show_all_original(tuxrup_root);
+}
+
+void build_tuxrup_window(){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
 
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	refresh_button = gtk_button_new_with_label("wow");	
+	refresh_button = gtk_button_new_with_label("REFRESH");	
+	g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh_tuxrup_window), NULL);
+
+	gtk_container_add_original(GTK_CONTAINER(tuxrup_root), box);
+	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
 
 	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(500, 500); 
+	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
 	widget_types                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	widget_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	widget_labels                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -300,33 +321,26 @@ void refresh(){
 	/* widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
 	/* widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
 	/* widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
-
-	gtk_container_add_original(GTK_CONTAINER(tuxrup_root), box);
-	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
-	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
-
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_types   );
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_names   );
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_labels  );
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_pointers);
-
 	gtk_widget_set_margin_right(widget_types,    10);
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
+
 	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
 	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
 	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
 	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
-
-	refresh_widgets_overview();		
 }
+
 
 // --------------------------------------------
 // INITIALIZATION
 // ---------------------------------------------
-typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 bool initialized = false;
 
 // This function is called as the very first function, ie. before ANYTHING else. Can't rely on any kind of GTK context, since GTK hasn't even run it's application yet.
@@ -353,11 +367,11 @@ void gtk_widget_show_all(GtkWidget *widget)
 
 	application_root = widget;
 	GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
-	gtk_widget_show_all_t gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
+	gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 	
 	init();
 	tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	refresh();
+	build_tuxrup_window();
 	gtk_widget_show_all_original(tuxrup_root);
 
 	gtk_widget_show_all_original(widget);	
