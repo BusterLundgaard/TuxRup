@@ -8,7 +8,8 @@
 //------------------------------------
 // GlOBALS
 // -----------------------------------
-GtkWidget* root = NULL;
+GtkWidget* application_root = NULL;
+GtkWidget* tuxrup_root = NULL;
 GtkWidget* selected_widget = NULL;
 
 // ------------------------------------
@@ -55,10 +56,9 @@ bool contains_class(GtkWidget* widget, char* class_name){
 }
 
 void apply_css(char* css_string){
-	g_print("css is applied!\n");
 	GtkCssProvider *provider = gtk_css_provider_new();    
     gtk_css_provider_load_from_data(provider, css_string, -1, NULL); 
-    GdkScreen *screen = gtk_widget_get_screen(root);
+    GdkScreen *screen = gtk_widget_get_screen(application_root);
     gtk_style_context_add_provider_for_screen(screen,
                                    GTK_STYLE_PROVIDER(provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -184,8 +184,8 @@ void refresh_widgets_overview(GList* application_windows){
 
 }
 
-void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
-	gtk_window_set_title(GTK_WINDOW(tuxrup_window), "Tuxrup");	
+void refresh(){
+	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
 
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	refresh_button = gtk_button_new_with_label("wow");	
@@ -194,11 +194,13 @@ void refresh(GtkWidget* original_window, GtkWidget* tuxrup_window){
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	GtkWidget* label = gtk_label_new("label 1");
 
-	gtk_container_add_original(GTK_CONTAINER(tuxrup_window), box);
+	gtk_container_add_original(GTK_CONTAINER(tuxrup_root), box);
 	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
 	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
 	gtk_container_add_original(GTK_CONTAINER(widgets_overview), label);
+
+	refresh_widgets_overview(gtk_application_get_windows(gtk_window_get_application(GTK_WINDOW(application_root))));		
 }
 
 // --------------------------------------------
@@ -229,13 +231,15 @@ void gtk_widget_show_all(GtkWidget *widget)
 
 	initialized = true;
 
-	root = widget;
+	application_root = widget;
 	GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 	gtk_widget_show_all_t gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 	
-	GtkWidget* tuxrup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	refresh(widget, tuxrup_window); 
-	gtk_widget_show_all_original(tuxrup_window);
+	init();
+	tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_widget_show_all_original(tuxrup_root);
+	refresh();
+
 	gtk_widget_show_all_original(widget);	
 	post_init();
 }
