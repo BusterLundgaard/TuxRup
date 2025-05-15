@@ -111,8 +111,6 @@ char* get_widget_label(GtkWidget* widget){
 // CATCHING ADDED WIDGETS
 // -----------------------------------------------------------------
 
-// Is this one of the types of widgets that we are looking at? 
-
 void on_widget_right_click(GtkWidget* widget){
 	g_print("widget %p has class selected: %d\n", widget, contains_class(widget, "selected"));
 	if(selected_widget != NULL){
@@ -211,7 +209,16 @@ void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_cu
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 // ----------------------------------------
 GtkWidget* refresh_button;
+
 GtkWidget* widgets_overview;
+GtkWidget* widget_types;
+GtkWidget* widget_names;
+GtkWidget* widget_labels;
+GtkWidget* widget_pointers;
+GtkWidget* widget_has_callbacks;
+GtkWidget* widget_callback_names;
+GtkWidget* widget_callback_function_names;
+GtkWidget* widget_callback_function_pointers;
 
 char* widget_to_string(GtkWidget* widget){
 	char* pointer_name = g_strdup_printf("%p", widget);
@@ -221,38 +228,61 @@ char* widget_to_string(GtkWidget* widget){
 	return g_strdup_printf("%s; %s; %s; %s", widget_type, id_name, label, pointer_name);
 }
 
-// Simply look at everything recursively and add everything there that is modifiable
-void register_all_modifiable_children(GtkWidget* widget){
+void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(!GTK_IS_WIDGET(widget)){return;}
 
 	if(contains_class(widget, "modifiable")){
-		GtkWidget* label = gtk_label_new(widget_to_string(widget));
-		if(widget == selected_widget){
-			add_class_to_widget(label, "selected");
-		}
-		gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-		gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-		gtk_widget_set_hexpand(label, false);
-	
-		gtk_box_pack_start(GTK_BOX(widgets_overview), label, FALSE, FALSE, 0);
+		*widgets = g_list_append(*widgets, widget);
 	}
 	
 	if(!GTK_IS_CONTAINER(widget)){return;}
-	int index = 0;
+
 	GList *children = gtk_container_get_children(GTK_CONTAINER(widget));
-	for (GList *l = children; l; l = l->next, index++) {
-		GtkWidget *child = GTK_WIDGET(l->data);
-		register_all_modifiable_children(child);
+	for (GList *l = children; l; l = l->next){
+		find_all_modifiable_children(GTK_WIDGET(l->data), widgets);
 	}
 	g_list_free(children);  
 }
 
-void refresh_widgets_overview(GList* application_windows){
+GList* find_all_modifiable_widgets(){
+	GList* application_windows = gtk_application_get_windows(gtk_window_get_application(GTK_WINDOW(application_root)));
+	GList* widgets = NULL; 
 	for(GList* elem = application_windows; elem; elem = elem->next){
 		GtkWidget* root_widget = GTK_WIDGET((GtkWindow*)elem->data);
-		register_all_modifiable_children(root_widget);
+		find_all_modifiable_children(root_widget, &widgets);
+	}
+	return widgets;
+}
+
+GtkWidget* create_overview_label(char* label_str){
+	GtkWidget* label = gtk_label_new(label_str);
+	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_widget_set_hexpand(label, false);
+	return label;
+}
+
+void refresh_widgets_overview(){
+	GList* widgets = find_all_modifiable_widgets();
+	g_print("amount of widgets is %d\n", g_list_length(widgets));
+	for(GList* elem = widgets; elem; elem=elem->next){
+		GtkWidget* widget = (GtkWidget*)elem->data;
+		
+		GtkWidget* type_label                      = create_overview_label(get_widget_type_string(widget));
+		GtkWidget* name_label                      = create_overview_label(gtk_widget_get_name(widget));
+		GtkWidget* label_label                     = create_overview_label(get_widget_label(widget));
+		GtkWidget* pointer_label                   = create_overview_label(g_strdup_printf("%p", widget));
+		/* GtkWidget* has_callback_label              = create_overview_label(); */
+		/* GtkWidget* callback_name_label             = create_overview_label(); */
+		/* GtkWidget* callback_function_name_label    = create_overview_label(); */
+		/* GtkWidget* callback_function_pointer_label = create_overview_label(); */
+		gtk_container_add_original(GTK_CONTAINER(widget_types), type_label);
+		gtk_container_add_original(GTK_CONTAINER(widget_names), name_label);
+		gtk_container_add_original(GTK_CONTAINER(widget_labels), label_label);
+		gtk_container_add_original(GTK_CONTAINER(widget_pointers), pointer_label);
 	}
 }
+
 
 void refresh(){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
@@ -260,15 +290,37 @@ void refresh(){
 	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	refresh_button = gtk_button_new_with_label("wow");	
 
-	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(200, 500); 
-	widgets_overview = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(500, 500); 
+	widgets_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	widget_types                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_labels                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_pointers                   = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	/* widget_has_callbacks              = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
+	/* widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
+	/* widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
+	/* widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
 
 	gtk_container_add_original(GTK_CONTAINER(tuxrup_root), box);
 	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
 	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
 
-	refresh_widgets_overview(gtk_application_get_windows(gtk_window_get_application(GTK_WINDOW(application_root))));		
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_types   );
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_names   );
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_labels  );
+	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_pointers);
+
+	gtk_widget_set_margin_right(widget_types,    10);
+	gtk_widget_set_margin_right(widget_names,    10);
+	gtk_widget_set_margin_right(widget_labels,   10);
+	gtk_widget_set_margin_right(widget_pointers, 10);
+	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
+	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
+	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
+	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
+
+	refresh_widgets_overview();		
 }
 
 // --------------------------------------------
