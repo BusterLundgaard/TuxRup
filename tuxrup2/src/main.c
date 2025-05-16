@@ -224,7 +224,7 @@ void build_tuxrup_window(){
 	GtkWidget* change_widget_properties_button = gtk_button_new_with_label("Change widget properties");	
 	gtk_container_add(GTK_CONTAINER(change_properties_column), change_widget_properties_button);
 
-	GtkWidget* property_editor_scrolled_window = make_scrolled_window(50, 500); 
+	GtkWidget* property_editor_scrolled_window = make_scrolled_window(100, 500); 
 	gtk_container_add(GTK_CONTAINER(columns), change_properties_column);
 
 	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
