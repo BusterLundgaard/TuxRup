@@ -11,7 +11,12 @@
 #include "globals.h"
 #include "properties.h"
 
-
+//TODO: Test we add the methods/callbacks correctly
+//TODO: Compute the various strings/constants we need
+//TODO: Get the debug symbols working again
+//TODO: Now also showw the function names in the overview, write a test that shows it works
+//TODO: Write the on-edit-callback button callback
+//TODO: Write the on-done-editing-callback button callback
 
 // -----------------------------------
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
@@ -19,10 +24,18 @@
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
+typedef gulong (*g_signal_connect_data_t)(gpointer instance,
+                                          const gchar *detailed_signal,
+                                          GCallback c_handler,
+                                          gpointer data,
+                                          GClosureNotify destroy_data,
+                                          GConnectFlags connect_flags);
+extern g_signal_connect_data_t g_signal_connect_data_original;
+
 // ------------------------------------
 // UTIL
 // ------------------------------------
-// idget methods:
+// Widget methods:
 // -----------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 //
@@ -39,18 +52,10 @@ GtkWidget* widget_types;
 GtkWidget* widget_names;
 GtkWidget* widget_labels;
 GtkWidget* widget_pointers;
-GtkWidget* widget_has_callbacks;
 GtkWidget* widget_callback_names;
 GtkWidget* widget_callback_function_names;
 GtkWidget* widget_callback_function_pointers;
 
-char* widget_to_string(GtkWidget* widget){
-	char* pointer_name = g_strdup_printf("%p", widget);
-	char* id_name = gtk_widget_get_name(widget); 
-	char* label = get_widget_label(widget);  
-	char* widget_type = get_widget_type_string(widget); 
-	return g_strdup_printf("%s; %s; %s; %s", widget_type, id_name, label, pointer_name);
-}
 
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(!GTK_IS_WIDGET(widget)){return;}
@@ -123,12 +128,22 @@ void refresh_widgets_overview(){
 	GList* widgets = find_all_modifiable_widgets();
 	for(GList* elem = widgets; elem; elem=elem->next){
 		GtkWidget* widget = (GtkWidget*)elem->data;
-		GtkWidget* label = create_overview_label(get_widget_type_string(widget));
-		gtk_container_add(GTK_CONTAINER(widget_types),    label);
-		/* gtk_container_add(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget))); */
+		gtk_container_add(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
-		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
+		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
+		
+		void* callback_pointer = g_object_get_data(G_OBJECT(widget), "callback_pointer");
+		char* callback_name = g_object_get_data(G_OBJECT(widget), "callback_name")
+
+		if(callback_pointer != NULL){
+			gtk_container_add(GTK_CONTAINER(widget_callback_names), callback_name);
+			// TODO: Add function name here once symbols are working
+			/* gtk_container_add(GTK_CONTAINER(widget_callback_function_names), callback_name); */
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), callback_name);
+		}
+		if(g_object_get_data(G_OBJECT(widget), "callback")){
+
 		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
 			make_widget_customizable(widget);
 			g_object_set_data(G_OBJECT(widget),"rightclickable", (gpointer)true);
@@ -170,10 +185,9 @@ void build_tuxrup_window(){
 	widget_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	widget_labels                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	widget_pointers                   = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	/* widget_has_callbacks              = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
-	/* widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
-	/* widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
-	/* widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
+	widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_types   );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_names   );
@@ -183,10 +197,9 @@ void build_tuxrup_window(){
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
-	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
-	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
-	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
-	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers);
 	
 	GtkWidget* symbol_label = gtk_label_new("symbols");	
 	gtk_box_pack_start(GTK_BOX(data_column), symbol_label, TRUE, TRUE, 0);
@@ -195,16 +208,16 @@ void build_tuxrup_window(){
 	gtk_box_pack_start(GTK_BOX(data_column), symbol_overview_scrolled_window, TRUE, TRUE, 0);
 	GtkWidget* symbol_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-	GtkWidget* symbol_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	GtkWidget* symbol_pointers                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	GtkWidget* symbol_sizes                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(symbol_overview_scrolled_window), symbol_overview);
+	GtkWidget* symbol_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* symbol_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* symbol_sizes    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_names   );
-	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_pointers   );
-	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_sizes  );
-	gtk_widget_set_margin_right(symbol_pointers,    10);
+	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_pointers);
+	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_sizes   );
+	gtk_widget_set_margin_right(symbol_pointers, 10);
 	gtk_widget_set_margin_right(symbol_names,    10);
-	gtk_widget_set_margin_right(symbol_sizes,   10);
+	gtk_widget_set_margin_right(symbol_sizes,    10);
 
 	for(int i = 0; i<100; i++){
 		GtkWidget* label1 = gtk_label_new("richard");	
@@ -270,7 +283,6 @@ void build_tuxrup_window(){
 
 	// --------------------------------------------------------------------------------------
 	// Change callback
-
 	GtkWidget* change_callback_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_widget_set_hexpand(change_callback_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), change_callback_column);
@@ -286,6 +298,35 @@ void build_tuxrup_window(){
 	GtkWidget* done_callback_button = gtk_button_new_with_label("Done editing callback");
 	gtk_container_add(GTK_CONTAINER(change_callback_column), done_callback_button);
 }
+
+
+// ---------------------------------------------
+// CALLBACKS
+// ---------------------------------------------
+gulong g_signal_connect_data(gpointer instance,
+                             const gchar *detailed_signal,
+                             GCallback c_handler,
+                             gpointer data,
+                             GClosureNotify destroy_data,
+ 							 GConnectFlags connect_flags){
+	if(!isobserved(instance))
+	{goto signal_connect_end;}
+
+	if(!(
+		strcmp(detailed_signal, "clicked")==0 || 
+		strcmp(detailed_signal, "activate") == 0)
+	)
+	{goto signal_connect_end;}
+
+	g_object_set_data(G_OBJECT(instance), "callback_name", detailed_signal); 
+	g_object_set_data(G_OBJECT(instance), "callback_pointer", (gpointer)c_handler);
+	g_object_set_data(G_OBJECT(instance), "callback_data", data); 
+
+	signal_connect_end:
+	g_signal_connect_data_original = g_signal_connect_data_original ? g_signal_connect_data_original : get_original_function_pointer("g_signal_connect_data");
+	return g_signal_connect_data_original(instane, detailed_signal, c_handler, data, destroy_data, connect_flags);
+}
+
 
 
 // --------------------------------------------
