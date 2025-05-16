@@ -292,7 +292,6 @@ void gtk_widget_show_all(GtkWidget *widget)
 	}
 }
 
-
 // ------------------------------------------------------------------
 // TESTS
 // The test functions are called *from* the testing GTK applications (currently only tests/test1/test1)
