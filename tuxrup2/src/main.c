@@ -9,6 +9,7 @@
 #include "util.h"
 #include "css.h"
 #include "globals.h"
+#include "properties.h"
 
 
 
@@ -128,15 +129,14 @@ void refresh_widgets_overview(){
 		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
-		if(!g_object_get_data(widget,"rightclickable")) {
+		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
 			make_widget_customizable(widget);
-			g_object_set_data(widget,"rightclickable",true);
+			g_object_set_data(G_OBJECT(widget),"rightclickable", (gpointer)true);
 			g_print("Hello\n");
 		}
 
 	}
 }
-
 
 void refresh_tuxrup_window(){
 	refresh_widgets_overview();
@@ -230,12 +230,7 @@ void build_tuxrup_window(){
 	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(change_properties_column), property_editor_scrolled_window);
 	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
-	
-	for(int i = 0; i < 100; i++){
-		GtkWidget* label = gtk_label_new("wow i am a label");
-		gtk_container_add(GTK_CONTAINER(property_editor), label);
-	}
-
+	g_signal_connect_data(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
 
 	// ---------------------------------------------------------------------------------
 	// Change CSS properties

@@ -15,7 +15,6 @@ void set_gtk_version() {
 }
 
 GObjectClass* get_widget_class(GtkWidget* widget){
-    GObject* object = G_OBJECT(widget);
     return G_OBJECT_GET_CLASS(G_OBJECT(widget));
 }
 
