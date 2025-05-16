@@ -7,54 +7,30 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
+#include "globals.h"
 #include "util.h"
 
 
 
-// void on_done_clicked(GtkWidget *widget, gpointer user_data)
-// {   
-//     gchar* text = get_textview_text(data->text_view);
+void on_done_clicked(GtkWidget *widget, gpointer user_data)
+{   
+    GtkTextBuffer *textbuffer = user_data;
+    char* text = get_text_from_buffer(textbuffer);
 
-//     static guint file_counter = 0;
-    
-//     // Apply the css
-//     apply_css_to_widget(modified_widget, text);
+    // Apply the css
+    GtkWidget*  w = selected_widget;
+    if(w == NULL) {return;}
+    if(!GTK_IS_WIDGET(w)) {return;}
+    apply_css_to_widget(w, text);
 
-//     // Make changes permanent by saving to a file
-//     gchar *filename;
-//     gchar *stored_filename = g_hash_table_lookup(widget_to_css_filepath_map, modified_widget);
-//     if (stored_filename) {
-//         filename = stored_filename;
-//     } else {
-//         filename = g_strdup_printf("./css_output_%u.css", file_counter++);
-//         g_hash_table_insert(widget_to_css_filepath_map, modified_widget, filename);
+    // Binds css directly to gobject data field
+    g_object_set_data_full(G_OBJECT(widget),"tuxrupcss",g_strdup(text),g_free); 
+}
+
+// void on_edit(GtkWidget *widget, gpointer user_data) {
+//     GtkTextBuffer *textbuffer = user_data
+//     if(g_object_get_data) {
+
 //     }
 
-//     GError *error = NULL;
-//     if (!g_file_set_contents(filename, text, -1, &error)) {
-//         g_print("Error writing to file %s: %s\n", filename, error->message);
-//         g_error_free(error);
-//         if (!stored_filename) {
-//             g_free(filename);
-//             g_hash_table_remove(widget_to_css_filepath_map, modified_widget);
-//         }
-//         g_free(text);
-//         #ifdef USE_GTK3
-//         gtk_widget_destroy(data->editor_window);
-//         #else
-//         gtk_window_destroy(GTK_WINDOW(data->editor_window));
-//         #endif
-//         g_free(data);
-//         return;
-//     } 
-
-//     // Clean up and close the editor window
-//     g_free(text);
-//     #ifdef USE_GTK3
-//     gtk_widget_destroy(data->editor_window);
-//     #else
-//     gtk_window_destroy(GTK_WINDOW(data->editor_window));
-//     #endif
-//     g_free(data);
 // }

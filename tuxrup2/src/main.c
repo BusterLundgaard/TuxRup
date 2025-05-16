@@ -7,13 +7,10 @@
 #include <dlfcn.h>
 
 #include "util.h"
+#include "css.h"
+#include "globals.h"
 
-//------------------------------------
-// GlOBALS
-// -----------------------------------
-GtkWidget* application_root = NULL; // the first window from the application we are modifying. Should remain constant.
-GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.   
-GtkWidget* selected_widget = NULL; //the currently selected widget.
+
 
 // -----------------------------------
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
@@ -88,6 +85,34 @@ GtkWidget* create_overview_label(char* label_str){
 	return label;
 }
 
+
+void on_widget_right_click(GtkWidget* widget){
+    if(selected_widget != NULL){
+        remove_class_from_widget(selected_widget, "selected");
+    }
+    selected_widget = widget;
+    add_class_to_widget(selected_widget, "selected");
+}
+
+
+gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
+    // Check that it is actually a right click and not just any click
+    if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
+        return false;
+    }
+    on_widget_right_click(widget);
+}
+
+// Make this widget customizable 
+void make_widget_customizable(GtkWidget* widget){
+    if(!observed_type(widget)){return;}
+
+    add_class_to_widget(widget, "modifiable");
+
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
+}
+
 void refresh_widgets_overview(){
 	empty_box(widget_types);
     empty_box(widget_names);
@@ -103,8 +128,11 @@ void refresh_widgets_overview(){
 		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
-
-		
+		if(!g_object_get_data(widget,"rightclickable")) {
+			make_widget_customizable(widget);
+			g_object_set_data(widget,"rightclickable",true);
+			g_print("Hello\n");
+		}
 
 	}
 }
@@ -216,9 +244,14 @@ void build_tuxrup_window(){
 	gtk_widget_set_hexpand(change_css_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), change_css_column);
 
-	GtkWidget* change_css_button = gtk_button_new_with_label("Change CSS");
+	GtkWidget* change_css_button = gtk_button_new_with_label("Load CSS");
 	gtk_container_add(GTK_CONTAINER(change_css_column), change_css_button);
 	apply_css_to_widget(change_css_button,"background: blue;");
+	// g_signal_connect(done, "clicked", G_CALLBACK(on_edit), textbuffer);
+
+
+	GtkWidget* done = gtk_button_new_with_label("Done");
+	gtk_container_add(GTK_CONTAINER(change_css_column), done);
 
 
 	GtkWidget* css_edit_label = gtk_label_new("Add CSS for widget here");
@@ -228,7 +261,7 @@ void build_tuxrup_window(){
 	gtk_text_buffer_set_text(textbuffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
 	GtkWidget* css_editor = gtk_text_view_new_with_buffer(textbuffer);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_editor);
-	//g_signal_connect(change_css_button, "clicked", G_CALLBACK(on_done_clicked), );
+	g_signal_connect(done, "clicked", G_CALLBACK(on_done_clicked), textbuffer);
 
 
 	GtkWidget* css_all_label = gtk_label_new("View all CSS for application here");
@@ -277,7 +310,13 @@ void init(){
 
 // This function is called right AFTER the application shows its first window
 void post_init(){
-	apply_css(".selected{background: blue} \n .debug{background: red}", application_root);
+	apply_css(".selected{background-image: linear-gradient(to bottom, #ffffffAA, #dddddd00); background-color:rgb(247, 190, 4);\
+    border: 2px solidrgb(231, 227, 1);\
+    border-radius: 8px;\
+    color: white;\
+    padding: 6px 12px;\
+    font-weight: bold;\
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);}\n .debug{background: red}", application_root);
 }
 
 void gtk_widget_show_all(GtkWidget *widget)
