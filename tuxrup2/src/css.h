@@ -1,0 +1,1 @@
+void on_done_clicked(GtkWidget *widget, gpointer user_data);

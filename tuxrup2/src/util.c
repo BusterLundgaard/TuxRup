@@ -71,6 +71,25 @@ void apply_css(char* css_string, GtkWidget* application_root){
     g_object_unref(provider); 
 }
 
+void apply_css_to_widget(GtkWidget *widget, const gchar *css_data) {
+
+	char *widgetstring = g_strdup_printf("%p",widget);
+    add_class_to_widget(widget,widgetstring);
+	char *css_block = g_strdup_printf(".%s {\n  %s\n}\n", widgetstring, css_data);
+
+    GtkCssProvider *provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(provider, css_block, -1, NULL);
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    gtk_style_context_add_provider(context,
+                                   GTK_STYLE_PROVIDER(provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+
+    // Clean up
+    g_free(css_block);
+    g_object_unref(provider);
+}
+
 
 // Detect and convert widget types methods:
 bool observed_type(GtkWidget* widget){

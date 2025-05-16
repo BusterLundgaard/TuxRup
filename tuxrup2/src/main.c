@@ -103,6 +103,9 @@ void refresh_widgets_overview(){
 		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
+
+		
+
 	}
 }
 
@@ -215,6 +218,8 @@ void build_tuxrup_window(){
 
 	GtkWidget* change_css_button = gtk_button_new_with_label("Change CSS");
 	gtk_container_add(GTK_CONTAINER(change_css_column), change_css_button);
+	apply_css_to_widget(change_css_button,"background: blue;");
+
 
 	GtkWidget* css_edit_label = gtk_label_new("Add CSS for widget here");
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_edit_label);
@@ -223,6 +228,8 @@ void build_tuxrup_window(){
 	gtk_text_buffer_set_text(textbuffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
 	GtkWidget* css_editor = gtk_text_view_new_with_buffer(textbuffer);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_editor);
+	//g_signal_connect(change_css_button, "clicked", G_CALLBACK(on_done_clicked), );
+
 
 	GtkWidget* css_all_label = gtk_label_new("View all CSS for application here");
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_all_label);
@@ -291,6 +298,9 @@ void gtk_widget_show_all(GtkWidget *widget)
 		gtk_widget_show_all_original(widget);	
 	}
 }
+
+
+
 
 // ------------------------------------------------------------------
 // TESTS
