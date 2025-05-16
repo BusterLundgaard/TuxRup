@@ -121,7 +121,7 @@ void build_tuxrup_window(){
 
 	// ------------------------------------------
 	// data colum
-	GtkWidget* data_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* data_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_hexpand(data_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), data_column);
 
@@ -157,6 +157,34 @@ void build_tuxrup_window(){
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
 	
+	GtkWidget* symbol_label = gtk_label_new("symbols");	
+	gtk_box_pack_start(GTK_BOX(data_column), symbol_label, TRUE, TRUE, 0);
+
+	GtkWidget* symbol_overview_scrolled_window = make_scrolled_window(20, 100); 
+	gtk_box_pack_start(GTK_BOX(data_column), symbol_overview_scrolled_window, TRUE, TRUE, 0);
+	GtkWidget* symbol_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+	GtkWidget* symbol_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* symbol_pointers                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* symbol_sizes                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_container_add(GTK_CONTAINER(symbol_overview_scrolled_window), symbol_overview);
+	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_names   );
+	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_pointers   );
+	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_sizes  );
+	gtk_widget_set_margin_right(symbol_pointers,    10);
+	gtk_widget_set_margin_right(symbol_names,    10);
+	gtk_widget_set_margin_right(symbol_sizes,   10);
+
+	for(int i = 0; i<100; i++){
+		GtkWidget* label1 = gtk_label_new("richard");	
+		GtkWidget* label2 = gtk_label_new("1x34859378");	
+		GtkWidget* label3 = gtk_label_new("300");	
+		gtk_container_add(GTK_CONTAINER(symbol_names), label1);
+		gtk_container_add(GTK_CONTAINER(symbol_pointers), label2);
+		gtk_container_add(GTK_CONTAINER(symbol_sizes), label3);
+
+	}
+
 	//---------------------------------------------------------------------------------
 	// Change widget properties
 	GtkWidget* change_properties_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
