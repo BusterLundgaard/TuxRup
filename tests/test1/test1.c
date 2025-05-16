@@ -81,7 +81,6 @@ int
 main (int    argc,
       char **argv)
 {
-	g_print("i was called!!\n");
     GtkApplication *app;
     int status;
     app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);

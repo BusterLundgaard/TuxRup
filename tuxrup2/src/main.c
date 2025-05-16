@@ -8,15 +8,19 @@
 //------------------------------------
 // GlOBALS
 // -----------------------------------
-GtkWidget* application_root = NULL;
-GtkWidget* tuxrup_root = NULL;
-GtkWidget* selected_widget = NULL;
+GtkWidget* application_root = NULL; // the first window from the application we are modifying. Should remain constant.
+GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.
+GtkWidget* selected_widget = NULL; //the currently selected window.
 
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
+
+
 // ------------------------------------
 // UTIL
 // ------------------------------------
+
+// widget methods
 gpointer* get_original_function_pointer(char* name){
 	void* p = dlsym(RTLD_NEXT, name);
 	if(p == NULL){
@@ -118,20 +122,30 @@ char* get_widget_label(GtkWidget* widget){
 	return label ? label : "";
 }
 
+
 // ----------------------------------------------------------------
 // CATCHING ADDED WIDGETS
+// In GTK3, you mostly add widgets by using gtk_container_add, so we get widgets we hooking into this function and picking them up
+// Theres uhhh, a few other methods in GTK3 for adding widgets, so we hook into those two
+// Hence the large block of code: It's just a bunch of addition functions we all bassicly hook into in the same way.
+//
+// In the previous version of Tuxrup, we tracked all added widgets and appended them to a hash map of all widgets that we are currently aware exist
+// But that means we have more *state*, which is bad. Who knows, this hash map of known widgets might easily get out of sync with the real current status of the DOM!
+// So we just track an element as "selected" by adding a class to it directly!
+// Then, when we want to refresh and see the current status of which widgets we know, we just say "fuck performance" and run through all widgets on all windows, checking which widgets have this class "selected".
+// Big gains: We don't need to keep track of widget deletion anymore, something we had completely forgotten about before
+
+// Instead of tracking litteraly every widget in GTK, we simplify things by tracking only certain types of widgets
+// You can view them in the function "observed_type()"
 // -----------------------------------------------------------------
 
 void on_widget_right_click(GtkWidget* widget){
-	g_print("widget %p has class selected: %d\n", widget, contains_class(widget, "selected"));
 	if(selected_widget != NULL){
 		remove_class_from_widget(selected_widget, "selected");
 	}
 	selected_widget = widget;
 	add_class_to_widget(selected_widget, "selected");
-	g_print("widget %p has class selected: %d\n", widget, contains_class(widget, "selected"));
 }
-
 gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
 	// Check that it is actually a right click and not just any click
     if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
@@ -148,10 +162,9 @@ void make_widget_customizable(GtkWidget* widget){
 
     gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
     g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
-
-	g_print("adding widget %p\n", widget);
 }
 
+// ... make a typedef for the type of the function you want to override
 typedef void (*gtk_container_add_t)(GtkContainer *container, GtkWidget *widget);
 /* typedef void (*gtk_box_pack_start_t)(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding); */
 /* typedef void (*gtk_box_pack_end_t)(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding); */
@@ -173,6 +186,7 @@ typedef void (*gtk_container_add_t)(GtkContainer *container, GtkWidget *widget);
 /* typedef void (*gtk_menu_shell_prepend_t)(GtkMenuShell *menu_shell, GtkWidget *child); */
 /* typedef void (*gtk_menu_shell_insert_t)(GtkMenuShell *menu_shell, GtkWidget *child, gint position); */
 
+// ... define a function storing the original function you are overriding
 gtk_container_add_t gtk_container_add_original;
 /* gtk_box_pack_start_t gtk_box_pack_start_original; */
 /* gtk_box_pack_end_t gtk_box_pack_end_original; */
@@ -194,6 +208,7 @@ gtk_container_add_t gtk_container_add_original;
 /* gtk_menu_shell_prepend_t gtk_menu_shell_prepend_original; */
 /* gtk_menu_shell_insert_t gtk_menu_shell_insert_original; */
 
+// ... then finally actually override the  function
 void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_customizable(child); gtk_container_add_original = (gtk_container_add_t)get_original_function_pointer("gtk_container_add"); gtk_container_add_original(container, child);}
 /* void gtk_box_pack_start(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding){make_widget_customizable(child);gtk_box_pack_start_original = (gtk_box_pack_start_t)get_original_function_pointer("gtk_box_pack_start");gtk_box_pack_start_original(box, child, expand, fill, padding);} */
 /* void gtk_box_pack_end(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding){make_widget_customizable(child);gtk_box_pack_end_original =  (gtk_box_pack_end_t)get_original_function_pointer("gtk_box_pack_end");gtk_box_pack_end_original(box, child, expand, fill, padding);} */
@@ -218,6 +233,12 @@ void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_cu
 
 // -----------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
+//
+// Tuxrup will have very bad human computer interaction: Every time some information is updated/changes, it wont automatically update on the tuxrup window. You have to manually press "refresh" for us to re-render the information
+// This is of course bad for performance and a little annoying, but it is much easier to program this way.
+// The two important functions to understand:
+// build_tuxrup_window(): builds the window initially and lays out the structure. Only called once
+// refresh_tuxrup_window(): fills out all the information we show in the tuxrup window. 
 // ----------------------------------------
 GtkWidget* refresh_button;
 
@@ -280,7 +301,6 @@ void refresh_widgets_overview(){
 	empty_box(widget_pointers);
 
 	GList* widgets = find_all_modifiable_widgets();
-	g_print("amount of widgets: %d\n", g_list_length(widgets));
 	for(GList* elem = widgets; elem; elem=elem->next){
 		GtkWidget* widget = (GtkWidget*)elem->data;
 		GtkWidget* label = create_overview_label(get_widget_type_string(widget));
@@ -346,7 +366,6 @@ bool initialized = false;
 // This function is called as the very first function, ie. before ANYTHING else. Can't rely on any kind of GTK context, since GTK hasn't even run it's application yet.
 __attribute__((constructor))
 void pre_init(){
-	g_print("hello there!!!\n");
 }
 
 // This function is run right BEFORE the application shows its first window
@@ -361,37 +380,75 @@ void post_init(){
 
 void gtk_widget_show_all(GtkWidget *widget)
 {
-	if(initialized){return;}
-
-	initialized = true;
-
-	application_root = widget;
-	GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
-	gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
-	
-	init();
-	tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	build_tuxrup_window();
-	gtk_widget_show_all_original(tuxrup_root);
-
-	gtk_widget_show_all_original(widget);	
-	post_init();
+	if(!initialized){
+		initialized = true;
+		application_root = widget;
+		GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+		gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
+		
+		init();
+		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		build_tuxrup_window();
+		gtk_widget_show_all_original(tuxrup_root);
+		gtk_widget_show_all_original(widget);	
+		post_init();
+	} else {
+		gtk_widget_show_all_original(widget);	
+	}
 }
 
 
 // ------------------------------------------------------------------
 // TESTS
+// The test functions are called *from* the testing GTK applications (currently only tests/test1/test1)
+// We do this by having the test applictations call undefined functions like tuxrup_test1, then have "empty" implementations of this in a shared library.
+// This way, when we run for example tests/test1/test1 with LD_PRELOAD, it takes the implementation of tuxrup_test1() from Tuxrup. 
+// Kind of complicated and confusing but moral of story: If you wanna make a new test, have it be called from the application you are testing
 // ----------------------------------------------------------------
-bool tuxrup_test1(){
-	g_print("hello from Tuxrup!!\n");
-	return true;
-}
-bool tuxrup_test2(){
-	g_print("second hello to you\n");
-	bool result = true;
+
+// Test: "There are 6 elements in tests/test1 that will be added to the list of widgets"
+bool exit_if_false(bool result, char* expected, char* got, int test_number){
 	if(!result){
-		g_print("test 2 failed: expected 2, got 3\n");
+		g_print("test %d failed. Expected: %s, got %s\n", test_number, expected, got);	
 		exit(1);
 	}
+	g_print("test %d PASSED.\n", test_number);
+	return true;
+}
+
+bool tuxrup_test1(){
+	GList* widgets = find_all_modifiable_widgets();
+	int count = g_list_length(widgets);
+
+	return exit_if_false(
+		count == 6,
+		"6",
+		g_strdup_printf("%d", count),
+	   1	
+	);
+}
+
+// Test: "The 6 added elements have these specific names" 
+bool tuxrup_test2(){
+	char* names[6] = {
+		"GtkButton",
+		"GtkCheckButton",
+		"buster",
+		"GtkSpinButton",
+		"GtkEntry",
+		"super cool dropdown"
+	};
+	GList* widgets = find_all_modifiable_widgets();
+
+	GList* elem = widgets;
+	for(int i = 0; i < 6 && elem != NULL; i++, elem = elem->next){
+		char* name = gtk_widget_get_name(elem->data); 
+		if(strcmp(name, names[i]) != 0){
+			g_print("test 2 failed. Expected: \"%s\", got \"%s\".\n", names[i], name);	
+			exit(1);
+		}
+	}
+
+	g_print("test 2 PASSED.\n");
 	return true;
 }
