@@ -24,7 +24,7 @@ gtk_widget_show_all_t gtk_widget_show_all_original;
 // ------------------------------------
 // UTIL
 // ------------------------------------
-// widget methods:
+// idget methods:
 gpointer* get_original_function_pointer(char* name){
 	void* p = dlsym(RTLD_NEXT, name);
 	if(p == NULL){
