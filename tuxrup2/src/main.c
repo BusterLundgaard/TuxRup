@@ -52,14 +52,17 @@ void empty_box(GtkWidget* box){
 
 
 // CSS methods
+// Adds a CSS class to a widget
 void add_class_to_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	gtk_style_context_add_class(context, class);
 }
+// Removes a CSS class from a widget
 void remove_class_from_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	gtk_style_context_remove_class(context, class);
 }
+// Checks if a widget contains a certain class_name
 bool contains_class(GtkWidget* widget, char* class_name){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	GList* classes = gtk_style_context_list_classes(context);
@@ -263,9 +266,11 @@ char* widget_to_string(GtkWidget* widget){
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(!GTK_IS_WIDGET(widget)){return;}
 
-	if(contains_class(widget, "modifiable")){
+	if(observed_type(widget)){
 		*widgets = g_list_append(*widgets, widget);
 	}
+	/* if(contains_class(widget, "modifiable")){ */
+	/* } */
 	
 	if(!GTK_IS_CONTAINER(widget)){return;}
 
