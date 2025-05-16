@@ -1,9 +1,14 @@
+
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <stdbool.h>
+
+
 
 // DESCRIBE THE TESTS HERE
 bool tuxrup_test1();
 bool tuxrup_test2();
+bool tuxrup_testBangladeshLable();
 
 void on_open_clicked(GtkWidget* widget, gpointer user_data){
 	g_print("on open\n");
@@ -73,6 +78,7 @@ activate (GtkApplication *app,
 	// TESTING
 	tuxrup_test1();
 	tuxrup_test2();
+	tuxrup_testBangladeshLable();
 	g_print("ALL TESTS PASSED!\n");
 	/* gtk_window_close(GTK_WINDOW(window)); */
 }

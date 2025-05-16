@@ -369,5 +369,4 @@ bool tuxrup_testBangladeshLable() {
 	g_print("test 3 failed. Expected: \"%s\", got \"%s\".\n", "Bangladesh", "None");	
 	exit(1);
 	return false;
-	
 }
