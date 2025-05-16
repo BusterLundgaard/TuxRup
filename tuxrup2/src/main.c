@@ -160,12 +160,12 @@ void build_tuxrup_window(){
 	//---------------------------------------------------------------------------------
 	// Change widget properties
 	GtkWidget* change_properties_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_widget_set_hexpand(change_properties_column, true);
+	/* gtk_widget_set_hexpand(change_properties_column, true); */
 
-	refresh_button = gtk_button_new_with_label("Change widget properties");	
-	gtk_container_add(GTK_CONTAINER(change_properties_column), refresh_button);
+	GtkWidget* change_widget_properties_button = gtk_button_new_with_label("Change widget properties");	
+	gtk_container_add(GTK_CONTAINER(change_properties_column), change_widget_properties_button);
 
-	GtkWidget* property_editor_scrolled_window = make_scrolled_window(100, 500); 
+	GtkWidget* property_editor_scrolled_window = make_scrolled_window(50, 500); 
 	gtk_container_add(GTK_CONTAINER(columns), change_properties_column);
 
 	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -177,6 +177,51 @@ void build_tuxrup_window(){
 		gtk_container_add(GTK_CONTAINER(property_editor), label);
 	}
 
+
+	// ---------------------------------------------------------------------------------
+	// Change CSS properties
+	
+	GtkWidget* change_css_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_widget_set_hexpand(change_css_column, true);
+	gtk_container_add(GTK_CONTAINER(columns), change_css_column);
+
+	GtkWidget* change_css_button = gtk_button_new_with_label("Change CSS");
+	gtk_container_add(GTK_CONTAINER(change_css_column), change_css_button);
+
+	GtkWidget* css_edit_label = gtk_label_new("Add CSS for widget here");
+	gtk_container_add(GTK_CONTAINER(change_css_column), css_edit_label);
+
+	GtkTextBuffer *textbuffer = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_set_text(textbuffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	GtkWidget* css_editor = gtk_text_view_new_with_buffer(textbuffer);
+	gtk_container_add(GTK_CONTAINER(change_css_column), css_editor);
+
+	GtkWidget* css_all_label = gtk_label_new("View all CSS for application here");
+	gtk_container_add(GTK_CONTAINER(change_css_column), css_all_label);
+
+	GtkTextBuffer *textbuffer2 = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_set_text(textbuffer2, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
+	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
+
+
+	// --------------------------------------------------------------------------------------
+	// Change callback
+
+	GtkWidget* change_callback_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_widget_set_hexpand(change_callback_column, true);
+	gtk_container_add(GTK_CONTAINER(columns), change_callback_column);
+
+	GtkWidget* change_callback_button = gtk_button_new_with_label("Edit callback");
+	gtk_container_add(GTK_CONTAINER(change_callback_column), change_callback_button);
+		
+	GtkTextBuffer *textbuffer3 = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_set_text(textbuffer3, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	GtkWidget* callback_editor = gtk_text_view_new_with_buffer(textbuffer3);
+	gtk_container_add(GTK_CONTAINER(change_callback_column), callback_editor);
+
+	GtkWidget* done_callback_button = gtk_button_new_with_label("Done editing callback");
+	gtk_container_add(GTK_CONTAINER(change_callback_column), done_callback_button);
 }
 
 
