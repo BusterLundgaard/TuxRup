@@ -10,8 +10,13 @@
 // -----------------------------------
 GtkWidget* application_root = NULL; // the first window from the application we are modifying. Should remain constant.
 GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.
-GtkWidget* selected_widget = NULL; //the currently selected window.
+							   
+GtkWidget* selected_widget = NULL; //the currently selected widget.
 
+
+// -----------------------------------
+// ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
+// -----------------------------------
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
@@ -19,8 +24,7 @@ gtk_widget_show_all_t gtk_widget_show_all_original;
 // ------------------------------------
 // UTIL
 // ------------------------------------
-
-// widget methods
+// widget methods:
 gpointer* get_original_function_pointer(char* name){
 	void* p = dlsym(RTLD_NEXT, name);
 	if(p == NULL){
@@ -51,7 +55,7 @@ void empty_box(GtkWidget* box){
 }
 
 
-// CSS methods
+// CSS methods:
 // Adds a CSS class to a widget
 void add_class_to_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
@@ -85,7 +89,7 @@ void apply_css(char* css_string){
 }
 
 
-// Detect and convert widget types
+// Detect and convert widget types methods:
 bool observed_type(GtkWidget* widget){
 	return 
 		GTK_IS_BUTTON(widget) ||
@@ -125,115 +129,6 @@ char* get_widget_label(GtkWidget* widget){
 	return label ? label : "";
 }
 
-
-// ----------------------------------------------------------------
-// CATCHING ADDED WIDGETS
-// In GTK3, you mostly add widgets by using gtk_container_add, so we get widgets we hooking into this function and picking them up
-// Theres uhhh, a few other methods in GTK3 for adding widgets, so we hook into those two
-// Hence the large block of code: It's just a bunch of addition functions we all bassicly hook into in the same way.
-//
-// In the previous version of Tuxrup, we tracked all added widgets and appended them to a hash map of all widgets that we are currently aware exist
-// But that means we have more *state*, which is bad. Who knows, this hash map of known widgets might easily get out of sync with the real current status of the DOM!
-// So we just track an element as "selected" by adding a class to it directly!
-// Then, when we want to refresh and see the current status of which widgets we know, we just say "fuck performance" and run through all widgets on all windows, checking which widgets have this class "selected".
-// Big gains: We don't need to keep track of widget deletion anymore, something we had completely forgotten about before
-
-// Instead of tracking litteraly every widget in GTK, we simplify things by tracking only certain types of widgets
-// You can view them in the function "observed_type()"
-// -----------------------------------------------------------------
-
-void on_widget_right_click(GtkWidget* widget){
-	if(selected_widget != NULL){
-		remove_class_from_widget(selected_widget, "selected");
-	}
-	selected_widget = widget;
-	add_class_to_widget(selected_widget, "selected");
-}
-gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
-	// Check that it is actually a right click and not just any click
-    if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
-        return false;
-    }
-	on_widget_right_click(widget);
-}
-
-// Make this widget customizable 
-void make_widget_customizable(GtkWidget* widget){
-	if(!observed_type(widget)){return;}
-
-	add_class_to_widget(widget, "modifiable");
-
-    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
-}
-
-// ... make a typedef for the type of the function you want to override
-typedef void (*gtk_container_add_t)(GtkContainer *container, GtkWidget *widget);
-/* typedef void (*gtk_box_pack_start_t)(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding); */
-/* typedef void (*gtk_box_pack_end_t)(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding); */
-/* typedef void (*gtk_box_insert_child_after_t)(GtkBox *box, GtkWidget *child, GtkWidget *sibling) ; */
-/* typedef void (*gtk_grid_attach_t)(GtkGrid *grid, GtkWidget *child, gint left, gint top, gint width, gint height); */
-/* typedef void (*gtk_grid_attach_next_to_t)(GtkGrid *grid, GtkWidget *child, GtkWidget *sibling, GtkPositionType side, gint width, gint height); */
-/* typedef void (*gtk_fixed_put_t)(GtkFixed *fixed, GtkWidget *widget, gint x, gint y); */
-/* typedef gint (*gtk_notebook_append_page_t)(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label); */
-/* typedef gint (*gtk_notebook_insert_page_t)(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label, gint position); */
-/* typedef void (*gtk_paned_pack1_t)(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink); */
-/* typedef void (*gtk_paned_pack2_t)(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink); */
-/* typedef void (*gtk_scrolled_window_add_with_viewport_t)(GtkScrolledWindow *scrolled_window, GtkWidget *child); */
-/* typedef void (*gtk_overlay_add_overlay_t)(GtkOverlay *overlay, GtkWidget *widget); */
-/* typedef void (*gtk_stack_add_titled_t)(GtkStack *stack, GtkWidget *child, const gchar *name, const gchar *title); */
-/* typedef void (*gtk_stack_add_named_t)(GtkStack *stack, GtkWidget *child, const gchar *name); */
-/* typedef void (*gtk_header_bar_pack_start_t)(GtkHeaderBar *bar, GtkWidget *child); */
-/* typedef void (*gtk_header_bar_pack_end_t)(GtkHeaderBar *bar, GtkWidget *child); */
-/* typedef void (*gtk_menu_shell_append_t)(GtkMenuShell *menu_shell, GtkWidget *child); */
-/* typedef void (*gtk_menu_shell_prepend_t)(GtkMenuShell *menu_shell, GtkWidget *child); */
-/* typedef void (*gtk_menu_shell_insert_t)(GtkMenuShell *menu_shell, GtkWidget *child, gint position); */
-
-// ... define a function storing the original function you are overriding
-gtk_container_add_t gtk_container_add_original;
-/* gtk_box_pack_start_t gtk_box_pack_start_original; */
-/* gtk_box_pack_end_t gtk_box_pack_end_original; */
-/* gtk_box_insert_child_after_t gtk_box_insert_child_after_original; */
-/* gtk_grid_attach_t gtk_grid_attach_original; */
-/* gtk_grid_attach_next_to_t gtk_grid_attach_next_to_original; */
-/* gtk_fixed_put_t gtk_fixed_put_original; */
-/* gtk_notebook_append_page_t gtk_notebook_append_page_original; */
-/* gtk_notebook_insert_page_t gtk_notebook_insert_page_original; */
-/* gtk_paned_pack1_t gtk_paned_pack1_original; */
-/* gtk_paned_pack2_t gtk_paned_pack2_original; */
-/* gtk_scrolled_window_add_with_viewport_t gtk_scrolled_window_add_with_viewport_original; */
-/* gtk_overlay_add_overlay_t gtk_overlay_add_overlay_original; */
-/* gtk_stack_add_titled_t gtk_stack_add_titled_original; */
-/* gtk_stack_add_named_t gtk_stack_add_named_original; */
-/* gtk_header_bar_pack_start_t gtk_header_bar_pack_start_original; */
-/* gtk_header_bar_pack_end_t gtk_header_bar_pack_end_original; */
-/* gtk_menu_shell_append_t gtk_menu_shell_append_original; */
-/* gtk_menu_shell_prepend_t gtk_menu_shell_prepend_original; */
-/* gtk_menu_shell_insert_t gtk_menu_shell_insert_original; */
-
-// ... then finally actually override the  function
-void gtk_container_add(GtkContainer *container, GtkWidget *child){make_widget_customizable(child); gtk_container_add_original = (gtk_container_add_t)get_original_function_pointer("gtk_container_add"); gtk_container_add_original(container, child);}
-/* void gtk_box_pack_start(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding){make_widget_customizable(child);gtk_box_pack_start_original = (gtk_box_pack_start_t)get_original_function_pointer("gtk_box_pack_start");gtk_box_pack_start_original(box, child, expand, fill, padding);} */
-/* void gtk_box_pack_end(GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding){make_widget_customizable(child);gtk_box_pack_end_original =  (gtk_box_pack_end_t)get_original_function_pointer("gtk_box_pack_end");gtk_box_pack_end_original(box, child, expand, fill, padding);} */
-/* void gtk_box_insert_child_after(GtkBox *box, GtkWidget *child, GtkWidget *sibling) {make_widget_customizable(child);gtk_box_insert_child_after_original =  (gtk_box_insert_child_after_t)get_original_function_pointer("gtk_box_insert_child_after");gtk_box_insert_child_after_original(box, child, sibling);} */
-/* void gtk_grid_attach(GtkGrid *grid, GtkWidget *child, gint left, gint top, gint width, gint height){make_widget_customizable(child);gtk_grid_attach_original =  (gtk_grid_attach_t)get_original_function_pointer("gtk_grid_attach");gtk_grid_attach_original(grid, child, left, top, width, height);} */
-/* void gtk_grid_attach_next_to(GtkGrid *grid, GtkWidget *child, GtkWidget *sibling, GtkPositionType side, gint width, gint height){make_widget_customizable(child);gtk_grid_attach_next_to_original =  (gtk_grid_attach_next_to_t)get_original_function_pointer("gtk_grid_attach_next_to");gtk_grid_attach_next_to_original(grid, child, sibling, side, width, height);} */
-/* void gtk_fixed_put(GtkFixed *fixed, GtkWidget *widget, gint x, gint y){make_widget_customizable(widget);gtk_fixed_put_original =  (gtk_fixed_put_t)get_original_function_pointer("gtk_fixed_put");gtk_fixed_put_original(fixed, widget, x, y);} */
-/* gint gtk_notebook_append_page(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label){make_widget_customizable(child);gtk_notebook_append_page_original =  (gtk_notebook_append_page_t)get_original_function_pointer("gtk_notebook_append_page");gtk_notebook_append_page_original(notebook, child, tab_label);} */
-/* gint gtk_notebook_insert_page(GtkNotebook *notebook, GtkWidget *child, GtkWidget *tab_label, gint position){make_widget_customizable(child);gtk_notebook_insert_page_original =  (gtk_notebook_insert_page_t)get_original_function_pointer("gtk_notebook_insert_page");gtk_notebook_insert_page_original(notebook, child, tab_label, position);} */
-/* void gtk_paned_pack1(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink){make_widget_customizable(child);gtk_paned_pack1_original =  (gtk_paned_pack1_t)get_original_function_pointer("gtk_paned_pack1");gtk_paned_pack1_original(paned, child, resize, shrink);} */
-/* void gtk_paned_pack2(GtkPaned *paned, GtkWidget *child, gboolean resize, gboolean shrink){make_widget_customizable(child);gtk_paned_pack2_original =  (gtk_paned_pack2_t)get_original_function_pointer("gtk_paned_pack2");gtk_paned_pack2_original(paned, child, resize, shrink);} */
-/* void gtk_scrolled_window_add_with_viewport(GtkScrolledWindow *scrolled_window, GtkWidget *child){make_widget_customizable(child);gtk_scrolled_window_add_with_viewport_original =  (gtk_scrolled_window_add_with_viewport_t)get_original_function_pointer("gtk_scrolled_window_add_with_viewport");gtk_scrolled_window_add_with_viewport_original(scrolled_window, child);} */
-/* void gtk_overlay_add_overlay(GtkOverlay *overlay, GtkWidget *child){make_widget_customizable(child);gtk_overlay_add_overlay_original =  (gtk_overlay_add_overlay_t)get_original_function_pointer("gtk_overlay_add_overlay");gtk_overlay_add_overlay_original(overlay, child);} */
-/* void gtk_stack_add_titled(GtkStack *stack, GtkWidget *child, const gchar *name, const gchar *title){make_widget_customizable(child);gtk_stack_add_titled_original =  (gtk_stack_add_titled_t)get_original_function_pointer("gtk_stack_add_titled");gtk_stack_add_titled_original(stack, child, name, title);} */
-/* void gtk_stack_add_named(GtkStack *stack, GtkWidget *child, const gchar *name){make_widget_customizable(child);gtk_stack_add_named_original =  (gtk_stack_add_named_t)get_original_function_pointer("gtk_stack_add_named");gtk_stack_add_named_original(stack, child, name);} */
-/* void gtk_header_bar_pack_start(GtkHeaderBar *bar, GtkWidget *child){make_widget_customizable(child);gtk_header_bar_pack_start_original =  (gtk_header_bar_pack_start_t)get_original_function_pointer("gtk_header_bar_pack_start");gtk_header_bar_pack_start_original(bar, child);} */
-/* void gtk_header_bar_pack_end(GtkHeaderBar *bar, GtkWidget *child){make_widget_customizable(child);gtk_header_bar_pack_end_original =  (gtk_header_bar_pack_end_t)get_original_function_pointer("gtk_header_bar_pack_end");gtk_header_bar_pack_end_original(bar, child);} */
-/* void gtk_menu_shell_append(GtkMenuShell *menu_shell, GtkWidget *child){make_widget_customizable(child);gtk_menu_shell_append_original =  (gtk_menu_shell_append_t)get_original_function_pointer("gtk_menu_shell_append");gtk_menu_shell_append_original(menu_shell, child);} */
-/* void gtk_menu_shell_prepend(GtkMenuShell *menu_shell, GtkWidget *child){make_widget_customizable(child);gtk_menu_shell_prepend_original =  (gtk_menu_shell_prepend_t)get_original_function_pointer("gtk_menu_shell_prepend");gtk_menu_shell_prepend_original(menu_shell, child);} */
-/* void gtk_menu_shell_insert(GtkMenuShell *menu_shell, GtkWidget *child, gint position){make_widget_customizable(child);gtk_menu_shell_insert_original =  (gtk_menu_shell_insert_t)get_original_function_pointer("gtk_menu_shell_insert");gtk_menu_shell_insert_original(menu_shell, child, position);} */
-
-
 // -----------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 //
@@ -269,8 +164,6 @@ void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(observed_type(widget)){
 		*widgets = g_list_append(*widgets, widget);
 	}
-	/* if(contains_class(widget, "modifiable")){ */
-	/* } */
 	
 	if(!GTK_IS_CONTAINER(widget)){return;}
 
@@ -309,11 +202,11 @@ void refresh_widgets_overview(){
 	for(GList* elem = widgets; elem; elem=elem->next){
 		GtkWidget* widget = (GtkWidget*)elem->data;
 		GtkWidget* label = create_overview_label(get_widget_type_string(widget));
-		gtk_container_add_original(GTK_CONTAINER(widget_types),    label);
-		/* gtk_container_add_original(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget))); */
-		gtk_container_add_original(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
-		gtk_container_add_original(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
-		gtk_container_add_original(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
+		gtk_container_add(GTK_CONTAINER(widget_types),    label);
+		/* gtk_container_add(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget))); */
+		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
+		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
+		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
 	}
 }
 
@@ -331,11 +224,11 @@ void build_tuxrup_window(){
 	refresh_button = gtk_button_new_with_label("REFRESH");	
 	g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh_tuxrup_window), NULL);
 
-	gtk_container_add_original(GTK_CONTAINER(tuxrup_root), box);
-	gtk_container_add_original(GTK_CONTAINER(box), refresh_button);
+	gtk_container_add(GTK_CONTAINER(tuxrup_root), box);
+	gtk_container_add(GTK_CONTAINER(box), refresh_button);
 
 	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(500, 500); 
-	gtk_container_add_original(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
+	gtk_container_add(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
 	widget_types                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -346,20 +239,20 @@ void build_tuxrup_window(){
 	/* widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
 	/* widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
 	/* widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); */
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_types   );
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_names   );
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_labels  );
-	gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_pointers);
+	gtk_container_add(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_types   );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_names   );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_labels  );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_pointers);
 	gtk_widget_set_margin_right(widget_types,    10);
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
 
-	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
-	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
-	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
-	/* gtk_container_add_original(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
+	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
+	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
+	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
+	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
 }
 
 
@@ -411,7 +304,7 @@ void gtk_widget_show_all(GtkWidget *widget)
 // Kind of complicated and confusing but moral of story: If you wanna make a new test, have it be called from the application you are testing
 // ----------------------------------------------------------------
 
-// Test: "There are 6 elements in tests/test1 that will be added to the list of widgets"
+// Test: "There are 8 elements in tests/test1 that will be added to the list of widgets"
 bool exit_if_false(bool result, char* expected, char* got, int test_number){
 	if(!result){
 		g_print("test %d failed. Expected: %s, got %s\n", test_number, expected, got);	
@@ -426,22 +319,24 @@ bool tuxrup_test1(){
 	int count = g_list_length(widgets);
 
 	return exit_if_false(
-		count == 6,
-		"6",
+		count == 8,
+		"8",
 		g_strdup_printf("%d", count),
 	   1	
 	);
 }
 
-// Test: "The 6 added elements have these specific names" 
+// Test: "The 8 added elements have these specific names" 
 bool tuxrup_test2(){
-	char* names[6] = {
+	char* names[8] = {
 		"GtkButton",
 		"GtkCheckButton",
 		"buster",
 		"GtkSpinButton",
 		"GtkEntry",
-		"super cool dropdown"
+		"super cool dropdown",
+		"GtkButton",
+		"GtkButton"
 	};
 	GList* widgets = find_all_modifiable_widgets();
 

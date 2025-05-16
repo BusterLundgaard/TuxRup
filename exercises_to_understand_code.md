@@ -18,6 +18,9 @@ Add and test tuxrup_test3() which makes sure there exists some element with the 
 Remmember: You'll have to go into tests/test1/test1.c to make sure your test is actually called!
 
 # Exercise 2:
+Move all the utils methods into a seperate util.c and util.h file, and update the Makefile accordingly.
+
+# Exercise 2:
 not because it's super important, but more just as an exercise to understand the code, try to identify and fix any memory leaks if you can.
 Remmember: Anything dealing with strings will probably have a chance to have some memory leaks.
 
