@@ -21,7 +21,7 @@ GtkWidget* make_scrolled_window(int width, int height){
 	GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
 	GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
 	GtkWidget* scrolled_window = gtk_scrolled_window_new(v_adj, h_adj);
-	gtk_widget_set_size_request(scrolled_window, 200, 500);
+	gtk_widget_set_size_request(scrolled_window, width, height);
 	gtk_scrolled_window_set_policy(
 			GTK_SCROLLED_WINDOW(scrolled_window), 
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

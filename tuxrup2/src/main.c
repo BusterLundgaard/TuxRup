@@ -116,15 +116,23 @@ void refresh_tuxrup_window(){
 void build_tuxrup_window(){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
 
-	GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkWidget* columns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_container_add(GTK_CONTAINER(tuxrup_root), columns);
+
+	// ------------------------------------------
+	// data colum
+	GtkWidget* data_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_widget_set_hexpand(data_column, true);
+	gtk_container_add(GTK_CONTAINER(columns), data_column);
+
 	refresh_button = gtk_button_new_with_label("REFRESH");	
 	g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh_tuxrup_window), NULL);
 
-	gtk_container_add(GTK_CONTAINER(tuxrup_root), box);
-	gtk_container_add(GTK_CONTAINER(box), refresh_button);
+	gtk_container_add(GTK_CONTAINER(data_column), refresh_button);
 
-	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(500, 500); 
-	gtk_container_add(GTK_CONTAINER(box), widgets_overview_scrolled_window);	
+	// TODO: Does not respect the size right now
+	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(20, 100); 
+	gtk_box_pack_start(GTK_BOX(data_column), widgets_overview_scrolled_window, TRUE, TRUE, 0);
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
 	widget_types                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -144,11 +152,31 @@ void build_tuxrup_window(){
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
-
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_has_callbacks             ); */
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            ); */
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   ); */
 	/* gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers); */
+	
+	//---------------------------------------------------------------------------------
+	// Change widget properties
+	GtkWidget* change_properties_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_widget_set_hexpand(change_properties_column, true);
+
+	refresh_button = gtk_button_new_with_label("Change widget properties");	
+	gtk_container_add(GTK_CONTAINER(change_properties_column), refresh_button);
+
+	GtkWidget* property_editor_scrolled_window = make_scrolled_window(100, 500); 
+	gtk_container_add(GTK_CONTAINER(columns), change_properties_column);
+
+	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_container_add(GTK_CONTAINER(change_properties_column), property_editor_scrolled_window);
+	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
+	
+	for(int i = 0; i < 100; i++){
+		GtkWidget* label = gtk_label_new("wow i am a label");
+		gtk_container_add(GTK_CONTAINER(property_editor), label);
+	}
+
 }
 
 
