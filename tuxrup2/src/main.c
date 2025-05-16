@@ -3,14 +3,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <dlfcn.h>
 
 //------------------------------------
 // GlOBALS
 // -----------------------------------
 GtkWidget* application_root = NULL; // the first window from the application we are modifying. Should remain constant.
-GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.
-							   
+GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.   
 GtkWidget* selected_widget = NULL; //the currently selected widget.
 
 
@@ -304,6 +304,8 @@ void gtk_widget_show_all(GtkWidget *widget)
 // Kind of complicated and confusing but moral of story: If you wanna make a new test, have it be called from the application you are testing
 // ----------------------------------------------------------------
 
+// TODO: might be worth trying to change the tests to keep on running even if one fails;
+
 // Test: "There are 8 elements in tests/test1 that will be added to the list of widgets"
 bool exit_if_false(bool result, char* expected, char* got, int test_number){
 	if(!result){
@@ -341,7 +343,7 @@ bool tuxrup_test2(){
 	GList* widgets = find_all_modifiable_widgets();
 
 	GList* elem = widgets;
-	for(int i = 0; i < 6 && elem != NULL; i++, elem = elem->next){
+	for(int i = 0; i < 8 && elem != NULL; i++, elem = elem->next){
 		char* name = gtk_widget_get_name(elem->data); 
 		if(strcmp(name, names[i]) != 0){
 			g_print("test 2 failed. Expected: \"%s\", got \"%s\".\n", names[i], name);	
@@ -351,4 +353,21 @@ bool tuxrup_test2(){
 
 	g_print("test 2 PASSED.\n");
 	return true;
+}
+
+
+bool tuxrup_testBangladeshLable() {
+	GList* widgets = find_all_modifiable_widgets();
+
+	GList* elem = widgets;
+	for(int i = 0; i < g_list_length(widgets); i++, elem = elem->next) {
+		if(strcmp(get_widget_label(elem->data),"Bangladesh") == 0) {
+			g_print("test 3 PASSED\n");
+			return true;
+		}
+	}
+	g_print("test 3 failed. Expected: \"%s\", got \"%s\".\n", "Bangladesh", "None");	
+	exit(1);
+	return false;
+	
 }
