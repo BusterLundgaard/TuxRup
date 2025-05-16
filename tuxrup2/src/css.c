@@ -24,13 +24,21 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
     apply_css_to_widget(w, text);
 
     // Binds css directly to gobject data field
-    g_object_set_data_full(G_OBJECT(widget),"tuxrupcss",g_strdup(text),g_free); 
+    g_object_set_data_full(G_OBJECT(w),"tuxrupcss",g_strdup(text),g_free); 
 }
 
-// void on_edit(GtkWidget *widget, gpointer user_data) {
-//     GtkTextBuffer *textbuffer = user_data
-//     if(g_object_get_data) {
+void on_load(GtkWidget *widget, gpointer user_data) {
+    GtkTextBuffer *textbuffer = user_data;
+    GtkWidget* w = selected_widget;
+    if(w == NULL) {return;}
+    if(!GTK_IS_WIDGET(w)) {return;}
+    g_print("getting data");
+    gpointer csspointer = g_object_get_data(G_OBJECT(w),"tuxrupcss");
+    g_print("Data is %s",csspointer);
 
-//     }
+    if(csspointer == NULL) {
+        return;
+    }
+    gtk_text_buffer_set_text(textbuffer, csspointer, -1);
 
-// }
+}

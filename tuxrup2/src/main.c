@@ -244,11 +244,9 @@ void build_tuxrup_window(){
 	gtk_widget_set_hexpand(change_css_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), change_css_column);
 
-	GtkWidget* change_css_button = gtk_button_new_with_label("Load CSS");
-	gtk_container_add(GTK_CONTAINER(change_css_column), change_css_button);
-	apply_css_to_widget(change_css_button,"background: blue;");
-	// g_signal_connect(done, "clicked", G_CALLBACK(on_edit), textbuffer);
-
+	GtkWidget* loadcssbutton = gtk_button_new_with_label("Load CSS");
+	gtk_container_add(GTK_CONTAINER(change_css_column), loadcssbutton);
+	apply_css_to_widget(loadcssbutton,"background: blue;");
 
 	GtkWidget* done = gtk_button_new_with_label("Done");
 	gtk_container_add(GTK_CONTAINER(change_css_column), done);
@@ -271,6 +269,8 @@ void build_tuxrup_window(){
 	gtk_text_buffer_set_text(textbuffer2, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
 	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
+	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), textbuffer);
+
 
 
 	// --------------------------------------------------------------------------------------
