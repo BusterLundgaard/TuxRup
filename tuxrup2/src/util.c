@@ -91,20 +91,6 @@ void apply_css_to_widget(GtkWidget *widget, const gchar *css_data) {
 }
 
 
-// Detect and convert widget types methods:
-bool observed_type(GtkWidget* widget){
-	return 
-		GTK_IS_BUTTON(widget) ||
-		GTK_IS_ENTRY(widget) ||
-		GTK_IS_TEXT_BUFFER(widget) ||
-		GTK_IS_CHECK_BUTTON(widget) ||
-		GTK_IS_TOGGLE_BUTTON(widget) ||
-		GTK_IS_SPIN_BUTTON(widget) ||
-		GTK_IS_SCALE(widget) ||
-		GTK_IS_COMBO_BOX(widget) ||
-		GTK_IS_COMBO_BOX_TEXT(widget);
-}
-
 char* get_widget_type_string(GtkWidget* widget){
 	if      (GTK_IS_CHECK_BUTTON(widget))  {return "check_button";} 
 	else if (GTK_IS_TOGGLE_BUTTON(widget)) {return "toggle_button";} 

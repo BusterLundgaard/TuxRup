@@ -11,8 +11,8 @@
 #include "globals.h"
 #include "properties.h"
 
-//TODO: Test we add the methods/callbacks correctly
 //TODO: Compute the various strings/constants we need
+//TODO: Test we add the methods/callbacks correctly
 //TODO: Get the debug symbols working again
 //TODO: Now also showw the function names in the overview, write a test that shows it works
 //TODO: Write the on-edit-callback button callback
@@ -30,12 +30,8 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
                                           gpointer data,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
-extern g_signal_connect_data_t g_signal_connect_data_original;
+g_signal_connect_data_t g_signal_connect_data_original;
 
-// ------------------------------------
-// UTIL
-// ------------------------------------
-// Widget methods:
 // -----------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 //
@@ -45,6 +41,21 @@ extern g_signal_connect_data_t g_signal_connect_data_original;
 // build_tuxrup_window(): builds the window initially and lays out the structure. Only called once
 // refresh_tuxrup_window(): fills out all the information we show in the tuxrup window. 
 // ----------------------------------------
+
+// Detect and convert widget types methods:
+bool observed_type(GtkWidget* widget){
+	return 
+		GTK_IS_BUTTON(widget) ||
+		GTK_IS_ENTRY(widget) ||
+		GTK_IS_TEXT_BUFFER(widget) ||
+		GTK_IS_CHECK_BUTTON(widget) ||
+		GTK_IS_TOGGLE_BUTTON(widget) ||
+		GTK_IS_SPIN_BUTTON(widget) ||
+		GTK_IS_SCALE(widget) ||
+		GTK_IS_COMBO_BOX(widget) ||
+		GTK_IS_COMBO_BOX_TEXT(widget);
+}
+
 GtkWidget* refresh_button;
 
 GtkWidget* widgets_overview;
@@ -128,26 +139,26 @@ void refresh_widgets_overview(){
 	GList* widgets = find_all_modifiable_widgets();
 	for(GList* elem = widgets; elem; elem=elem->next){
 		GtkWidget* widget = (GtkWidget*)elem->data;
-		gtk_container_add(GTK_CONTAINER(widget_types),    create_overview_label(get_widget_type_string(widget)));
+		GtkWidget* label_type = create_overview_label(get_widget_type_string(widget));
+		if(widget == selected_widget){
+			add_class_to_widget(label_type, "selected");
+		}
+		gtk_container_add(GTK_CONTAINER(widget_types),    label_type); 
 		gtk_container_add(GTK_CONTAINER(widget_names),    create_overview_label(gtk_widget_get_name(widget)));
 		gtk_container_add(GTK_CONTAINER(widget_pointers), create_overview_label(g_strdup_printf("%p", widget)));
 		gtk_container_add(GTK_CONTAINER(widget_labels),   create_overview_label(get_widget_label(widget)));
 		
 		void* callback_pointer = g_object_get_data(G_OBJECT(widget), "callback_pointer");
-		char* callback_name = g_object_get_data(G_OBJECT(widget), "callback_name")
+		char* callback_name = g_object_get_data(G_OBJECT(widget), "callback_name");
 
 		if(callback_pointer != NULL){
-			gtk_container_add(GTK_CONTAINER(widget_callback_names), callback_name);
-			// TODO: Add function name here once symbols are working
-			/* gtk_container_add(GTK_CONTAINER(widget_callback_function_names), callback_name); */
-			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), callback_name);
+			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(callback_name));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(g_strdup_printf("%p", callback_name)));
 		}
-		if(g_object_get_data(G_OBJECT(widget), "callback")){
 
 		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
 			make_widget_customizable(widget);
 			g_object_set_data(G_OBJECT(widget),"rightclickable", (gpointer)true);
-			g_print("Hello\n");
 		}
 
 	}
@@ -166,7 +177,7 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(tuxrup_root), columns);
 
 	// ------------------------------------------
-	// data colum
+	// data column
 	GtkWidget* data_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_hexpand(data_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), data_column);
@@ -193,13 +204,15 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_names   );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_labels  );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_pointers);
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers);
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   );
 	gtk_widget_set_margin_right(widget_types,    10);
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            );
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   );
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers);
+	gtk_widget_set_margin_right(widget_callback_names, 10);
+	gtk_widget_set_margin_right(widget_callback_function_pointers, 10);
 	
 	GtkWidget* symbol_label = gtk_label_new("symbols");	
 	gtk_box_pack_start(GTK_BOX(data_column), symbol_label, TRUE, TRUE, 0);
@@ -226,7 +239,6 @@ void build_tuxrup_window(){
 		gtk_container_add(GTK_CONTAINER(symbol_names), label1);
 		gtk_container_add(GTK_CONTAINER(symbol_pointers), label2);
 		gtk_container_add(GTK_CONTAINER(symbol_sizes), label3);
-
 	}
 
 	//---------------------------------------------------------------------------------
@@ -249,7 +261,6 @@ void build_tuxrup_window(){
 	// Change CSS properties
 	
 	GtkWidget* change_css_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_widget_set_hexpand(change_css_column, true);
 	gtk_container_add(GTK_CONTAINER(columns), change_css_column);
 
 	GtkWidget* loadcssbutton = gtk_button_new_with_label("Load CSS");
@@ -258,7 +269,6 @@ void build_tuxrup_window(){
 
 	GtkWidget* done = gtk_button_new_with_label("Done");
 	gtk_container_add(GTK_CONTAINER(change_css_column), done);
-
 
 	GtkWidget* css_edit_label = gtk_label_new("Add CSS for widget here");
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_edit_label);
@@ -309,22 +319,24 @@ gulong g_signal_connect_data(gpointer instance,
                              gpointer data,
                              GClosureNotify destroy_data,
  							 GConnectFlags connect_flags){
-	if(!isobserved(instance))
+
+	if(!observed_type(instance))
 	{goto signal_connect_end;}
 
 	if(!(
-		strcmp(detailed_signal, "clicked")==0 || 
-		strcmp(detailed_signal, "activate") == 0)
+		strcmp(detailed_signal, "clicked") ==0 || 
+		strcmp(detailed_signal, "activate")==0)
 	)
 	{goto signal_connect_end;}
 
+	g_print("widget %p passed. Has detailed_signal %s, and name %s.\n", instance, detailed_signal, gtk_widget_get_name(GTK_WIDGET(instance)));
 	g_object_set_data(G_OBJECT(instance), "callback_name", detailed_signal); 
 	g_object_set_data(G_OBJECT(instance), "callback_pointer", (gpointer)c_handler);
 	g_object_set_data(G_OBJECT(instance), "callback_data", data); 
 
 	signal_connect_end:
-	g_signal_connect_data_original = g_signal_connect_data_original ? g_signal_connect_data_original : get_original_function_pointer("g_signal_connect_data");
-	return g_signal_connect_data_original(instane, detailed_signal, c_handler, data, destroy_data, connect_flags);
+	g_signal_connect_data_original = (g_signal_connect_data_original != NULL) ? g_signal_connect_data_original : (g_signal_connect_data_t)get_original_function_pointer("g_signal_connect_data");
+	return g_signal_connect_data_original(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
 }
 
 
@@ -346,13 +358,18 @@ void init(){
 
 // This function is called right AFTER the application shows its first window
 void post_init(){
-	apply_css(".selected{background-image: linear-gradient(to bottom, #ffffffAA, #dddddd00); background-color:rgb(247, 190, 4);\
-    border: 2px solidrgb(231, 227, 1);\
-    border-radius: 8px;\
-    color: white;\
-    padding: 6px 12px;\
-    font-weight: bold;\
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);}\n .debug{background: red}", application_root);
+	char* selected_css = 
+	".selected{\
+		 background-image: linear-gradient(to bottom, #ffffffAA, #dddddd00); background-color:rgb(247, 190, 4);\
+  		 border: 2px solidrgb(231, 227, 1);\
+   		 border-radius: 8px;\
+   		 color: white;\
+   		 padding: 6px 12px;\
+   		 font-weight: bold;\
+   		 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);\
+    }";
+	apply_css(selected_css, application_root);
+	apply_css(selected_css, tuxrup_root);
 }
 
 void gtk_widget_show_all(GtkWidget *widget)

@@ -32,6 +32,7 @@ activate (GtkApplication *app,
 	gtk_container_add(GTK_CONTAINER(window), box);
 
 	GtkWidget* button = gtk_button_new_with_label ("Bangladesh");
+	g_signal_connect(button, "clicked", G_CALLBACK(on_new_clicked), NULL);
 
 	GtkWidget* checkbutton = gtk_check_button_new();
 
@@ -62,10 +63,12 @@ activate (GtkApplication *app,
 	toolbar = gtk_toolbar_new();
 
 	new_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
+	gtk_widget_set_name(GTK_WIDGET(new_button), "toolbar button left");
 	g_signal_connect(new_button, "clicked", G_CALLBACK(on_new_clicked), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), new_button, -1);
 
 	open_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_widget_set_name(GTK_WIDGET(new_button), "toolbar button right");
 	g_signal_connect(open_button, "clicked", G_CALLBACK(on_open_clicked), NULL);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), open_button, -1);
 
@@ -73,6 +76,7 @@ activate (GtkApplication *app,
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
 	gtk_container_add(GTK_CONTAINER(box), toolbar);
 
+	// Done
 	gtk_widget_show_all(window);
 
 	// TESTING
