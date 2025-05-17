@@ -1,3 +1,5 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
 #include <gtk-3.0/gtk/gtk.h>
 
 extern GtkWidget* application_root;
@@ -10,4 +12,5 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
                                           gpointer data,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
-g_signal_connect_data_t g_signal_connect_data_original;
+extern g_signal_connect_data_t g_signal_connect_data_original;
+#endif

@@ -64,7 +64,16 @@ void function_dispatcher(GtkWidget* widget, gpointer data){
 }
 
 char* read_file(char* filepath){
-	// TODO
+	FILE* filePointer;
+	char buffer[2012]; 
+	FILE* fp = fopen(filepath, "r");
+
+	GString* contents = g_string_new("");
+	while(fgets(buffer, 2012, fp)) {
+		g_string_append(contents, buffer);
+	}
+	fclose(filePointer);
+	return contents->str;		
 }
 
 void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){

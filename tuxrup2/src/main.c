@@ -25,7 +25,6 @@
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
-// g_signal_connect_data is in globals
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // FINDING ALL WIDGETS
@@ -97,7 +96,7 @@ void make_widget_customizable(GtkWidget* widget){
     add_class_to_widget(widget, "modifiable");
 
     gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
+    g_signal_connect_data_original(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
 }
 
 
@@ -278,7 +277,7 @@ void build_tuxrup_window(){
 	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(change_properties_column), property_editor_scrolled_window);
 	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
-	g_signal_connect_data(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
+	g_signal_connect_data_original(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
 
 	// ---------------------------------------------------------------------------------
 	// Change CSS properties
@@ -287,7 +286,6 @@ void build_tuxrup_window(){
 
 	GtkWidget* loadcssbutton = gtk_button_new_with_label("Load CSS");
 	gtk_container_add(GTK_CONTAINER(change_css_column), loadcssbutton);
-	apply_css_to_widget(loadcssbutton,"background: blue;");
 
 	GtkWidget* done = gtk_button_new_with_label("Done");
 	gtk_container_add(GTK_CONTAINER(change_css_column), done);

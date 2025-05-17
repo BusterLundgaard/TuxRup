@@ -5,10 +5,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
+
 #include "globals.h"
 #include "util.h"
-
-
 
 void on_done_clicked(GtkWidget *widget, gpointer user_data)
 {   
