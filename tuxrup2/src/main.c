@@ -12,6 +12,7 @@
 #include "properties.h"
 #include "io.h"
 #include "symbols.h"
+#include "callbacks.h"
 
 //TODO: Get the debug symbols working again
 //TODO: Now also showw the function names in the overview, write a test that shows it works
@@ -24,14 +25,7 @@
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
-typedef gulong (*g_signal_connect_data_t)(gpointer instance,
-                                          const gchar *detailed_signal,
-                                          GCallback c_handler,
-                                          gpointer data,
-                                          GClosureNotify destroy_data,
-                                          GConnectFlags connect_flags);
-g_signal_connect_data_t g_signal_connect_data_original;
- 
+// g_signal_connect_data is in globals
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // FINDING ALL WIDGETS
@@ -333,6 +327,9 @@ void build_tuxrup_window(){
 
 	GtkWidget* done_callback_button = gtk_button_new_with_label("Done editing callback");
 	gtk_container_add(GTK_CONTAINER(change_callback_column), done_callback_button);
+
+	g_signal_connect_data_original(change_callback_button, "clicked", G_CALLBACK(on_callback_edit), textbuffer3, NULL, (GConnectFlags)0);
+	g_signal_connect_data_original(done_callback_button, "clicked", G_CALLBACK(on_callback_done), textbuffer3, NULL, (GConnectFlags)0);
 }
 
 
