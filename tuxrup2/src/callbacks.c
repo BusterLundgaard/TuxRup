@@ -41,21 +41,22 @@ char* get_document_path(char* function_name){
 }
 
 char* shared_lib_path(GtkWidget* widget){
-   	 return g_strdup_printf("runtime_generated_code/%p.so", selected_widget);
+	 return g_strdup_printf("runtime_generated_code/%lu.so", (unsigned long*)widget);
 }
 
 void function_dispatcher(GtkWidget* widget, gpointer data){
 	void* shared_lib_pointer        = g_object_get_data(G_OBJECT(widget), "shared_lib_pointer");
 	void* user_data                 = g_object_get_data(G_OBJECT(widget), "callback_data");
 	void* original_function_pointer = g_object_get_data(G_OBJECT(widget), "callback_pointer");
-	void* original_function_name    = identifier_from_pointer(original_function_pointer);
+	char* original_function_name    = identifier_from_pointer(original_function_pointer);
 
 	if(shared_lib_pointer == NULL){g_print("shared_lib_pointer was NULL. Cant continue callback\n"); return;}              
-	if(user_data == NULL){g_print("user_data was NULL. Cant continue callback\n"); return;}                                
 	if(original_function_pointer == NULL){g_print("original_function_pointer was NULL. Cant continue callback\n"); return;}
 	if(original_function_name == NULL){g_print("original_function_name was NULL. Cant continue callback\n"); return;}      
 
-	callback_function_t custom_function_pointer = (callback_function_t)dlsym(original_function_pointer, original_function_name);
+	if(user_data == NULL){g_print("user_data was NULL. But this may be intentional. Just a warning!\n");}                                
+
+	callback_function_t custom_function_pointer = (callback_function_t)dlsym(shared_lib_pointer, original_function_name);
 	if(custom_function_pointer == NULL){g_print("custom_function_pointer was NULL. Cant continue callback\n"); return;}
 
 	sync_variables(shared_lib_path(widget), shared_lib_pointer, true); 
@@ -92,17 +93,14 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 	
 	g_file_set_contents("temp.c", code, strlen(code), NULL);
 
-	char* shared_lib_path = g_strdup_printf("runtime_generated_code/%p.so", selected_widget);
+	char* compile_path = shared_lib_path(selected_widget);
 	char* gcc_command = g_strdup_printf(
-			"gcc temp.c \
-			-g -shared -fPIC \
-			$(pkg-config --cflags --libs gtk+-3.0) \
-		   	-o %s", 
-			selected_widget, shared_lib_path);
+			"gcc temp.c -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", compile_path);
+	g_print("%s\n", gcc_command);
 	int res = system(gcc_command);
 
 	// Check for potential issues
-	if(!res){
+	if(res != 0){
 		g_print("Compilation failed! Won't overwrite callback.\n");
 		return;
 	}
@@ -113,16 +111,16 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		return;
 	}
 
-	void* shared_lib_pointer = dlopen(shared_lib_path, RTLD_LAZY);
+	void* shared_lib_pointer = dlopen(compile_path, RTLD_LAZY);
 	if(shared_lib_pointer == NULL){
-		g_print("Failed to open shared lib pointer to %s. Won't overwrite callback.\n", shared_lib_path);
+		g_print("Failed to open shared lib pointer to %s. Won't overwrite callback.\n", compile_path);
 		return;
 	}
 
 	void* previous_shared_lib_pointer = g_object_get_data(G_OBJECT(selected_widget), "shared_lib_pointer");
 	if(previous_shared_lib_pointer != NULL){
-		g_print("There was a previously opened shared_lib_pointer. Closing it and proceeding to set a new one.", shared_lib_path);
-		dlclose(previous_shared_lib_pointer);;
+		g_print("There was a previously opened shared_lib_pointer. Closing it and proceeding to set a new one.", compile_path);
+		dlclose(previous_shared_lib_pointer);
 	}
 	
 	// Actually change the callback	

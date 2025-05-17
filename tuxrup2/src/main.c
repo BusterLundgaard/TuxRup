@@ -14,10 +14,7 @@
 #include "symbols.h"
 #include "callbacks.h"
 
-//TODO: Get the debug symbols working again
-//TODO: Now also showw the function names in the overview, write a test that shows it works
-//TODO: Write the on-edit-callback button callback
-//TODO: Write the on-done-editing-callback button callback
+// TODO: Pressing some of the buttons when you have no widget selected crashes the program
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
@@ -318,10 +315,13 @@ void build_tuxrup_window(){
 	GtkWidget* change_callback_button = gtk_button_new_with_label("Edit callback");
 	gtk_container_add(GTK_CONTAINER(change_callback_column), change_callback_button);
 		
+	GtkWidget* callback_editor_scrolled_window = make_scrolled_window(20, 100); 
+	gtk_box_pack_start(GTK_BOX(change_callback_column), callback_editor_scrolled_window, TRUE, TRUE, 0);
+
 	GtkTextBuffer *textbuffer3 = gtk_text_buffer_new(NULL);
 	gtk_text_buffer_set_text(textbuffer3, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
 	GtkWidget* callback_editor = gtk_text_view_new_with_buffer(textbuffer3);
-	gtk_container_add(GTK_CONTAINER(change_callback_column), callback_editor);
+	gtk_container_add(GTK_CONTAINER(callback_editor_scrolled_window), callback_editor);
 
 	GtkWidget* done_callback_button = gtk_button_new_with_label("Done editing callback");
 	gtk_container_add(GTK_CONTAINER(change_callback_column), done_callback_button);

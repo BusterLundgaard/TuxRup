@@ -5,16 +5,16 @@
             "name": "Debug hw with LD_PRELOAD",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder/evaluation_applications/clock/clock",
+            "program": "${workspaceFolder}/tests/test1/test1",
             "args": [],
             "environment": [
                 {
                     "name": "LD_PRELOAD",
-                    "value": "${workspaceFolder}/tuxrup/build/libtuxrup_gtk4.so"
+                    "value": "${workspaceFolder}/tuxrup2/build/libtuxrup.so"
                 }
             ],
             "stopAtEntry": true,
-            "cwd": "${workspaceFolder}/tuxrup/build",
+            "cwd": "${workspaceFolder}/tuxrup2/build",
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

@@ -13,6 +13,19 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Build tuxrup2",
+            "type": "shell",
+            "command": "make build",
+            "options": {
+                "cwd": "${workspaceFolder}/tuxrup2/build"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

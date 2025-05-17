@@ -125,8 +125,10 @@ GHashTable* get_main_symbols(){
 
 
 void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, bool to_from){
+	g_print("i was called!\n");
     char command[512];
     snprintf(command, sizeof(command), "nm -C -S %s", shared_lib_path);
+	g_print("calling command %s\n", command);
 
 	// Pass 1: Get the base (real, not relative) address you will use to compute the other addresses
 	FILE *fp = popen(command, "r");
