@@ -11,9 +11,8 @@
 #include "globals.h"
 #include "properties.h"
 #include "io.h"
+#include "symbols.h"
 
-//TODO: Compute the various strings/constants we need
-//TODO: Test we add the methods/callbacks correctly
 //TODO: Get the debug symbols working again
 //TODO: Now also showw the function names in the overview, write a test that shows it works
 //TODO: Write the on-edit-callback button callback
@@ -126,7 +125,8 @@ GtkWidget* working_directory_label;
 GtkWidget* executable_path_label;        
 GtkWidget* executable_name_label;        
 GtkWidget* executable_symbols_path_label;
-
+GtkWidget* symbol_names;
+GtkWidget* symbol_pointers;
 
 GtkWidget* create_overview_label(char* label_str){
 	GtkWidget* label = gtk_label_new(label_str);
@@ -170,8 +170,28 @@ void refresh_widgets_overview(){
 	}
 }
 
+void refresh_symbols_overview(){
+	empty_box(symbol_names);
+	empty_box(symbol_pointers);
+
+	GHashTable* main_symbols = get_main_symbols();
+	GHashTableIter iter;
+	gpointer key, value;
+
+	g_hash_table_iter_init(&iter, main_symbols);
+	while(g_hash_table_iter_next(&iter, &key, &value)){
+		char* symbol_name = (char*)key;
+		void* symbol_pointer = (void*)value;
+		g_print("looking at name %s\n", symbol_name);
+		
+		gtk_container_add(GTK_CONTAINER(symbol_names), create_overview_label(symbol_name));  
+		gtk_container_add(GTK_CONTAINER(symbol_pointers), create_overview_label(g_strdup_printf("%p", symbol_pointer)));  
+	}
+}
+
 void refresh_tuxrup_window(){
 	refresh_widgets_overview();
+	refresh_symbols_overview();
 	
 	gtk_label_set_label(GTK_LABEL(program_src_folder_label),      g_strdup_printf("program_src_folder: %s",      get_program_src_folder()));
 	gtk_label_set_label(GTK_LABEL(working_directory_label),       g_strdup_printf("working_directory: %s",       get_working_directory()));
@@ -245,29 +265,16 @@ void build_tuxrup_window(){
 	GtkWidget* symbol_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
 	gtk_container_add(GTK_CONTAINER(symbol_overview_scrolled_window), symbol_overview);
-	GtkWidget* symbol_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	GtkWidget* symbol_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	GtkWidget* symbol_sizes    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	symbol_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	symbol_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_names   );
 	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_pointers);
-	gtk_container_add(GTK_CONTAINER(symbol_overview), symbol_sizes   );
 	gtk_widget_set_margin_right(symbol_pointers, 10);
 	gtk_widget_set_margin_right(symbol_names,    10);
-	gtk_widget_set_margin_right(symbol_sizes,    10);
-
-	for(int i = 0; i<100; i++){
-		GtkWidget* label1 = gtk_label_new("richard");	
-		GtkWidget* label2 = gtk_label_new("1x34859378");	
-		GtkWidget* label3 = gtk_label_new("300");	
-		gtk_container_add(GTK_CONTAINER(symbol_names), label1);
-		gtk_container_add(GTK_CONTAINER(symbol_pointers), label2);
-		gtk_container_add(GTK_CONTAINER(symbol_sizes), label3);
-	}
 
 	//---------------------------------------------------------------------------------
 	// Change widget properties
 	GtkWidget* change_properties_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	/* gtk_widget_set_hexpand(change_properties_column, true); */
 
 	GtkWidget* change_widget_properties_button = gtk_button_new_with_label("Change widget properties");	
 	gtk_container_add(GTK_CONTAINER(change_properties_column), change_widget_properties_button);
@@ -280,10 +287,8 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
 	g_signal_connect_data(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
 
-
 	// ---------------------------------------------------------------------------------
 	// Change CSS properties
-	
 	GtkWidget* change_css_column = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(columns), change_css_column);
 
@@ -312,7 +317,6 @@ void build_tuxrup_window(){
 	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
 	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), textbuffer);
-
 
 	// --------------------------------------------------------------------------------------
 	// Change callback

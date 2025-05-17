@@ -29,6 +29,8 @@ char* get_program_src_folder(){
 		g_hash_table_insert(source_code_paths, "quodlibet", "/src/tuxrup_testing_applications_src/quodlibet"              );
 		g_hash_table_insert(source_code_paths, "totem", "/src/tuxrup_testing_applications_src/totem"                      );
 		g_hash_table_insert(source_code_paths, "xzgv", "/src/tuxrup_testing_applications_src/xzgv"                        );
+		g_hash_table_insert(source_code_paths, "test1", "../../tests/test1/"                                              );
+
 	}
 
 	if(!g_hash_table_contains(source_code_paths, get_executable_name())){
@@ -94,6 +96,6 @@ char* get_executable_symbols_path(){
 	if(get_executable_name() == NULL){
 		return "N/A";
 	}
-	executable_symbols_path = g_strdup_printf("symbols/%s", get_executable_name()); 
+	executable_symbols_path = g_strdup_printf("symbols/%s.debug", get_executable_name()); 
 	return executable_symbols_path;
 }
