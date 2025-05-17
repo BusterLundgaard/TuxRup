@@ -10,6 +10,7 @@
 #include "css.h"
 #include "globals.h"
 #include "properties.h"
+#include "io.h"
 
 //TODO: Compute the various strings/constants we need
 //TODO: Test we add the methods/callbacks correctly
@@ -18,9 +19,9 @@
 //TODO: Write the on-edit-callback button callback
 //TODO: Write the on-done-editing-callback button callback
 
-// -----------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
-// -----------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
@@ -31,18 +32,11 @@ typedef gulong (*g_signal_connect_data_t)(gpointer instance,
                                           GClosureNotify destroy_data,
                                           GConnectFlags connect_flags);
 g_signal_connect_data_t g_signal_connect_data_original;
+ 
 
-// -----------------------------------------
-// CREATING AND REFRESHING THE TUXRUP WINDOW
-//
-// Tuxrup will have very bad human computer interaction: Every time some information is updated/changes, it wont automatically update on the tuxrup window. You have to manually press "refresh" for us to re-render the information
-// This is of course bad for performance and a little annoying, but it is much easier to program this way.
-// The two important functions to understand:
-// build_tuxrup_window(): builds the window initially and lays out the structure. Only called once
-// refresh_tuxrup_window(): fills out all the information we show in the tuxrup window. 
-// ----------------------------------------
-
-// Detect and convert widget types methods:
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// FINDING ALL WIDGETS
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 bool observed_type(GtkWidget* widget){
 	return 
 		GTK_IS_BUTTON(widget) ||
@@ -55,18 +49,6 @@ bool observed_type(GtkWidget* widget){
 		GTK_IS_COMBO_BOX(widget) ||
 		GTK_IS_COMBO_BOX_TEXT(widget);
 }
-
-GtkWidget* refresh_button;
-
-GtkWidget* widgets_overview;
-GtkWidget* widget_types;
-GtkWidget* widget_names;
-GtkWidget* widget_labels;
-GtkWidget* widget_pointers;
-GtkWidget* widget_callback_names;
-GtkWidget* widget_callback_function_names;
-GtkWidget* widget_callback_function_pointers;
-
 
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(!GTK_IS_WIDGET(widget)){return;}
@@ -94,15 +76,10 @@ GList* find_all_modifiable_widgets(){
 	return widgets;
 }
 
-GtkWidget* create_overview_label(char* label_str){
-	GtkWidget* label = gtk_label_new(label_str);
-	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
-	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
-	gtk_widget_set_hexpand(label, false);
-	return label;
-}
 
-
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// SELECTING WIDGETS WITH RIGHT CLICK
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void on_widget_right_click(GtkWidget* widget){
     if(selected_widget != NULL){
         remove_class_from_widget(selected_widget, "selected");
@@ -128,6 +105,35 @@ void make_widget_customizable(GtkWidget* widget){
 
     gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
     g_signal_connect_data(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// CREATING AND REFRESHING THE TUXRUP WINDOW
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+GtkWidget* refresh_button;
+GtkWidget* widgets_overview;
+GtkWidget* widget_types;
+GtkWidget* widget_names;
+GtkWidget* widget_labels;
+GtkWidget* widget_pointers;
+GtkWidget* widget_callback_names;
+GtkWidget* widget_callback_function_names;
+GtkWidget* widget_callback_function_pointers;
+GtkWidget* program_src_folder_label;    
+GtkWidget* working_directory_label;      
+GtkWidget* executable_path_label;        
+GtkWidget* executable_name_label;        
+GtkWidget* executable_symbols_path_label;
+
+
+GtkWidget* create_overview_label(char* label_str){
+	GtkWidget* label = gtk_label_new(label_str);
+	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_widget_set_hexpand(label, false);
+	return label;
 }
 
 void refresh_widgets_overview(){
@@ -166,7 +172,13 @@ void refresh_widgets_overview(){
 
 void refresh_tuxrup_window(){
 	refresh_widgets_overview();
-	//other stuff here
+	
+	gtk_label_set_label(GTK_LABEL(program_src_folder_label),      g_strdup_printf("program_src_folder: %s",      get_program_src_folder()));
+	gtk_label_set_label(GTK_LABEL(working_directory_label),       g_strdup_printf("working_directory: %s",       get_working_directory()));
+	gtk_label_set_label(GTK_LABEL(executable_path_label),         g_strdup_printf("executable_path: %s",         get_executable_path()));
+	gtk_label_set_label(GTK_LABEL(executable_name_label),         g_strdup_printf("executable_name: %s",         get_executable_name()));
+	gtk_label_set_label(GTK_LABEL(executable_symbols_path_label), g_strdup_printf("executable_symbols_path: %s", get_executable_symbols_path()));
+
 	gtk_widget_show_all_original(tuxrup_root);
 }
 
@@ -186,6 +198,16 @@ void build_tuxrup_window(){
 	g_signal_connect(refresh_button, "clicked", G_CALLBACK(refresh_tuxrup_window), NULL);
 
 	gtk_container_add(GTK_CONTAINER(data_column), refresh_button);
+	program_src_folder_label      = gtk_label_new("program_src_folder:     ");
+	working_directory_label       = gtk_label_new("working_directory:      ");
+	executable_path_label         = gtk_label_new("executable_path:        ");
+	executable_name_label         = gtk_label_new("executable_name:        ");
+	executable_symbols_path_label = gtk_label_new("executable_symbols_path:");
+	gtk_container_add(GTK_CONTAINER(data_column), program_src_folder_label     );
+	gtk_container_add(GTK_CONTAINER(data_column), working_directory_label      );
+	gtk_container_add(GTK_CONTAINER(data_column), executable_path_label        );
+	gtk_container_add(GTK_CONTAINER(data_column), executable_name_label        );
+	gtk_container_add(GTK_CONTAINER(data_column), executable_symbols_path_label);
 
 	// TODO: Does not respect the size right now
 	GtkWidget* widgets_overview_scrolled_window = make_scrolled_window(20, 100); 
@@ -257,6 +279,7 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
 	g_signal_connect_data(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
 
+
 	// ---------------------------------------------------------------------------------
 	// Change CSS properties
 	
@@ -288,7 +311,6 @@ void build_tuxrup_window(){
 	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
 	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), textbuffer);
-
 
 
 	// --------------------------------------------------------------------------------------
