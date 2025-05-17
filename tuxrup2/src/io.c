@@ -33,7 +33,7 @@ char* get_program_src_folder(){
 
 	if(!g_hash_table_contains(source_code_paths, get_executable_name())){
 		g_print("Could not find source code folder. Have you maybe forgotten to add it to the hardwired list?\n");		
-		return "";
+		return "N/A";
 	}	
 
 	program_src_folder = g_hash_table_lookup(source_code_paths, get_executable_name());
@@ -48,12 +48,12 @@ char* get_working_directory(){
 	char* cwd = malloc(PATH_MAX);
 	if (cwd == NULL) {
 		perror("malloc error");
-		return NULL;
+		return "N/A";
 	}
 	if (getcwd(cwd, PATH_MAX) == NULL) {
 		perror("getcwd error");
 		free(cwd);
-		return NULL;
+		return "N/A";
 	}
 
 	working_directory = cwd;
@@ -68,7 +68,7 @@ char* get_executable_path(){
     char* buffer = malloc(sizeof(char)*PATH_MAX);
     ssize_t len = readlink("/proc/self/exe", buffer, PATH_MAX - 1);
     if(len == -1){
-        return NULL;
+        return "N/A";
     }
     buffer[len] = '\0';
 
@@ -80,6 +80,9 @@ char* get_executable_name(){
 	if(executable_name != NULL){
 		return executable_name;
 	}
+	if(get_executable_path() == NULL){
+		return "N/A";
+	}
 	executable_name = g_basename(g_strdup(get_executable_path()));
 	return executable_name;
 }
@@ -87,6 +90,9 @@ char* get_executable_name(){
 char* get_executable_symbols_path(){
 	if(executable_symbols_path != NULL){
 		return executable_symbols_path;
+	}
+	if(get_executable_name() == NULL){
+		return "N/A";
 	}
 	executable_symbols_path = g_strdup_printf("symbols/%s", get_executable_name()); 
 	return executable_symbols_path;
