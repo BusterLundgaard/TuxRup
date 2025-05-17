@@ -5,8 +5,36 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
+#include <setjmp.h>
+#include <signal.h>
 
 #include "util.h"
+
+jmp_buf jump;
+
+void segv (int sig)
+{
+  longjmp (jump, 1); 
+}
+
+// This is some hack from stackexchange
+// https://stackoverflow.com/questions/1576300/checking-if-a-pointer-is-allocated-memory-or-not
+int check_memory_allocated (void *x) 
+{
+  volatile char c;
+  int illegal = 0;
+
+  signal (SIGSEGV, segv);
+
+  if (!setjmp (jump))
+    c = *(char *) (x);
+  else
+    illegal = 1;
+
+  signal (SIGSEGV, SIG_DFL);
+
+  return (illegal);
+}
 
 gpointer* get_original_function_pointer(char* name){
 	void* p = dlsym(RTLD_NEXT, name);

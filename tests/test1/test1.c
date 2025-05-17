@@ -3,15 +3,16 @@
 #include <gdk/gdk.h>
 #include <stdbool.h>
 
-
-
 // DESCRIBE THE TESTS HERE
 bool tuxrup_test1();
 bool tuxrup_test2();
 bool tuxrup_testBangladeshLable();
+bool tuxrup_test_pointer_name_conversion();
+
+int x = 23;
 
 void on_open_clicked(GtkWidget* widget, gpointer user_data){
-	g_print("on open\n");
+	g_print("on open. x = %d\n", x);
 }
 
 void on_new_clicked(GtkWidget* widget, gpointer user_data){
@@ -83,6 +84,7 @@ activate (GtkApplication *app,
 	tuxrup_test1();
 	tuxrup_test2();
 	tuxrup_testBangladeshLable();
+	tuxrup_test_pointer_name_conversion();
 	g_print("ALL TESTS PASSED!\n");
 	/* gtk_window_close(GTK_WINDOW(window)); */
 }

@@ -1,3 +1,4 @@
+int check_memory_allocated (void *x); 
 gpointer* get_original_function_pointer(char* name);
 GtkWidget* make_scrolled_window(int width, int height);
 void empty_box(GtkWidget* box);

@@ -46,6 +46,46 @@ bool is_variable(char symbol_type){
 }
 
 
+bool is_pie_executable()
+{
+    int fd = open(get_executable_symbols_path(), O_RDONLY);
+
+    Elf64_Ehdr ehdr;
+    if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr))
+    {
+        close(fd);
+        return false;
+    }
+    close(fd);
+
+    return (ehdr.e_type == ET_DYN); // PIE executables are of type ET_DYN
+}
+
+void *get_base_address()
+{
+	if(!is_pie_executable()){
+		return 0;
+	}
+
+    FILE* fp = fopen("/proc/self/maps", "r");
+    if (!fp){return NULL;}
+
+    void *base_addr = NULL;
+    char line[256];
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        if (strstr(line, "r--p") && strstr(line, get_executable_name()))
+        {
+            base_addr = (void *)strtoull(line, NULL, 16);
+            break;
+        }
+    }
+
+    fclose(fp);
+    return base_addr;
+}
+
 GHashTable* get_main_symbols(){
 	if(identifiers_to_pointers_map != NULL){
 		return identifiers_to_pointers_map;
@@ -54,40 +94,13 @@ GHashTable* get_main_symbols(){
 	identifiers_to_pointers_map = g_hash_table_new(g_str_hash, g_str_equal);
 	pointers_to_identifiers_map = g_hash_table_new(g_direct_hash, g_direct_equal);
 
+	void* base_addr = get_base_address();
+
     char command[512];
     snprintf(command, sizeof(command), "nm %s", get_executable_symbols_path());
+	FILE* fp = popen(command, "r");
 
-	// Pass 1: Get the base (real, not relative) address you will use to compute the other addresses
-	void* base_addr_absolute;
-	void* base_addr_relative;
-
-	FILE *fp = popen(command, "r");
-    char line[1024];
-
-    while (fgets(line, sizeof(line), fp)) {
-		if (!isdigit(line[0]))
-		{continue;}
-
-        unsigned long address;
-        char type;
-        char name[512];
-        if (sscanf(line, "%lx %c %511s", &address, &type, name) != 3) {
-			continue;
-		}
-		
-		void* sym_pointer = dlsym(RTLD_DEFAULT, name);
-		if(sym_pointer == NULL){
-			continue;
-		}
-
-		base_addr_absolute = (void*)sym_pointer;
-		base_addr_relative = (void*)address;
-		break;
-    }
-    pclose(fp);
-
-	// Pass 2: Use this base address and the offsets in nm to compute the real address of every other symbol
-	fp = popen(command, "r");
+    char line[256];
     while (fgets(line, sizeof(line), fp)) {
 		if (!isdigit(line[0])){
             continue;
@@ -100,10 +113,10 @@ GHashTable* get_main_symbols(){
 			continue;
 		}
 
-		void* real_address = (void*)((uintptr_t)base_addr_absolute + ((uintptr_t)address - (uintptr_t)base_addr_relative)); 	
-		char* symbol_name = g_strdup_printf(name);
-		g_hash_table_insert(identifiers_to_pointers_map, symbol_name, real_address); 
-		g_hash_table_insert(pointers_to_identifiers_map, real_address, symbol_name);  
+		void* sym_pointer = (void*)((uintptr_t)address + base_addr);
+		char* sym_name = g_strdup(name);
+		g_hash_table_insert(identifiers_to_pointers_map, sym_name, sym_pointer); 
+		g_hash_table_insert(pointers_to_identifiers_map, sym_pointer, sym_name);  
 	}
 
 	return identifiers_to_pointers_map;
@@ -208,12 +221,19 @@ char* identifier_from_pointer(void* pointer){
 	if(pointers_to_identifiers_map == NULL){
 		get_main_symbols();	
 	}
+	if(!g_hash_table_contains(pointers_to_identifiers_map, pointer)){
+		return "N/A";
+	}
 	return g_hash_table_lookup(pointers_to_identifiers_map, pointer);
 }
 char* pointer_from_identifier(char* identifier){
 	if(identifiers_to_pointers_map == NULL){
 		get_main_symbols();
 	} 
+	if(!g_hash_table_contains(identifiers_to_pointers_map, identifier)){
+		g_print("could not find pointer for the identifier %s\n", identifier);
+		return NULL;
+	}
 	return g_hash_table_lookup(identifiers_to_pointers_map, identifier);
 }
 

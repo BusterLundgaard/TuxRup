@@ -159,7 +159,8 @@ void refresh_widgets_overview(){
 
 		if(callback_pointer != NULL){
 			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(callback_name));
-			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(g_strdup_printf("%p", callback_name)));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(g_strdup_printf("%p", callback_pointer)));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(identifier_from_pointer(callback_pointer)));
 		}
 
 		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
@@ -182,8 +183,6 @@ void refresh_symbols_overview(){
 	while(g_hash_table_iter_next(&iter, &key, &value)){
 		char* symbol_name = (char*)key;
 		void* symbol_pointer = (void*)value;
-		g_print("looking at name %s\n", symbol_name);
-		
 		gtk_container_add(GTK_CONTAINER(symbol_names), create_overview_label(symbol_name));  
 		gtk_container_add(GTK_CONTAINER(symbol_pointers), create_overview_label(g_strdup_printf("%p", symbol_pointer)));  
 	}
@@ -494,4 +493,17 @@ bool tuxrup_testBangladeshLable() {
 	g_print("test 3 failed. Expected: \"%s\", got \"%s\".\n", "Bangladesh", "None");	
 	exit(1);
 	return false;
+}
+
+bool tuxrup_test_pointer_name_conversion(){
+	int x = *((int*)pointer_from_identifier("x"));
+	if(x != 23){
+		g_print("test 4 failed. Failed to properly resolve pointer with name \"x\". Expected: 23, got: %d\n", x);	
+		exit(1);
+	}		
+
+	typedef void(*on_new_clicked_t)(GtkWidget*, gpointer);
+	((on_new_clicked_t)pointer_from_identifier("on_new_clicked"))(NULL, NULL);
+
+	g_print("test 4 PASSED.\n");
 }
