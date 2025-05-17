@@ -4,4 +4,7 @@ tuxrup/build/cmake_install.cmake
 tuxrup/build/__pycache__/*
 tuxrup/build/runtime_files/*
 tuxrup/tuxrup2/build/libtuxrup.so
-tuxrup/tests/test1/test1
+tests/test1/test1
+tuxrup2/build/runtime_generated_code/*
+tuxrup2/build/temp.c
+tuxrup2/symbols/*

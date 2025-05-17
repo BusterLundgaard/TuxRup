@@ -1,3 +1,0 @@
-set breakpoint pending on
-break callbacks.c:91
-break symbols.c:128
