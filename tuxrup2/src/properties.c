@@ -13,7 +13,7 @@
 // ---------------------------------
 // LOCALS
 // ------------------------------
-GtkWidget* active_widget = NULL;
+static GtkWidget* active_widget = NULL;
 
 // ---------------------------------
 // LOCAL UTILS
@@ -180,7 +180,6 @@ void on_edit_properties(GtkWidget* widget, gpointer user_data){
 
     active_widget = selected_widget;
     if(active_widget == NULL) {return;}
-    if(!GTK_IS_WIDGET(active_widget)) {return;}
 	
 	g_print("about to cast to object. active_widget = %p\n!", active_widget);
     GObjectClass* klass = G_OBJECT_GET_CLASS(G_OBJECT(active_widget));
@@ -192,4 +191,8 @@ void on_edit_properties(GtkWidget* widget, gpointer user_data){
     } 
 
 	gtk_widget_show_all(tuxrup_root);
+}
+
+void properties_reset(GtkWidget* property_editor){
+	empty_box(property_editor);
 }

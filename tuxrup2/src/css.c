@@ -26,6 +26,7 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
 
 void on_load(GtkWidget *widget, gpointer user_data) {
     GtkTextBuffer *textbuffer = user_data;
+
     GtkWidget* w = selected_widget;
     if(w == NULL) {return;}
     if(!GTK_IS_WIDGET(w)) {return;}
@@ -39,3 +40,9 @@ void on_load(GtkWidget *widget, gpointer user_data) {
     gtk_text_buffer_set_text(textbuffer, csspointer, -1);
 
 }
+
+void css_reset(GtkTextBuffer* textbuffer){
+	gtk_text_buffer_set_text(textbuffer, "", -1);	
+}
+
+

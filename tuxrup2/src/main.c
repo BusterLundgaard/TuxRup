@@ -67,37 +67,6 @@ GList* find_all_modifiable_widgets(){
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// SELECTING WIDGETS WITH RIGHT CLICK
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void on_widget_right_click(GtkWidget* widget){
-    if(selected_widget != NULL){
-        remove_class_from_widget(selected_widget, "selected");
-    }
-    selected_widget = widget;
-    add_class_to_widget(selected_widget, "selected");
-}
-
-
-gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
-    // Check that it is actually a right click and not just any click
-    if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
-        return false;
-    }
-    on_widget_right_click(widget);
-}
-
-// Make this widget customizable 
-void make_widget_customizable(GtkWidget* widget){
-    if(!observed_type(widget)){return;}
-
-    add_class_to_widget(widget, "modifiable");
-
-    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect_data_original(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
-}
-
-
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -110,6 +79,9 @@ GtkWidget* widget_pointers;
 GtkWidget* widget_callback_names;
 GtkWidget* widget_callback_function_names;
 GtkWidget* widget_callback_function_pointers;
+GtkWidget* property_editor;
+GtkTextBuffer* css_text_buffer;
+GtkTextBuffer* callbacks_text_buffer;
 GtkWidget* program_src_folder_label;    
 GtkWidget* working_directory_label;      
 GtkWidget* executable_path_label;        
@@ -126,6 +98,7 @@ GtkWidget* create_overview_label(char* label_str){
 	return label;
 }
 
+void make_widget_customizable(GtkWidget* widget);
 void refresh_widgets_overview(){
 	empty_box(widget_types);
     empty_box(widget_names);
@@ -187,6 +160,10 @@ void refresh_tuxrup_window(){
 	gtk_label_set_label(GTK_LABEL(executable_path_label),         g_strdup_printf("executable_path: %s",         get_executable_path()));
 	gtk_label_set_label(GTK_LABEL(executable_name_label),         g_strdup_printf("executable_name: %s",         get_executable_name()));
 	gtk_label_set_label(GTK_LABEL(executable_symbols_path_label), g_strdup_printf("executable_symbols_path: %s", get_executable_symbols_path()));
+
+	css_reset(css_text_buffer);
+	properties_reset(property_editor);
+	callbacks_reset(callbacks_text_buffer);
 
 	gtk_widget_show_all_original(tuxrup_root);
 }
@@ -271,7 +248,7 @@ void build_tuxrup_window(){
 	GtkWidget* property_editor_scrolled_window = make_scrolled_window(100, 500); 
 	gtk_container_add(GTK_CONTAINER(columns), change_properties_column);
 
-	GtkWidget* property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(change_properties_column), property_editor_scrolled_window);
 	gtk_container_add(GTK_CONTAINER(property_editor_scrolled_window), property_editor);
 	g_signal_connect_data_original(change_widget_properties_button, "clicked", G_CALLBACK(on_edit_properties), property_editor, NULL, (GConnectFlags)0); 
@@ -290,12 +267,11 @@ void build_tuxrup_window(){
 	GtkWidget* css_edit_label = gtk_label_new("Add CSS for widget here");
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_edit_label);
 
-	GtkTextBuffer *textbuffer = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_set_text(textbuffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
-	GtkWidget* css_editor = gtk_text_view_new_with_buffer(textbuffer);
+	css_text_buffer = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_set_text(css_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	GtkWidget* css_editor = gtk_text_view_new_with_buffer(css_text_buffer);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_editor);
-	g_signal_connect(done, "clicked", G_CALLBACK(on_done_clicked), textbuffer);
-
+	g_signal_connect(done, "clicked", G_CALLBACK(on_done_clicked), css_text_buffer);
 
 	GtkWidget* css_all_label = gtk_label_new("View all CSS for application here");
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_all_label);
@@ -304,7 +280,7 @@ void build_tuxrup_window(){
 	gtk_text_buffer_set_text(textbuffer2, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
 	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
-	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), textbuffer);
+	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), css_text_buffer);
 
 	// --------------------------------------------------------------------------------------
 	// Change callback
@@ -318,16 +294,48 @@ void build_tuxrup_window(){
 	GtkWidget* callback_editor_scrolled_window = make_scrolled_window(20, 100); 
 	gtk_box_pack_start(GTK_BOX(change_callback_column), callback_editor_scrolled_window, TRUE, TRUE, 0);
 
-	GtkTextBuffer *textbuffer3 = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_set_text(textbuffer3, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
-	GtkWidget* callback_editor = gtk_text_view_new_with_buffer(textbuffer3);
+	callbacks_text_buffer = gtk_text_buffer_new(NULL);
+	gtk_text_buffer_set_text(callbacks_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	GtkWidget* callback_editor = gtk_text_view_new_with_buffer(callbacks_text_buffer);
 	gtk_container_add(GTK_CONTAINER(callback_editor_scrolled_window), callback_editor);
 
 	GtkWidget* done_callback_button = gtk_button_new_with_label("Done editing callback");
 	gtk_container_add(GTK_CONTAINER(change_callback_column), done_callback_button);
 
-	g_signal_connect_data_original(change_callback_button, "clicked", G_CALLBACK(on_callback_edit), textbuffer3, NULL, (GConnectFlags)0);
-	g_signal_connect_data_original(done_callback_button, "clicked", G_CALLBACK(on_callback_done), textbuffer3, NULL, (GConnectFlags)0);
+	g_signal_connect_data_original(change_callback_button, "clicked", G_CALLBACK(on_callback_edit), callbacks_text_buffer, NULL, (GConnectFlags)0);
+	g_signal_connect_data_original(done_callback_button, "clicked", G_CALLBACK(on_callback_done), callbacks_text_buffer, NULL, (GConnectFlags)0);
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// SELECTING WIDGETS WITH RIGHT CLICK
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void on_widget_right_click(GtkWidget* widget){
+    if(selected_widget != NULL){
+        remove_class_from_widget(selected_widget, "selected");
+    }
+    selected_widget = widget;
+    add_class_to_widget(selected_widget, "selected");
+	refresh_tuxrup_window();
+}
+
+
+gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
+    // Check that it is actually a right click and not just any click
+    if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
+        return false;
+    }
+    on_widget_right_click(widget);
+}
+
+// Make this widget customizable 
+void make_widget_customizable(GtkWidget* widget){
+    if(!observed_type(widget)){return;}
+
+    add_class_to_widget(widget, "modifiable");
+
+    gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect_data_original(widget, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
 }
 
 

@@ -11,6 +11,8 @@
 #include "symbols.h"
 #include "globals.h"
 
+static GtkWidget* active_widget = NULL;
+
 typedef void(*callback_function_t)(GtkWidget*, gpointer);
 
 void remove_callback (GtkWidget* w, char* callback_name){
@@ -78,7 +80,13 @@ char* read_file(char* filepath){
 }
 
 void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
-	char* original_document = get_document_path(identifier_from_pointer(g_object_get_data(G_OBJECT(selected_widget), "callback_pointer"))); 
+	active_widget = selected_widget;
+	if(active_widget == NULL){
+		g_print("Selected widget was null. Not continuing with editing callback\n");
+		return;
+	}
+
+	char* original_document = get_document_path(identifier_from_pointer(g_object_get_data(G_OBJECT(active_widget), "callback_pointer"))); 
 	char* contents = read_file(original_document); 
 	gtk_text_buffer_set_text(buffer, contents, -1); 
 
@@ -88,12 +96,17 @@ void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
 
 
 void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
+	if(active_widget == NULL){
+		g_print("Selected widget was null. Not continuing with editing callback\n");
+		return;
+	}
+
 	// Compile code in the text buffer
 	char* code = get_text_from_buffer(buffer);		
 	
 	g_file_set_contents("temp.c", code, strlen(code), NULL);
 
-	char* compile_path = shared_lib_path(selected_widget);
+	char* compile_path = shared_lib_path(active_widget);
 	char* gcc_command = g_strdup_printf(
 			"gcc temp.c -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", compile_path);
 	g_print("%s\n", gcc_command);
@@ -105,9 +118,9 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		return;
 	}
 
-	char* callback_name = g_object_get_data(G_OBJECT(selected_widget), "callback_name");
+	char* callback_name = g_object_get_data(G_OBJECT(active_widget), "callback_name");
 	if(callback_name == NULL){
-		g_print("Couldn't find any callback_name field on widget %p. Won't overwrite callback.\n", selected_widget);
+		g_print("Couldn't find any callback_name field on widget %p. Won't overwrite callback.\n", active_widget);
 		return;
 	}
 
@@ -117,14 +130,19 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		return;
 	}
 
-	void* previous_shared_lib_pointer = g_object_get_data(G_OBJECT(selected_widget), "shared_lib_pointer");
+	void* previous_shared_lib_pointer = g_object_get_data(G_OBJECT(active_widget), "shared_lib_pointer");
 	if(previous_shared_lib_pointer != NULL){
 		g_print("There was a previously opened shared_lib_pointer. Closing it and proceeding to set a new one.", compile_path);
 		dlclose(previous_shared_lib_pointer);
 	}
 	
 	// Actually change the callback	
-	remove_callback(selected_widget, callback_name);
-	g_object_set_data(G_OBJECT(selected_widget), "shared_lib_pointer", shared_lib_pointer);
-	g_signal_connect_data_original(selected_widget, callback_name, G_CALLBACK(&function_dispatcher), NULL, NULL, (GConnectFlags)0);
+	remove_callback(active_widget, callback_name);
+	g_object_set_data(G_OBJECT(active_widget), "shared_lib_pointer", shared_lib_pointer);
+	g_signal_connect_data_original(active_widget, callback_name, G_CALLBACK(&function_dispatcher), NULL, NULL, (GConnectFlags)0);
+}
+
+void callbacks_reset(GtkTextBuffer* buffer){
+	active_widget = NULL;
+	gtk_text_buffer_set_text(buffer, "", -1);
 }
