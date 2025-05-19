@@ -389,11 +389,8 @@ void init(){
 void post_init(){
 	char* selected_css = 
 	".selected{\
-		 background-image: linear-gradient(to bottom, #ffffffAA, #dddddd00); background-color:rgb(247, 190, 4);\
-  		 border: 2px solidrgb(231, 227, 1);\
-   		 border-radius: 8px;\
-   		 color: white;\
-   		 padding: 6px 12px;\
+		 background-color:rgb(247, 190, 4);\
+   		 color: black;\
    		 font-weight: bold;\
    		 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);\
     }";
