@@ -125,10 +125,8 @@ GHashTable* get_main_symbols(){
 
 
 void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, bool to_from){
-	g_print("i was called!\n");
     char command[512];
     snprintf(command, sizeof(command), "nm -C -S %s", shared_lib_path);
-	g_print("calling command %s\n", command);
 
 	// Pass 1: Get the base (real, not relative) address you will use to compute the other addresses
 	FILE *fp = popen(command, "r");
@@ -174,6 +172,9 @@ void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, boo
 		if(!is_variable(type)){
 			continue;
 		}
+		if(size == 0){
+			continue;
+		}
 
 		symbol_info* value = malloc(sizeof(symbol_info));
 		value->size = size;
@@ -188,29 +189,50 @@ void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, boo
 	g_hash_table_iter_init(&iter, shared_lib_identifiers);
 	while(g_hash_table_iter_next(&iter, &key, &value)){
 		char* var_name = (char*)key;
+		if(var_name == NULL){
+			g_print("Syncing variables, but some var_name is NULL. Continuing on with the next symbol\n");
+			continue;
+		}
+		if(value == NULL){
+			g_print("Pointer to size and address info about symbol %s is NULL. Continuing on with the next symbol\n", var_name);
+			continue;
+		}
+
 		size_t var_size = ((symbol_info*)(value))->size;
-		void* var_address = ((symbol_info*)(value))->address;
-		if(var_address == NULL){
-			printf("Could not find pointer to a variable in the shared lib with name %s\n", var_name);
-			exit(1);
+		if(var_size == 0){
+			g_print("Variable %s has size 0, so we cant sync it. Continuing on with the next symbol\n", var_name);
+			continue;
 		}
 
-		void* variable_pointer_main;
+		void* var_address_shared = ((symbol_info*)(value))->address;
+		if(var_address_shared == NULL){
+			printf("Could not find pointer to a variable in the shared lib with name %s. Continuing on with the next symbol\n", var_name);
+			continue;
+		}
+
+		void* var_address_main;
 		if(g_hash_table_contains(identifiers_to_pointers_map, var_name)){
-			variable_pointer_main = g_hash_table_lookup(identifiers_to_pointers_map, var_name);
+			var_address_main = g_hash_table_lookup(identifiers_to_pointers_map, var_name);
 		} else {
-			variable_pointer_main = dlsym(RTLD_NEXT, var_name);
+			var_address_main = dlsym(RTLD_NEXT, var_name);
 		}
-		if(variable_pointer_main == NULL){
-			printf("Could not find a pointer in main with name %s\n", var_name);
-			exit(1);
+		if(var_address_main == NULL){
+			printf("Could not find a pointer in main with name %s. Continuing on with the next symbol.\n", var_name);
+			continue;
+		}
+		
+		if(((uintptr_t)var_address_shared > (uintptr_t)var_address_main && (uintptr_t)var_address_main + var_size > (uintptr_t)var_address_shared) ||
+		   ((uintptr_t)var_address_main > (uintptr_t)var_address_shared && (uintptr_t)var_address_shared + var_size > (uintptr_t)var_address_main) ||
+		   ((uintptr_t)var_address_main < var_size) ||
+		   ((uintptr_t)var_address_shared < var_size)){
+			printf("Detected a memcpy that seemed sus (overlapping regions or the size of the allocation being greater than the actual addresses. Stopping and continuing to next variable\n");
+			continue;
 		}
 
-		g_print("syncing the variable %s\n", var_name);	
 		if(to_from){
-			memcpy(var_address, variable_pointer_main, var_size);
+			memcpy(var_address_shared, var_address_main, var_size);
 		} else {
-			memcpy(variable_pointer_main, var_address, var_size);
+			memcpy(var_address_main, var_address_shared, var_size);
 		}
 	}
 	
