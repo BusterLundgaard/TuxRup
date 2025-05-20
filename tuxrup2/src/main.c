@@ -1,10 +1,13 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib.h>
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
+
 
 #include "util.h"
 #include "css.h"
@@ -13,6 +16,7 @@
 #include "io.h"
 #include "symbols.h"
 #include "callbacks.h"
+
 
 // TODO: Pressing some of the buttons when you have no widget selected crashes the program
 

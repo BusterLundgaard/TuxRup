@@ -19,6 +19,7 @@ typedef struct {
 	void* address;
 } symbol_info;
 
+__attribute__((used)) static void* force_link = (void*)g_direct_hash;
 GHashTable* identifiers_to_pointers_map = NULL;
 GHashTable* pointers_to_identifiers_map = NULL; 
 
