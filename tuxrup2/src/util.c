@@ -40,6 +40,9 @@ void empty_box(GtkWidget* box){
 }
 
 
+// Try to safely get the selected widget:
+	
+
 // CSS methods:
 // Adds a CSS class to a widget
 void add_class_to_widget(GtkWidget* widget, char* class){

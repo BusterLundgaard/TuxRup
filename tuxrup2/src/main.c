@@ -315,10 +315,15 @@ void build_tuxrup_window(){
 // SELECTING WIDGETS WITH RIGHT CLICK
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void on_widget_right_click(GtkWidget* widget){
+	
     if(selected_widget != NULL){
         remove_class_from_widget(selected_widget, "selected");
     }
-    selected_widget = widget;
+	if(!widget) {
+		g_print("right clicked widget not applicable");
+		return;
+	}
+	selected_widget = widget;
     add_class_to_widget(selected_widget, "selected");
 	refresh_tuxrup_window();
 }

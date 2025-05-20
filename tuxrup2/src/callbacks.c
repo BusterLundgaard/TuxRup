@@ -66,30 +66,64 @@ void function_dispatcher(GtkWidget* widget, gpointer data){
 	sync_variables(shared_lib_path(widget), shared_lib_pointer, false); 
 }
 
-char* read_file(char* filepath){
-	FILE* filePointer;
-	char buffer[2012]; 
-	FILE* fp = fopen(filepath, "r");
-
-	GString* contents = g_string_new("");
-	while(fgets(buffer, 2012, fp)) {
-		g_string_append(contents, buffer);
-	}
-	fclose(filePointer);
-	return contents->str;		
+char* read_file(const char* filepath) {
+    FILE* fp = fopen(filepath, "r");
+    if (!fp) {
+        g_warning("Failed to open file: %s", filepath);
+        return NULL;
+    }
+    char buffer[2048];
+    GString* contents = g_string_new("");
+    while (fgets(buffer, sizeof(buffer), fp)) {
+        g_string_append(contents, buffer);
+    }
+    fclose(fp);
+	char* result = g_strdup(contents->str);
+    g_string_free(contents, TRUE); 
+    return result;  
 }
 
+
 void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
+	if (!selected_widget) {
+		g_print("Selected widget was null. Not continuing with editing callback\n");
+		return;
+	}
 	active_widget = selected_widget;
 	if(active_widget == NULL){
 		g_print("Selected widget was null. Not continuing with editing callback\n");
 		return;
 	}
+	g_print("Selected widget was not null. continuing with editing callback\n");
+	if (!buffer) {
+		g_print("Buffer, in on call_bcak was null. Not continuing with editing callback\n");
 
-	char* original_document = get_document_path(identifier_from_pointer(g_object_get_data(G_OBJECT(active_widget), "callback_pointer"))); 
+	}
+
+	gpointer callbackpointer = g_object_get_data(G_OBJECT(active_widget), "callback_pointer");
+	if(!callbackpointer) {
+		g_print("callbackpointer was null, finishing");
+		return;
+	}
+	char* identifier = identifier_from_pointer(callbackpointer);
+	if(!identifier) {
+		g_print("identifier was null, finishing");
+		return;
+	}
+
+	char* original_document = get_document_path(identifier); 
+	if(!original_document) {
+		g_print("original documnet was null, finishing");
+		return;
+	}
+
 	char* contents = read_file(original_document); 
-	gtk_text_buffer_set_text(buffer, contents, -1); 
+	if(!contents) {
+		g_print("could not read document returning");
+		return;
+	}
 
+	gtk_text_buffer_set_text(buffer, contents, -1); 
 	g_free(contents);
 	g_free(original_document);
 }
