@@ -136,7 +136,11 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 	}
 
 	// Compile code in the text buffer
-	char* code = get_text_from_buffer(buffer);		
+	char* code = get_text_from_buffer(buffer);
+	if(!code) {
+		g_print("code gotten from view is null?");
+		return;
+	}
 	
 	g_file_set_contents("temp.c", code, strlen(code), NULL);
 
