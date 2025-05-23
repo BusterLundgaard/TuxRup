@@ -186,8 +186,28 @@ void refreshallcss() {
 	}
 }
 
+void try_set_application_root() {
+	if (!GTK_IS_WINDOW(application_root)) {
+		GList* toplevels = gtk_window_list_toplevels();
+		for (GList* l = toplevels; l != NULL; l = l->next) {
+			if (GTK_IS_WINDOW(l->data)) {
+				application_root = GTK_WIDGET(l->data);
+				break;
+			}
+		}
+		g_list_free(toplevels);
+	
+		if (!GTK_IS_WINDOW(application_root)) {
+			g_warning("Failed to set application_root in refresh_tuxrup_window.");
+			return;
+		}
+	}
+}
+
+// this is the important part, we need to try and grab the application window when refresh is called every time, gotdamn i hate this.
 void refresh_tuxrup_window(){
-	refresh_widgets_overview();
+	try_set_application_root();
+	if(application_root) {refresh_widgets_overview();}
 	refresh_symbols_overview();
 	
 	gtk_label_set_label(GTK_LABEL(program_src_folder_label),      g_strdup_printf("program_src_folder: %s",      get_program_src_folder()));
@@ -440,7 +460,12 @@ void init(){
 }
 
 // This function is called right AFTER the application shows its first window
+// we should try to get the application root here yes?
+//:thinking:;______________________________;
 void post_init(){
+
+
+
 	char* selected_css = 
 	".selected{\
 		 background-color:rgb(247, 190, 4);\
@@ -456,12 +481,18 @@ void gtk_widget_show_all(GtkWidget *widget)
 {
 	if(!initialized){
 		initialized = true;
-		application_root = widget;
-		GtkApplication* app = gtk_window_get_application(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+		if(!GTK_IS_WINDOW(widget)) {goto showall;}
+		set_application_root(widget);
+		GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget));
+		if(!window) {goto showall;}
+		GtkApplication* app = gtk_window_get_application(window); // when do we use this? This is defined locally in the function but not used here ;____;
+
+
+		showall:
 		gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 		
 		init();
-		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL); // why is this not just in init ;________;
 		build_tuxrup_window();
 		gtk_widget_show_all_original(tuxrup_root);
 		gtk_widget_show_all_original(widget);	
@@ -478,6 +509,18 @@ void gtk_widget_show_all(GtkWidget *widget)
 //-------------------------------------------------------------------
 //Helper functions
 //-------------------------------------------------------------------
+
+void set_application_root(GtkWidget* candidate) {
+	if (!application_root && GTK_IS_WINDOW(candidate)) {
+		application_root = candidate;
+		g_debug("application_root set to %p", candidate);
+	} else if (application_root && application_root != candidate) {
+		g_warning("overriding applicatoin root. Existing: %p, New: %p", application_root, candidate);
+	}
+}
+
+
+
 gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
 	GFileInputStream *stream = g_file_read(file,NULL,error_out);
 	if (!stream) {
