@@ -77,6 +77,19 @@ activate (GtkApplication *app,
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), sep, -1);
 	gtk_container_add(GTK_CONTAINER(box), toolbar);
 
+	// applying css:
+
+	GtkCssProvider *provider = gtk_css_provider_new();
+	GFile *file = g_file_new_for_path("/home/wowsuchdoge/TuxRup/tests/test1/test1.css");
+	gtk_css_provider_load_from_file(provider,file,NULL);
+	g_object_unref(file);
+
+	gtk_style_context_add_provider_for_screen(
+		gdk_screen_get_default(),
+		GTK_STYLE_PROVIDER(provider),
+		GTK_STYLE_PROVIDER_PRIORITY_USER
+	);
+
 	// Done
 	gtk_widget_show_all(window);
 

@@ -16,3 +16,4 @@ GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.
 GtkWidget* selected_widget = NULL; //the currently selected widget.
 
 g_signal_connect_data_t g_signal_connect_data_original = NULL;
+

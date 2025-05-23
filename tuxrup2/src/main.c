@@ -1,6 +1,7 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib.h>
+#include <gio/gio.h>
 
 
 #include <stdio.h>
@@ -24,7 +25,21 @@
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 typedef void(*gtk_widget_show_all_t)(GtkWidget*);
+// defining local var
 gtk_widget_show_all_t gtk_widget_show_all_original;
+
+typedef gboolean(*gtk_css_provider_load_from_file_t)(GtkCssProvider*, const gchar*, GError**);
+// defining local var with this return type
+gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_original;
+
+
+
+// LOCAL VARIABLES
+
+GtkTextBuffer* css_buffer = NULL;
+GFile* file_to_css = NULL;
+gboolean hasloaded = FALSE;
+
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,9 +85,11 @@ GList* find_all_modifiable_widgets(){
 }
 
 
+
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 GtkWidget* refresh_button;
 GtkWidget* widgets_overview;
@@ -155,6 +172,20 @@ void refresh_symbols_overview(){
 	}
 }
 
+void refreshallcss() {
+	if(hasloaded == TRUE) {
+		return;
+	}
+	hasloaded = TRUE;
+	if(!G_IS_FILE(file_to_css)) {
+		g_print("G_IS_FILE says its not a file");
+		gtk_text_buffer_set_text(css_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	}
+	else {
+		read_and_append_to_buffer(file_to_css,css_buffer);
+	}
+}
+
 void refresh_tuxrup_window(){
 	refresh_widgets_overview();
 	refresh_symbols_overview();
@@ -168,6 +199,7 @@ void refresh_tuxrup_window(){
 	css_reset(css_text_buffer);
 	properties_reset(property_editor);
 	callbacks_reset(callbacks_text_buffer);
+	refreshallcss();
 
 	gtk_widget_show_all_original(tuxrup_root);
 }
@@ -281,10 +313,11 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_all_label);
 
 	GtkTextBuffer *textbuffer2 = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_set_text(textbuffer2, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	css_buffer = textbuffer2;
 	GtkWidget* css_viewer = gtk_text_view_new_with_buffer(textbuffer2);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_viewer);
 	g_signal_connect(loadcssbutton, "clicked", G_CALLBACK(on_load), css_text_buffer);
+
 
 	// --------------------------------------------------------------------------------------
 	// Change callback
@@ -377,6 +410,18 @@ gulong g_signal_connect_data(gpointer instance,
 	return g_signal_connect_data_original(instance, detailed_signal, c_handler, data, destroy_data, connect_flags);
 }
 
+// we only want to read the file, and bail out fast.
+gboolean gtk_css_provider_load_from_file(GtkCssProvider *css_provider, GFile *file, GError **error){
+	gtk_css_provider_load_from_file_original = (gtk_css_provider_load_from_file_original != NULL) ? gtk_css_provider_load_from_file_original : (gtk_css_provider_load_from_file_t)get_original_function_pointer("gtk_css_provider_load_from_file");
+	if (G_IS_FILE(file)) {
+	if(file_to_css) g_object_unref(file_to_css);
+	file_to_css = g_object_ref(file);
+	g_print("Updated file to %s",g_file_get_path(file_to_css));
+	return gtk_css_provider_load_from_file_original(css_provider,file,error);
+	}
+	return gtk_css_provider_load_from_file_original(css_provider,file,error);
+}
+
 
 
 // --------------------------------------------
@@ -428,6 +473,68 @@ void gtk_widget_show_all(GtkWidget *widget)
 
 
 
+
+
+//-------------------------------------------------------------------
+//Helper functions
+//-------------------------------------------------------------------
+gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
+	GFileInputStream *stream = g_file_read(file,NULL,error_out);
+	if (!stream) {
+		return NULL;
+	}
+	GDataInputStream *data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+	if (!data_stream) {
+		return NULL;
+	}
+	
+	GByteArray *buffer = g_byte_array_new();
+	guint8 tempbuffer[4096];
+	gssize bytes;
+
+	GError *error = NULL;
+	while ((bytes = g_input_stream_read(G_INPUT_STREAM(data_stream), tempbuffer, sizeof(tempbuffer), NULL, &error)) > 0) {
+        g_byte_array_append(buffer, tempbuffer, bytes);
+    }
+	if (bytes<0) {
+		g_warning("could not read the file with error %s",error->message);
+		g_clear_error(error);
+		g_byte_array_free(buffer,TRUE);
+		g_object_unref(data_stream);
+		g_object_unref(stream);
+		return NULL;
+	}
+	g_object_unref(data_stream);
+	g_object_unref(stream);
+	g_byte_array_append(buffer, (const guint8 *)"", 1);
+    if (length) *length = buffer->len - 1;
+
+    return (gchar *)g_byte_array_free(buffer, FALSE);
+}
+// could have used set text here
+void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
+	GtkTextIter end;
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    gtk_text_buffer_insert(buffer, &end, text, -1);
+    gtk_text_buffer_insert(buffer, &end, "\n\n", -1);
+}
+
+void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
+	GError *error = NULL;
+	gsize len = 0;
+	if(!G_IS_FILE(file)) {
+		return;
+	}
+	gchar *text = read_gfile(file,len,error);
+	if(text) {
+		append_to_gtk_buffer(buffer,text);
+		g_free(text);
+	}
+	else {
+		g_warning("could not read file with error %s",error->message);
+		g_clear_error(error);
+	}
+}
 
 
 // ------------------------------------------------------------------

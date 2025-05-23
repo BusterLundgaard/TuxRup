@@ -184,3 +184,4 @@ void callbacks_reset(GtkTextBuffer* buffer){
 	active_widget = NULL;
 	gtk_text_buffer_set_text(buffer, "", -1);
 }
+	
