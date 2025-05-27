@@ -95,7 +95,7 @@ void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
 	}
 	g_print("Selected widget was not null. continuing with editing callback\n");
 	if (!buffer) {
-		g_print("Buffer, in on call_bcak was null. Not continuing with editing callback\n");
+		g_print("Buffer in on_callback_edit was null. Not continuing with editing callback\n");
 
 	}
 
@@ -112,7 +112,7 @@ void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
 
 	char* original_document = get_document_path(identifier); 
 	if(!original_document) {
-		g_print("original documnet was null, finishing");
+		g_print("original document was null, finishing");
 		return;
 	}
 
@@ -150,7 +150,7 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 
 	char* original_document = get_document_path(identifier); 
 	if(!original_document) {
-		g_print("original documnet was null, finishing");
+		g_print("original document was null, finishing");
 		return;
 	}
 
@@ -185,9 +185,12 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		return;
 	}
 
+
+	/* gcc -rdynamic -o my_app main.o other.o ... */
 	void* shared_lib_pointer = dlopen(compile_path, RTLD_LAZY);
 	if(shared_lib_pointer == NULL){
 		g_print("Failed to open shared lib pointer to %s. Won't overwrite callback.\n", compile_path);
+		fprintf(stderr, "dlopen failed: %s\n", dlerror());
 		return;
 	}
 
