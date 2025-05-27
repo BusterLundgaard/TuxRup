@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <limits.h>
+
 #include "globals.h"
 #include "image_viewer.h"
 
@@ -31,6 +34,26 @@ static void on_zoom_changed(GtkSpinButton* spinbutton, gpointer data){
     }
 }
 
+char* get_executable_dir() {
+    static char exe_path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (len != -1) {
+        exe_path[len] = '\0';
+        return g_dirname(exe_path);  // returns parent directory of the executable
+    } else {
+        return NULL; // fallback or handle error
+    }
+}
+
+GtkWidget* create_image_from_relative_path(const char *relative_path) {
+    const char *exe_dir = get_executable_dir();
+    if (!exe_dir) return NULL;
+
+    char full_path[PATH_MAX];
+    snprintf(full_path, sizeof(full_path), "%s/%s", exe_dir, relative_path);
+
+    return gtk_image_new_from_file(full_path);
+}
 
 GtkWidget* create_imageviewer(){
     GtkWidget* imageviewer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -44,7 +67,7 @@ GtkWidget* create_imageviewer(){
 
     for (int i = 0; i < 3; i++) {
         char* image_name = g_strdup_printf("jump%d.png", i+1);
-        images[i] = gtk_image_new_from_file(image_name);
+        images[i] = create_image_from_relative_path(image_name);
         gtk_image_set_pixel_size(GTK_IMAGE(images[i]), 300);
 
 		fixed[i] = gtk_fixed_new();
