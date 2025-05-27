@@ -3,12 +3,10 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 
 #include "util.h"
 #include "css.h"
@@ -28,7 +26,7 @@ typedef void(*gtk_widget_show_all_t)(GtkWidget*);
 // defining local var
 gtk_widget_show_all_t gtk_widget_show_all_original;
 
-typedef gboolean(*gtk_css_provider_load_from_file_t)(GtkCssProvider*, const gchar*, GError**);
+typedef gboolean(*gtk_css_provider_load_from_file_t)(GtkCssProvider*, GFile*, GError**);
 // defining local var with this return type
 gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_original;
 
@@ -40,6 +38,79 @@ GtkTextBuffer* css_buffer = NULL;
 GFile* file_to_css = NULL;
 gboolean hasloaded = FALSE;
 
+
+
+//-------------------------------------------------------------------
+// HELPER FUNCTIONS
+//-------------------------------------------------------------------
+void set_application_root(GtkWidget* candidate) {
+	if (!application_root && GTK_IS_WINDOW(candidate)) {
+		application_root = candidate;
+		g_debug("application_root set to %p", candidate);
+	} else if (application_root && application_root != candidate) {
+		g_warning("overriding applicatoin root. Existing: %p, New: %p", application_root, candidate);
+	}
+}
+
+
+
+gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
+	GFileInputStream *stream = g_file_read(file,NULL,error_out);
+	if (!stream) {
+		return NULL;
+	}
+	GDataInputStream *data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+	if (!data_stream) {
+		return NULL;
+	}
+	
+	GByteArray *buffer = g_byte_array_new();
+	guint8 tempbuffer[4096];
+	gssize bytes;
+
+	GError *error = NULL;
+	while ((bytes = g_input_stream_read(G_INPUT_STREAM(data_stream), tempbuffer, sizeof(tempbuffer), NULL, &error)) > 0) {
+        g_byte_array_append(buffer, tempbuffer, bytes);
+    }
+	if (bytes<0) {
+		g_warning("could not read the file with error %s",error->message);
+		g_clear_error(&error);
+		g_byte_array_free(buffer,TRUE);
+		g_object_unref(data_stream);
+		g_object_unref(stream);
+		return NULL;
+	}
+	g_object_unref(data_stream);
+	g_object_unref(stream);
+	g_byte_array_append(buffer, (const guint8 *)"", 1);
+    if (length) *length = buffer->len - 1;
+
+    return (gchar *)g_byte_array_free(buffer, FALSE);
+}
+// could have used set text here
+void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
+	GtkTextIter end;
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    gtk_text_buffer_insert(buffer, &end, text, -1);
+    gtk_text_buffer_insert(buffer, &end, "\n\n", -1);
+}
+
+void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
+	GError *error = NULL;
+	gsize len = 0;
+	if(!G_IS_FILE(file)) {
+		return;
+	}
+	gchar *text = read_gfile(file,&len,&error);
+	if(text) {
+		append_to_gtk_buffer(buffer,text);
+		g_free(text);
+	}
+	else {
+		g_warning("could not read file with error %s",error->message);
+		g_clear_error(&error);
+	}
+}
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -171,6 +242,8 @@ void refresh_symbols_overview(){
 		gtk_container_add(GTK_CONTAINER(symbol_pointers), create_overview_label(g_strdup_printf("%p", symbol_pointer)));  
 	}
 }
+
+void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer); 
 
 void refreshallcss() {
 	if(hasloaded == TRUE) {
@@ -463,9 +536,6 @@ void init(){
 // we should try to get the application root here yes?
 //:thinking:;______________________________;
 void post_init(){
-
-
-
 	char* selected_css = 
 	".selected{\
 		 background-color:rgb(247, 190, 4);\
@@ -506,78 +576,6 @@ void gtk_widget_show_all(GtkWidget *widget)
 
 
 
-//-------------------------------------------------------------------
-//Helper functions
-//-------------------------------------------------------------------
-
-void set_application_root(GtkWidget* candidate) {
-	if (!application_root && GTK_IS_WINDOW(candidate)) {
-		application_root = candidate;
-		g_debug("application_root set to %p", candidate);
-	} else if (application_root && application_root != candidate) {
-		g_warning("overriding applicatoin root. Existing: %p, New: %p", application_root, candidate);
-	}
-}
-
-
-
-gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
-	GFileInputStream *stream = g_file_read(file,NULL,error_out);
-	if (!stream) {
-		return NULL;
-	}
-	GDataInputStream *data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
-	if (!data_stream) {
-		return NULL;
-	}
-	
-	GByteArray *buffer = g_byte_array_new();
-	guint8 tempbuffer[4096];
-	gssize bytes;
-
-	GError *error = NULL;
-	while ((bytes = g_input_stream_read(G_INPUT_STREAM(data_stream), tempbuffer, sizeof(tempbuffer), NULL, &error)) > 0) {
-        g_byte_array_append(buffer, tempbuffer, bytes);
-    }
-	if (bytes<0) {
-		g_warning("could not read the file with error %s",error->message);
-		g_clear_error(error);
-		g_byte_array_free(buffer,TRUE);
-		g_object_unref(data_stream);
-		g_object_unref(stream);
-		return NULL;
-	}
-	g_object_unref(data_stream);
-	g_object_unref(stream);
-	g_byte_array_append(buffer, (const guint8 *)"", 1);
-    if (length) *length = buffer->len - 1;
-
-    return (gchar *)g_byte_array_free(buffer, FALSE);
-}
-// could have used set text here
-void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
-	GtkTextIter end;
-    gtk_text_buffer_get_end_iter(buffer, &end);
-    gtk_text_buffer_insert(buffer, &end, text, -1);
-    gtk_text_buffer_insert(buffer, &end, "\n\n", -1);
-}
-
-void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
-	GError *error = NULL;
-	gsize len = 0;
-	if(!G_IS_FILE(file)) {
-		return;
-	}
-	gchar *text = read_gfile(file,len,error);
-	if(text) {
-		append_to_gtk_buffer(buffer,text);
-		g_free(text);
-	}
-	else {
-		g_warning("could not read file with error %s",error->message);
-		g_clear_error(error);
-	}
-}
 
 
 // ------------------------------------------------------------------
