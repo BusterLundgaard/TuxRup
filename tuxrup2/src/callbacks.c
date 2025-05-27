@@ -37,13 +37,12 @@ char* get_document_path(char* function_name){
     char document_path[1024];
     document_path[0]='\0';
     sscanf(buffer, "%*s %1023s", document_path);
-	g_print("document_path is %s\n", document_path);
 
     return g_strdup(document_path);
 }
 
 char* shared_lib_path(GtkWidget* widget){
-	 return g_strdup_printf("runtime_generated_code/%lu.so", (unsigned long*)widget);
+	 return g_strdup_printf("./runtime_generated_code/%lu.so", (unsigned long*)widget);
 }
 
 void function_dispatcher(GtkWidget* widget, gpointer data){
@@ -134,6 +133,26 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		g_print("Selected widget was null. Not continuing with editing callback\n");
 		return;
 	}
+	if (!buffer) {
+		g_print("Buffer, in on call_bcak was null. Not continuing with editing callback\n");
+	}
+
+	gpointer callbackpointer = g_object_get_data(G_OBJECT(active_widget), "callback_pointer");
+	if(!callbackpointer) {
+		g_print("callbackpointer was null, finishing");
+		return;
+	}
+	char* identifier = identifier_from_pointer(callbackpointer);
+	if(!identifier) {
+		g_print("identifier was null, finishing");
+		return;
+	}
+
+	char* original_document = get_document_path(identifier); 
+	if(!original_document) {
+		g_print("original documnet was null, finishing");
+		return;
+	}
 
 	// Compile code in the text buffer
 	char* code = get_text_from_buffer(buffer);
@@ -142,11 +161,15 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		return;
 	}
 	
-	g_file_set_contents("temp.c", code, strlen(code), NULL);
+	char* document_directory_path = g_dirname(g_strdup(original_document));
+	g_print("document_directory_path is %s\n", document_directory_path);
+	char* document_path = g_strdup_printf("%s/tuxrup_modified.c", document_directory_path);
+	g_print("document_path is %s\n", document_path);
+	g_file_set_contents(document_path, code, strlen(code), NULL);
 
 	char* compile_path = shared_lib_path(active_widget);
 	char* gcc_command = g_strdup_printf(
-			"gcc temp.c -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", compile_path);
+			"gcc %s -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", document_path, compile_path);
 	g_print("%s\n", gcc_command);
 	int res = system(gcc_command);
 
