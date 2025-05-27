@@ -48,6 +48,7 @@ void set_application_root(GtkWidget* candidate) {
 		application_root = candidate;
 		g_debug("application_root set to %p", candidate);
 	} else if (application_root && application_root != candidate) {
+		application_root = candidate;
 		g_warning("overriding applicatoin root. Existing: %p, New: %p", application_root, candidate);
 	}
 }
@@ -262,7 +263,7 @@ void refreshallcss() {
 	}
 }
 
-void try_set_application_root() {
+void fix_application_root() {
 	if (!GTK_IS_WINDOW(application_root)) {
 		GList* toplevels = gtk_window_list_toplevels();
 		for (GList* l = toplevels; l != NULL; l = l->next) {
@@ -282,8 +283,9 @@ void try_set_application_root() {
 
 // this is the important part, we need to try and grab the application window when refresh is called every time, gotdamn i hate this.
 void refresh_tuxrup_window(){
-	try_set_application_root();
+	fix_application_root();
 	if(application_root) {refresh_widgets_overview();}
+
 	refresh_symbols_overview();
 	
 	gtk_label_set_label(GTK_LABEL(program_src_folder_label),      g_strdup_printf("program_src_folder: %s",      get_program_src_folder()));
@@ -555,7 +557,8 @@ void gtk_widget_show_all(GtkWidget *widget)
 	if(!initialized){
 		initialized = true;
 		if(!GTK_IS_WINDOW(widget)) {goto showall;}
-		set_application_root(widget);
+		application_root = widget;
+		fix_application_root();
 		GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget));
 		if(!window) {goto showall;}
 		GtkApplication* app = gtk_window_get_application(window); // when do we use this? This is defined locally in the function but not used here ;____;
