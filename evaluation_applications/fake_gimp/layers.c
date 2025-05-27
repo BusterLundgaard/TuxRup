@@ -1,7 +1,9 @@
-#include <gtk/gtk.h>
 #include "globals.h"
 #include "layers.h"
 #include "image_viewer.h"
+
+#include <gtk-3.0/gtk/gtk.h>
+#include <gdk/gdk.h>
 
 int layers[3] = {0, 1, 2};
 GtkWidget* layer_buttons[3] = {};
@@ -40,13 +42,13 @@ GtkWidget* create_layerpicker(){
     g_signal_connect(layer_buttons[1], "clicked", G_CALLBACK(on_layer_select), &layers[1]);
     g_signal_connect(layer_buttons[2], "clicked", G_CALLBACK(on_layer_select), &layers[2]);
 
-    gtk_box_append(GTK_BOX(layerpicker), layer_buttons[0]);
-    gtk_box_append(GTK_BOX(layerpicker), layer_buttons[1]);
-    gtk_box_append(GTK_BOX(layerpicker), layer_buttons[2]);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[0]);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[1]);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[2]);
 
 	//Make invisible button
 	GtkWidget* make_invisible = gtk_button_new_with_label("toggle invisible");
-	gtk_box_append(GTK_BOX(layerpicker), make_invisible);
+	gtk_container_add(GTK_CONTAINER(layerpicker), make_invisible);
 	g_signal_connect(make_invisible, "clicked", G_CALLBACK(on_make_invisible), NULL);
 
 	return layerpicker;

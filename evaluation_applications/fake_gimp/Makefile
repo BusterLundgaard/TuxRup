@@ -1,6 +1,7 @@
 normal:
-	gcc -g $(shell pkg-config --cflags gtk3) \
+	gcc -w fakegimp.c \
 	globals.c image_viewer.c layers.c toolbar.c toolpicker.c \
-	fakegimp.c -o fg $(shell pkg-config --libs gtk3)\&&
+	-g $(shell pkg-config --cflags --libs gtk+-3.0) \
+	-o fg && \
 	objcopy --only-keep-debug fg ../../tuxrup2/build/symbols/fg.debug
 

@@ -1,8 +1,8 @@
 #ifndef TOOLBAR_H
 #define TOOLBAR_H
-#include <gtk/gtk.h>
+#include <gtk-3.0/gtk/gtk.h>
+#include <gdk/gdk.h>
 
-GMenu* create_toolbar(GApplication* app);
-void enable_toolbar(GtkApplication* app, GtkWindow* win, GMenu* menu_bar);
+GtkWidget* create_toolbar(GApplication* application);
 
 #endif
