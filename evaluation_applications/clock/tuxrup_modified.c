@@ -37,7 +37,7 @@ void switchAmPm(GtkWidget *button, gpointer data){
 //increment hour by 1
 void incHour(GtkWidget *buttonClicked, GtkWidget *buttonChanged){
     hour++;
-    if(hour > 23){
+    if(hour > 12){
         hour = 1;
     }
     char str[20];
