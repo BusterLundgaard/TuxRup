@@ -196,6 +196,7 @@ void refresh_widgets_overview(){
 	empty_box(widget_pointers);
 	empty_box(widget_callback_names);
 	empty_box(widget_callback_function_names);
+	empty_box(widget_callback_function_documents);
 	empty_box(widget_callback_function_pointers);
 
 	GList* widgets = find_all_modifiable_widgets();
