@@ -17,8 +17,6 @@
 #include "callbacks.h"
 
 
-// TODO: Pressing some of the buttons when you have no widget selected crashes the program
-
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ORIGINAL (NON-OVERRIDEN) FUNCTIONS: 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -32,12 +30,12 @@ gtk_css_provider_load_from_file_t gtk_css_provider_load_from_file_original;
 
 
 
-// LOCAL VARIABLES
-
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// GLOBAL VARIABLES
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 GtkTextBuffer* css_buffer = NULL;
 GFile* file_to_css = NULL;
 gboolean hasloaded = FALSE;
-
 
 
 //-------------------------------------------------------------------
@@ -52,8 +50,6 @@ void set_application_root(GtkWidget* candidate) {
 		g_warning("overriding applicatoin root. Existing: %p, New: %p", application_root, candidate);
 	}
 }
-
-
 
 gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
 	GFileInputStream *stream = g_file_read(file,NULL,error_out);
@@ -88,6 +84,7 @@ gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
 
     return (gchar *)g_byte_array_free(buffer, FALSE);
 }
+
 // could have used set text here
 void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
 	GtkTextIter end;
@@ -155,7 +152,6 @@ GList* find_all_modifiable_widgets(){
 	}
 	return widgets;
 }
-
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
