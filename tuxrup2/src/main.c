@@ -168,6 +168,7 @@ GtkWidget* widget_pointers;
 GtkWidget* widget_callback_names;
 GtkWidget* widget_callback_function_names;
 GtkWidget* widget_callback_function_pointers;
+GtkWidget* widget_callback_function_documents;
 GtkWidget* property_editor;
 GtkTextBuffer* css_text_buffer;
 GtkTextBuffer* callbacks_text_buffer;
@@ -215,11 +216,14 @@ void refresh_widgets_overview(){
 		if(callback_pointer != NULL){
 			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(callback_name));
 			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(g_strdup_printf("%p", callback_pointer)));
-			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(identifier_from_pointer(callback_pointer)));
+			char* identifier = identifier_from_pointer(callback_pointer);
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(identifier));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_documents), create_overview_label(get_document_path(identifier)));
 		} else {
 			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(""));
 			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(""));
 			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(""));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_documents), create_overview_label(""));
 		}
 
 		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
@@ -335,27 +339,30 @@ void build_tuxrup_window(){
 	gtk_box_pack_start(GTK_BOX(data_column), widgets_overview_scrolled_window, TRUE, TRUE, 0);
 	widgets_overview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-	widget_types                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_names                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_labels                     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_pointers                   = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_callback_names             = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_callback_function_names    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	widget_callback_function_pointers = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_types                       = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_names                       = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_labels                      = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_pointers                    = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_names              = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_function_names     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_function_pointers  = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	widget_callback_function_documents = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(widgets_overview_scrolled_window), widgets_overview);
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_types   );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_names   );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_labels  );
 	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_pointers);
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names            );
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers);
-	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names   );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_names             );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_pointers );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_names    );
+	gtk_container_add(GTK_CONTAINER(widgets_overview), widget_callback_function_documents);
 	gtk_widget_set_margin_right(widget_types,    10);
 	gtk_widget_set_margin_right(widget_names,    10);
 	gtk_widget_set_margin_right(widget_labels,   10);
 	gtk_widget_set_margin_right(widget_pointers, 10);
 	gtk_widget_set_margin_right(widget_callback_names, 10);
 	gtk_widget_set_margin_right(widget_callback_function_pointers, 10);
+	gtk_widget_set_margin_right(widget_callback_function_documents, 10);
 	
 	GtkWidget* symbol_label = gtk_label_new("symbols");	
 	gtk_box_pack_start(GTK_BOX(data_column), symbol_label, TRUE, TRUE, 0);

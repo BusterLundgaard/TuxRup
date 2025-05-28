@@ -27,17 +27,19 @@ void remove_callback (GtkWidget* w, char* callback_name){
 }
 
 char* get_document_path(char* function_name){
+	if(function_name == NULL || function_name == "N/A"){return "N/A";}
+	if(get_program_src_folder() == NULL || get_program_src_folder() == ""){return "N/A";}
+
     FILE* fp = popen(g_strdup_printf("ctags -R -o - %s | grep %s", get_program_src_folder(), function_name), "r");
 
     char buffer[1024];
-    if(fgets(buffer, sizeof(buffer), fp) == NULL){
-        return NULL;
-    }
+    if(fgets(buffer, sizeof(buffer), fp) == NULL){return "N/A";}
 
     char document_path[1024];
     document_path[0]='\0';
     sscanf(buffer, "%*s %1023s", document_path);
 
+	if(document_path == NULL || document_path == ""){return "N/A";}
     return g_strdup(document_path);
 }
 
