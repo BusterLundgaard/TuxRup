@@ -216,6 +216,10 @@ void refresh_widgets_overview(){
 			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(callback_name));
 			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(g_strdup_printf("%p", callback_pointer)));
 			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(identifier_from_pointer(callback_pointer)));
+		} else {
+			gtk_container_add(GTK_CONTAINER(widget_callback_names), create_overview_label(""));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_pointers), create_overview_label(""));
+			gtk_container_add(GTK_CONTAINER(widget_callback_function_names), create_overview_label(""));
 		}
 
 		if(!g_object_get_data(G_OBJECT(widget),"rightclickable")) {
