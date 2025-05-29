@@ -564,15 +564,13 @@ void gtk_widget_show_all(GtkWidget *widget)
 {
 	if(!initialized){
 		initialized = true;
-		if(!GTK_IS_WINDOW(widget)) {goto showall;}
-		application_root = widget;
-		fix_application_root();
-		GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget));
-		if(!window) {goto showall;}
-		GtkApplication* app = gtk_window_get_application(window); // when do we use this? This is defined locally in the function but not used here ;____;
+		/* if(!GTK_IS_WINDOW(widget)) {goto showall;} */
+		/* application_root = widget; */
+		/* fix_application_root(); */
+		/* GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget)); */
+		/* if(!window) {goto showall;} */
+		/* GtkApplication* app = gtk_window_get_application(window); // when do we use this? This is defined locally in the function but not used here ;____; */
 
-
-		showall:
 		gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 		
 		init();

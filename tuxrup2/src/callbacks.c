@@ -28,7 +28,7 @@ void remove_callback (GtkWidget* w, char* callback_name){
 
 char* get_document_path(char* function_name){
 	if(function_name == NULL || function_name == "N/A"){return "N/A";}
-	if(get_program_src_folder() == NULL || get_program_src_folder() == ""){return "N/A";}
+	if(get_program_src_folder() == NULL || get_program_src_folder() == "N/A"){return "N/A";}
 
     FILE* fp = popen(g_strdup_printf("ctags -R -o - %s | grep %s", get_program_src_folder(), function_name), "r");
 
@@ -60,7 +60,10 @@ void function_dispatcher(GtkWidget* widget, gpointer data){
 	if(user_data == NULL){g_print("user_data was NULL. But this may be intentional. Just a warning!\n");}                                
 
 	callback_function_t custom_function_pointer = (callback_function_t)dlsym(shared_lib_pointer, original_function_name);
-	if(custom_function_pointer == NULL){g_print("custom_function_pointer was NULL. Cant continue callback\n"); return;}
+	if(custom_function_pointer == NULL){
+		g_print("getting pointer to the function %s in the shared library with dl pointer %p failed. dlerror() reports:\n", original_function_name, shared_lib_pointer);
+		fprintf(stderr, "%s", dlerror());
+		return;}
 
 	sync_variables(shared_lib_path(widget), shared_lib_pointer, true); 
 	custom_function_pointer(widget, user_data);

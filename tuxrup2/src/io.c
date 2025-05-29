@@ -26,26 +26,26 @@ char* get_program_src_folder(){
 		g_hash_table_insert(source_code_paths, "fg", "../../evaluation_applications/fake_gimp"                            );
 		g_hash_table_insert(source_code_paths, "gnome-clocks", "/src/tuxrup_testing_applications_src/gnome-clocks"        );
 
-		g_hash_table_insert(source_code_paths, "fctix-configtool", "../tuxrup_testing_applications_src/fcitx-configtool"  );
-		g_hash_table_insert(source_code_paths, "quodlibet", "../tuxrup_testing_applications_src/quodlibet"                );
-		g_hash_table_insert(source_code_paths, "totem", "../tuxrup_testing_applications_src/totem"                        );
-		g_hash_table_insert(source_code_paths, "xzgv", "../tuxrup_testing_applications_src/xzgv"                          );
-		g_hash_table_insert(source_code_paths, "test1", "../../tests/test1/"                                              );
-		g_hash_table_insert(source_code_paths, "cpu-x", "../tuxrup_testing_applications_src/CPU-X");
-		g_hash_table_insert(source_code_paths, "gaupol", "../tuxrup_testing_applications_src/gaupol");
-		g_hash_table_insert(source_code_paths, "gigolo", "../tuxrup_testing_applications_src/gigolo");
-		g_hash_table_insert(source_code_paths, "gimp", "../tuxrup_testing_applications_src/gimp");
-		g_hash_table_insert(source_code_paths, "gmtp", "../tuxrup_testing_applications_src/gMTP");
-		g_hash_table_insert(source_code_paths, "gnome-games", "../tuxrup_testing_applications_src/gnome-games");
-		g_hash_table_insert(source_code_paths, "gnome-nibbles", "../tuxrup_testing_applications_src/gnome-nibbles");
-		g_hash_table_insert(source_code_paths, "inkscape", "../tuxrup_testing_applications_src/inkscape");
-		g_hash_table_insert(source_code_paths, "lxsession", "../tuxrup_testing_applications_src/lxsession");
-		g_hash_table_insert(source_code_paths, "minigalaxy", "../tuxrup_testing_applications_src/minigalaxy");
-		g_hash_table_insert(source_code_paths, "pcmanfm", "../tuxrup_testing_applications_src/pcmanfm");
-		g_hash_table_insert(source_code_paths, "pidgin", "../tuxrup_testing_applications_src/pidgin");
-		g_hash_table_insert(source_code_paths, "synfig", "../tuxrup_testing_applications_src/synfig");
-		g_hash_table_insert(source_code_paths, "totem", "../tuxrup_testing_applications_src/totem");
-		g_hash_table_insert(source_code_paths, "viewnior", "../tuxrup_testing_applications_src/Viewnior");
+		g_hash_table_insert(source_code_paths, "fcitx-config-gtk3", "../../../tuxrup_test_programs_source_code/fcitx-configtool"  );
+		g_hash_table_insert(source_code_paths, "quodlibet", "../../../tuxrup_test_programs_source_code/quodlibet"                );
+		g_hash_table_insert(source_code_paths, "totem", "../../../tuxrup_test_programs_source_code/totem"                        );
+		g_hash_table_insert(source_code_paths, "xzgv", "../../../tuxrup_test_programs_source_code/xzgv"                          );
+		g_hash_table_insert(source_code_paths, "test1", "../../../../tests/test1/"                                              );
+		g_hash_table_insert(source_code_paths, "cpu-x", "../../../tuxrup_test_programs_source_code/CPU-X");
+		g_hash_table_insert(source_code_paths, "gaupol", "../../../tuxrup_test_programs_source_code/gaupol");
+		g_hash_table_insert(source_code_paths, "gigolo", "../../../tuxrup_test_programs_source_code/gigolo");
+		g_hash_table_insert(source_code_paths, "gimp", "../../../tuxrup_test_programs_source_code/gimp");
+		g_hash_table_insert(source_code_paths, "gmtp", "../../../tuxrup_test_programs_source_code/gMTP");
+		g_hash_table_insert(source_code_paths, "gnome-games", "../../../tuxrup_test_programs_source_code/gnome-games");
+		g_hash_table_insert(source_code_paths, "gnome-nibbles", "../../../tuxrup_test_programs_source_code/gnome-nibbles");
+		g_hash_table_insert(source_code_paths, "inkscape", "../../../tuxrup_test_programs_source_code/inkscape");
+		g_hash_table_insert(source_code_paths, "lxsession", "../../../tuxrup_test_programs_source_code/lxsession");
+		g_hash_table_insert(source_code_paths, "minigalaxy", "../../../tuxrup_test_programs_source_code/minigalaxy");
+		g_hash_table_insert(source_code_paths, "pcmanfm", "../../../tuxrup_test_programs_source_code/pcmanfm");
+		g_hash_table_insert(source_code_paths, "pidgin", "../../../tuxrup_test_programs_source_code/pidgin");
+		g_hash_table_insert(source_code_paths, "synfig", "../../../tuxrup_test_programs_source_code/synfig");
+		g_hash_table_insert(source_code_paths, "totem", "../../../tuxrup_test_programs_source_code/totem");
+		g_hash_table_insert(source_code_paths, "viewnior", "../../../tuxrup_test_programs_source_code/Viewnior");
 	}
 
 	if(!g_hash_table_contains(source_code_paths, get_executable_name())){
@@ -111,6 +111,6 @@ char* get_executable_symbols_path(){
 	if(get_executable_name() == NULL){
 		return "N/A";
 	}
-	executable_symbols_path = g_strdup_printf("symbols/%s.debug", get_executable_name()); 
+	executable_symbols_path = g_strdup_printf("symbols/%s_symbols", get_executable_name()); 
 	return executable_symbols_path;
 }
