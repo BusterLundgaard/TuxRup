@@ -115,6 +115,7 @@ void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
 // FINDING ALL WIDGETS
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 bool observed_type(GtkWidget* widget){
+	if(widget == NULL){return false;}
 	return 
 		GTK_IS_BUTTON(widget) ||
 		GTK_IS_ENTRY(widget) ||
@@ -157,8 +158,6 @@ GList* find_all_modifiable_widgets(){
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // CREATING AND REFRESHING THE TUXRUP WINDOW
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 GtkWidget* refresh_button;
 GtkWidget* widgets_overview;
 GtkWidget* widget_types;
@@ -307,6 +306,32 @@ void refresh_tuxrup_window(){
 	gtk_widget_show_all_original(tuxrup_root);
 }
 
+
+static GtkWidget* widget_with_keyboard_shortcut = NULL;
+static gboolean on_key_press(GtkWidget* widget, GdkEventKey* event, gpointer user_data){
+	if(event->keyval == GDK_KEY_e){
+		if(selected_widget == NULL){return false;}
+		widget_with_keyboard_shortcut = selected_widget;					
+		g_print("The widget %p is now mapped to use its callback when you press \'d\'", widget_with_keyboard_shortcut);
+	}
+	else if(event->keyval == GDK_KEY_r){
+		if(widget_with_keyboard_shortcut == NULL){return false;}
+		void* callback_pointer = g_object_get_data(G_OBJECT(widget_with_keyboard_shortcut), "callback_pointer");
+		
+		if(callback_pointer == NULL){return false;}
+		void* callback_data = g_object_get_data(G_OBJECT(widget_with_keyboard_shortcut), "callback_data"); 
+		void (*foo)(GtkWidget*, gpointer) = callback_pointer;
+
+		if(GTK_IS_TOGGLE_BUTTON(widget_with_keyboard_shortcut)){
+			 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget_with_keyboard_shortcut), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget_with_keyboard_shortcut)));
+		}
+		foo(widget_with_keyboard_shortcut, callback_data);
+
+		g_print("Succesfully called the callback on widget %p\n", widget_with_keyboard_shortcut);
+	}
+	return false;
+}
+
 void build_tuxrup_window(){
 	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
 
@@ -387,7 +412,7 @@ void build_tuxrup_window(){
 	GtkWidget* change_widget_properties_button = gtk_button_new_with_label("Change widget properties");	
 	gtk_container_add(GTK_CONTAINER(change_properties_column), change_widget_properties_button);
 
-	GtkWidget* property_editor_scrolled_window = make_scrolled_window(100, 500); 
+	GtkWidget* property_editor_scrolled_window = make_scrolled_window(300, 500); 
 	gtk_container_add(GTK_CONTAINER(columns), change_properties_column);
 
 	property_editor = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -490,6 +515,25 @@ void make_widget_customizable(GtkWidget* widget){
 // ---------------------------------------------
 // CALLBACKS
 // ---------------------------------------------
+bool initialized = false;
+typedef void(*activate_function_t)(GtkApplication*, gpointer);
+activate_function_t original_activate = NULL;
+
+static void
+tuxrup_activate (GtkApplication *app,
+          gpointer        data)
+{
+
+	//original initialization
+	original_activate(app, data);
+
+	//tuxrup initialization	
+	tuxrup_root = gtk_application_window_new(app); 
+	build_tuxrup_window();
+	gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
+	gtk_widget_show_all_original(tuxrup_root);
+}
+
 gulong g_signal_connect_data(gpointer instance,
                              const gchar *detailed_signal,
                              GCallback c_handler,
@@ -497,16 +541,38 @@ gulong g_signal_connect_data(gpointer instance,
                              GClosureNotify destroy_data,
  							 GConnectFlags connect_flags){
 
+	if(GTK_IS_APPLICATION(instance) && strcmp(detailed_signal, "activate") && !initialized){
+		initialized = true;
+		g_print("I was initialized yay!\n");
+		
+		original_activate = (activate_function_t)c_handler;
+		g_signal_connect_data_original(instance, "activate", G_CALLBACK(tuxrup_activate), data, NULL, (GConnectFlags)0);
+
+		return 0;
+	}
+	/* if(G_IS_APPLICATION(instance)){ */
+	/* 	g_print("It is an application\n"); */
+	/* } */
+	/* if(strcmp(detailed_signal, "activate")){ */
+	/* 	g_print("it is the activate signal\n"); */
+	/* } */
+
+
+	if(detailed_signal == "key-press-event"){
+		g_print("Adding a key-press-event", instance);	
+	}
+
 	if(!observed_type(instance))
 	{goto signal_connect_end;}
 
 	if(!(
 		strcmp(detailed_signal, "clicked") ==0 || 
-		strcmp(detailed_signal, "activate")==0)
+		strcmp(detailed_signal, "activate")==0 ||
+		strcmp(detailed_signal, "toggled")==0) 
 	)
 	{goto signal_connect_end;}
 
-	g_print("widget %p passed. Has detailed_signal %s, and name %s.\n", instance, detailed_signal, gtk_widget_get_name(GTK_WIDGET(instance)));
+	/* g_print("widget %p passed. Has detailed_signal %s, and name %s.\n", instance, detailed_signal, gtk_widget_get_name(GTK_WIDGET(instance))); */
 	g_object_set_data(G_OBJECT(instance), "callback_name", detailed_signal); 
 	g_object_set_data(G_OBJECT(instance), "callback_pointer", (gpointer)c_handler);
 	g_object_set_data(G_OBJECT(instance), "callback_data", data); 
@@ -533,8 +599,6 @@ gboolean gtk_css_provider_load_from_file(GtkCssProvider *css_provider, GFile *fi
 // --------------------------------------------
 // INITIALIZATION
 // ---------------------------------------------
-bool initialized = false;
-
 // This function is called as the very first function, ie. before ANYTHING else. Can't rely on any kind of GTK context, since GTK hasn't even run it's application yet.
 __attribute__((constructor))
 void pre_init(){
@@ -562,32 +626,46 @@ void post_init(){
 
 void gtk_widget_show_all(GtkWidget *widget)
 {
+	gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
+	g_print("gtk_widget_show_all called!\n");
+
 	if(!initialized){
 		initialized = true;
-		/* if(!GTK_IS_WINDOW(widget)) {goto showall;} */
-		/* application_root = widget; */
-		/* fix_application_root(); */
-		/* GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(widget)); */
-		/* if(!window) {goto showall;} */
-		/* GtkApplication* app = gtk_window_get_application(window); // when do we use this? This is defined locally in the function but not used here ;____; */
 
-		gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
-		
+		application_root = widget;
+		fix_application_root();
+
 		init();
 		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL); // why is this not just in init ;________;
 		build_tuxrup_window();
 		gtk_widget_show_all_original(tuxrup_root);
 		gtk_widget_show_all_original(widget);	
+
+		gtk_widget_add_events(application_root, GDK_KEY_PRESS_MASK);
+		g_signal_connect(application_root, "key-press-event", G_CALLBACK(on_key_press), NULL);
+
 		post_init();
 	} else {
 		gtk_widget_show_all_original(widget);	
 	}
 }
 
+/* void g_application_run(GApplication* application, int argc, char** argv){ */
+	
+/* } */
 
+/* GtkWidget* gtk_window_new ( */
+/*   GtkWindowType type */
+/* ){ */
+/* 	g_print("gtk_window_new called!\n"); */
+/* } */
 
-
-
+/* GtkWidget* */
+/* gtk_application_window_new ( */
+/*   GtkApplication* application */
+/* ){ */
+/* 	g_print("gtk_application_window_new was called!\n"); */
+/* } */
 
 
 // ------------------------------------------------------------------

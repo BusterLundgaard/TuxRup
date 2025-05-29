@@ -185,7 +185,6 @@ activate (GtkApplication *app,
   gtk_widget_set_valign(H_box4, GTK_ALIGN_CENTER);
 
   //add H boxes to V box
-#ifdef GTK3
   gtk_container_add(GTK_CONTAINER(V_box), H_box0);
   gtk_container_add(GTK_CONTAINER(V_box), H_box1);
   gtk_container_add(GTK_CONTAINER(V_box), H_box2);
@@ -209,31 +208,6 @@ activate (GtkApplication *app,
 
   gtk_container_add (GTK_CONTAINER(window), V_box);
   gtk_widget_show_all(window);
-#else
-  gtk_box_append(GTK_BOX(V_box), H_box0);
-  gtk_box_append(GTK_BOX(V_box), H_box1);
-  gtk_box_append(GTK_BOX(V_box), H_box2);
-  gtk_box_append(GTK_BOX(V_box), H_box3);
-  gtk_box_append(GTK_BOX(V_box), H_box4);
-  gtk_box_append(GTK_BOX(V_box), H_box5);
-
-  //add buttons to H boxes
-  gtk_box_append(GTK_BOX(H_box0), button0);
-  gtk_box_append(GTK_BOX(H_box0), button2);
-  gtk_box_append(GTK_BOX(H_box2), button1);
-  gtk_box_append(GTK_BOX(H_box2), button3);
-  gtk_box_append(GTK_BOX(H_box3), button5);
-  gtk_box_append(GTK_BOX(H_box4), button4);
-
-  //add labels and dummy buttons to H boxes
-  gtk_box_append(GTK_BOX(H_box1), hourLabel);
-  gtk_box_append(GTK_BOX(H_box1), minutLabel);
-  gtk_box_append(GTK_BOX(H_box3), amPmLabel);
-  gtk_box_append(GTK_BOX(H_box5), timerLabel);
-
-  gtk_window_set_child (GTK_WINDOW (window), V_box);
-  gtk_window_present (GTK_WINDOW (window));
-#endif
 }
 
 int

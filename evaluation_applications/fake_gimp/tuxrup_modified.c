@@ -1,96 +1,60 @@
-#include <unistd.h>
-#include <limits.h>
-
 #include "globals.h"
+#include "layers.h"
 #include "image_viewer.h"
 
-int images_numbers[3] = {0, 1, 2};
-int image_margins[3] = {0, 0, 0};
+#include <gtk-3.0/gtk/gtk.h>
+#include <gdk/gdk.h>
+
+int layers[3] = {0, 1, 2};
+GtkWidget* layer_buttons[3] = {};
+GtkWidget* opacity_slider;
+
+int selected_layer = 0;
 GtkWidget* images[3] = {};
-GtkWidget* fixed[3] = {};
+float opacities[3] = {0,0,0};
 
-int move_left_tool = 4;
-int move_right_tool = 5;
-
-static void move_image(bool left){
-	printf("selected_layer = %d\n", selected_layer);
-	if(selected_layer < 0 || selected_layer > 2){return;}
-
-    image_margins[selected_layer] += left ? 20 : -20;
-	gtk_fixed_move(GTK_FIXED(fixed[selected_layer]), images[selected_layer], image_margins[selected_layer], 0);
-}
-
-void on_move_image_left(GtkWidget* widget, gpointer user_data){
-	move_image(true);
-}
-void on_move_image_right(GtkWidget* widget, gpointer user_data){
-	move_image(false);
-}
-
-static void on_zoom_changed(GtkSpinButton* spinbutton, gpointer data){
-    double spin_button_value = gtk_spin_button_get_value(spinbutton);
-    for (int i = 0; i < 3; i++) {
-        gtk_image_set_pixel_size(GTK_IMAGE(images[i]), 300 + 50*spin_button_value);
+static void on_layer_select(GtkWidget* self, gpointer data){
+    selected_layer = *((int*)data);
+    for(int i = 0; i < 3; i++){
+        GtkStyleContext *context = gtk_widget_get_style_context(layer_buttons[i]);
+        if(i == selected_layer){
+            gtk_style_context_add_class(context, "selected");
+        } else {
+            gtk_style_context_remove_class(context, "selected");
+        }
     }
 }
 
-char* get_executable_dir() {
-    static char exe_path[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
-    if (len != -1) {
-        exe_path[len] = '\0';
-        return g_dirname(exe_path);  // returns parent directory of the executable
-    } else {
-        return NULL; // fallback or handle error
-    }
+static void on_opacity_changed(GtkSpinButton* spin, gpointer user_data){
+	opacities[selected_layer] = gtk_spin_button_get_value(spin);		
 }
 
-GtkWidget* create_image_from_relative_path(const char *relative_path) {
-    const char *exe_dir = get_executable_dir();
-    if (!exe_dir) return NULL;
-
-    char full_path[PATH_MAX];
-    snprintf(full_path, sizeof(full_path), "%s/%s", exe_dir, relative_path);
-
-    return gtk_image_new_from_file(full_path);
+void on_make_invisible(GtkWidget* widget, gpointer user_data){
+g_print("hello!\n");	
+gtk_widget_set_visible(images[selected_layer], !gtk_widget_get_visible(images[selected_layer])); 	
 }
 
-GtkWidget* create_imageviewer(){
-    GtkWidget* imageviewer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_vexpand(imageviewer, true);
+GtkWidget* create_layerpicker(){
+    GtkWidget* layerpicker = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_widget_set_vexpand(layerpicker, TRUE);
 
-    // Images at the top of the right box
-    GtkWidget *overlay = gtk_overlay_new();
-    gtk_widget_set_halign(overlay, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(overlay, GTK_ALIGN_CENTER);
-	gtk_container_add(GTK_CONTAINER(imageviewer), overlay);	
+    // Buttons inside A2
+    layer_buttons[0] = gtk_button_new_with_label("Layer 1");
+    layer_buttons[1] = gtk_button_new_with_label("Layer 2");
+    layer_buttons[2] = gtk_button_new_with_label("Layer 3");
+   
+    g_signal_connect(layer_buttons[0], "clicked", G_CALLBACK(on_layer_select), &layers[0]);
+    g_signal_connect(layer_buttons[1], "clicked", G_CALLBACK(on_layer_select), &layers[1]);
+    g_signal_connect(layer_buttons[2], "clicked", G_CALLBACK(on_layer_select), &layers[2]);
 
-    for (int i = 0; i < 3; i++) {
-        char* image_name = g_strdup_printf("jump%d.png", i+1);
-        images[i] = create_image_from_relative_path(image_name);
-        gtk_image_set_pixel_size(GTK_IMAGE(images[i]), 300);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[0]);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[1]);
+	gtk_container_add(GTK_CONTAINER(layerpicker), layer_buttons[2]);
 
-		fixed[i] = gtk_fixed_new();
-		gtk_fixed_put(GTK_FIXED(fixed[i]), images[i], 0, 0);
+	//Make invisible button
+	GtkWidget* make_invisible = gtk_button_new_with_label("toggle invisible");
+	gtk_container_add(GTK_CONTAINER(layerpicker), make_invisible);
+	g_signal_connect(make_invisible, "clicked", G_CALLBACK(on_make_invisible), NULL);
 
-		if(i == 0){
-			gtk_container_add(GTK_CONTAINER(overlay), fixed[i]);
-		} else {
-			gtk_overlay_add_overlay(GTK_OVERLAY(overlay), fixed[i]);
-		}
-
-    }
-    
-    // Spinbutton at the bottom of the box (fixed height)
-    GtkAdjustment *adjustment = gtk_adjustment_new(0, 0, 10, 1, 10, 0);
-    GtkWidget* spinbutton = gtk_spin_button_new(adjustment, 1, 0);
-    gtk_widget_set_size_request(spinbutton, -1, 40);  // Fixed height (40px)
-
-    g_signal_connect(spinbutton, "changed", G_CALLBACK(on_zoom_changed), NULL);
-
-	gtk_container_add(GTK_CONTAINER(imageviewer), spinbutton);
-    gtk_widget_set_valign(spinbutton, GTK_ALIGN_END);
-    gtk_widget_set_vexpand(spinbutton, true);
-
-	return imageviewer;
+	return layerpicker;
 }

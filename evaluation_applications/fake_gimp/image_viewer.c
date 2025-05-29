@@ -29,6 +29,7 @@ void on_move_image_right(GtkWidget* widget, gpointer user_data){
 
 static void on_zoom_changed(GtkSpinButton* spinbutton, gpointer data){
     double spin_button_value = gtk_spin_button_get_value(spinbutton);
+	g_print("I am zooming!!!!!\n");
     for (int i = 0; i < 3; i++) {
         gtk_image_set_pixel_size(GTK_IMAGE(images[i]), 300 + 50*spin_button_value);
     }
