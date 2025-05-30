@@ -149,7 +149,11 @@ GList* find_all_modifiable_widgets(){
 	GList* widgets = NULL; 
 	for(GList* elem = application_windows; elem; elem = elem->next){
 		GtkWidget* root_widget = GTK_WIDGET((GtkWindow*)elem->data);
-		find_all_modifiable_children(root_widget, &widgets);
+		char* tempname = gtk_widget_get_name(root_widget);
+		if (strcmp(tempname, "Tuxrup") != 0)
+		{
+			find_all_modifiable_children(root_widget, &widgets);
+		}
 	}
 	return widgets;
 }
@@ -333,7 +337,8 @@ static gboolean on_key_press(GtkWidget* widget, GdkEventKey* event, gpointer use
 }
 
 void build_tuxrup_window(){
-	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");	
+	gtk_window_set_title(GTK_WINDOW(tuxrup_root), "Tuxrup");
+	gtk_widget_set_name(tuxrup_root, "Tuxrup");	
 
 	GtkWidget* columns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_container_add(GTK_CONTAINER(tuxrup_root), columns);
