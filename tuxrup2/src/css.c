@@ -15,9 +15,6 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
     char* text = get_text_from_buffer(textbuffer);
 
     // Apply the css
-    GtkWidget*  w = selected_widget;
-    if(w == NULL) {return;}
-    if(!GTK_IS_WIDGET(w)) {return;}
     apply_css_to_widget(w, text);
 
     // Binds css directly to gobject data field
