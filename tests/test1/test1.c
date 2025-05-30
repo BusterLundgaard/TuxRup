@@ -94,12 +94,10 @@ activate (GtkApplication *app,
 	gtk_widget_show_all(window);
 
 	// TESTING
-	tuxrup_test1();
-	tuxrup_test2();
-	tuxrup_testBangladeshLable();
-	tuxrup_test_pointer_name_conversion();
-	g_print("ALL TESTS PASSED!\n");
-	/* gtk_window_close(GTK_WINDOW(window)); */
+	/* tuxrup_test1(); */
+	/* tuxrup_test2(); */
+	/* tuxrup_testBangladeshLable(); */
+	/* tuxrup_test_pointer_name_conversion(); */
 }
 
 int

@@ -36,7 +36,6 @@ void set_value(gchar* property_name, GType value_type, gpointer new_value){
         case G_TYPE_STRING: g_value_set_string(&value, (gchar*)new_value); break;
         case G_TYPE_ENUM: g_value_set_enum(&value, *(gint*)new_value); break;
     }
-    g_object_set_property(G_OBJECT(active_widget), property_name, &value);
 }
 
 

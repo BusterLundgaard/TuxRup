@@ -167,15 +167,12 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 	}
 	
 	char* document_directory_path = g_dirname(g_strdup(original_document));
-	g_print("document_directory_path is %s\n", document_directory_path);
 	char* document_path = g_strdup_printf("%s/tuxrup_modified.c", document_directory_path);
-	g_print("document_path is %s\n", document_path);
 	g_file_set_contents(document_path, code, strlen(code), NULL);
 
 	char* compile_path = shared_lib_path(active_widget);
 	char* gcc_command = g_strdup_printf(
 			"gcc %s -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", document_path, compile_path);
-	g_print("%s\n", gcc_command);
 	int res = system(gcc_command);
 
 	// Check for potential issues
@@ -189,7 +186,6 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 		g_print("Couldn't find any callback_name field on widget %p. Won't overwrite callback.\n", active_widget);
 		return;
 	}
-
 
 	/* gcc -rdynamic -o my_app main.o other.o ... */
 	void* shared_lib_pointer = dlopen(compile_path, RTLD_LAZY);

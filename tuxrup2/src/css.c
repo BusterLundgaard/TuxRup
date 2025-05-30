@@ -30,9 +30,7 @@ void on_load(GtkWidget *widget, gpointer user_data) {
     GtkWidget* w = selected_widget;
     if(w == NULL) {return;}
     if(!GTK_IS_WIDGET(w)) {return;}
-    g_print("getting data");
     gpointer csspointer = g_object_get_data(G_OBJECT(w),"tuxrupcss");
-    g_print("Data is %s",csspointer);
 
     if(csspointer == NULL) {
         return;
