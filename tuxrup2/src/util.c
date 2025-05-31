@@ -129,3 +129,21 @@ char* get_text_from_buffer(GtkTextBuffer *buffer){
     return g_strdup(gtk_text_buffer_get_text(buffer, &start, &end, FALSE));
 }
 
+//task #4
+//i've just dumped read_file here at the bottom
+char* read_file(const char* filepath) {
+    FILE* fp = fopen(filepath, "r");
+    if (!fp) {
+        g_warning("Failed to open file: %s", filepath);
+        return NULL;
+    }
+    char buffer[2048];
+    GString* contents = g_string_new("");
+    while (fgets(buffer, sizeof(buffer), fp)) {
+        g_string_append(contents, buffer);
+    }
+    fclose(fp);
+	char* result = g_strdup(contents->str);
+    g_string_free(contents, TRUE); 
+    return result;  
+}

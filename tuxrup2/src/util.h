@@ -12,4 +12,7 @@ char* get_widget_type_string(GtkWidget* widget);
 char* get_widget_label(GtkWidget* widget);
 void apply_css_to_widget(GtkWidget *widget, const gchar *css_data);
 char* get_text_from_buffer(GtkTextBuffer *buffer);
+//task #4
+//i add read_file to the header, so that it can be accessed
+char* read_file(const char* filepath);
 #endif

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <dlfcn.h>
 
+//task #4 util.h is already included so thats good
 #include "util.h"
 #include "io.h"
 #include "symbols.h"
@@ -70,22 +71,10 @@ void function_dispatcher(GtkWidget* widget, gpointer data){
 	sync_variables(shared_lib_path(widget), shared_lib_pointer, false); 
 }
 
-char* read_file(const char* filepath) {
-    FILE* fp = fopen(filepath, "r");
-    if (!fp) {
-        g_warning("Failed to open file: %s", filepath);
-        return NULL;
-    }
-    char buffer[2048];
-    GString* contents = g_string_new("");
-    while (fgets(buffer, sizeof(buffer), fp)) {
-        g_string_append(contents, buffer);
-    }
-    fclose(fp);
-	char* result = g_strdup(contents->str);
-    g_string_free(contents, TRUE); 
-    return result;  
-}
+//task #4 this is where read_file was originally. it is also being called by another function in callbacks.c. 
+//we have to make sure its still accessible after it has been moved
+
+
 
 
 void on_callback_edit(GtkWidget* widget, GtkTextBuffer* buffer){
@@ -173,6 +162,7 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 	char* compile_path = shared_lib_path(active_widget);
 	char* gcc_command = g_strdup_printf(
 			"gcc %s -w -g -shared -fPIC $(pkg-config --cflags --libs gtk+-3.0) -o %s", document_path, compile_path);
+	printf("\n %s \n", gcc_command);
 	int res = system(gcc_command);
 
 	// Check for potential issues
