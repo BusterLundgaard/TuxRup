@@ -11,6 +11,11 @@
 
 void on_done_clicked(GtkWidget *widget, gpointer user_data)
 {   
+    //retriveing the selected windget
+    GtkWidget* w = selected_widget;
+    if(w == NULL) {return;}
+    if(!GTK_IS_WIDGET(w)) {return;}
+
     GtkTextBuffer *textbuffer = user_data;
     char* text = get_text_from_buffer(textbuffer);
 
