@@ -525,13 +525,16 @@ void refreshallcss() {
 			printf("my text is: %s \n",gtk_label_get_text(widget));
 			printf("my toplevel title is: %s \n", gtk_window_get_title(window));
 			//first we remove the label from its original container
-			//gtk_container_remove(GTK_CONTAINER(parent), widget);
-			//we create an eventbox to contane the label, and add ite to the labels parent
-			GtkWidget *labelbutton2 = gtk_button_new_with_label("asdasdas");
+			gtk_container_remove(GTK_CONTAINER(parent), widget);
+			//we create an eventbox to contane the label, and add it to the labels parent
+			GtkWidget *label2 = gtk_label_new("asdasdas");
 			GtkWidget *eventbox = gtk_event_box_new();
-			//gtk_container_add(GTK_CONTAINER(eventbox), label2);
-			gtk_container_add(GTK_CONTAINER(parent), labelbutton2);
+			gtk_container_add(GTK_CONTAINER(eventbox), label2);
+			gtk_container_add(GTK_CONTAINER(parent), eventbox);
+			gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
+			g_signal_connect_data_original(eventbox, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
 			gtk_widget_show_all_original(window);
+			return;
 		}
 
 		add_class_to_widget(widget, "modifiable");
