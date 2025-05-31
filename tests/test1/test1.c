@@ -32,6 +32,8 @@ activate (GtkApplication *app,
 	gtk_widget_set_valign(box, GTK_ALIGN_CENTER);
 	gtk_container_add(GTK_CONTAINER(window), box);
 
+	GtkWidget *label = gtk_label_new("edit me!");
+
 	GtkWidget* button = gtk_button_new_with_label ("Bangladesh");
 	g_signal_connect(button, "clicked", G_CALLBACK(on_new_clicked), NULL);
 
@@ -45,6 +47,7 @@ activate (GtkApplication *app,
 	GtkWidget* dropdown = gtk_combo_box_text_new();
 	gtk_widget_set_name(dropdown, "super cool dropdown");
 
+	gtk_container_add(GTK_CONTAINER(box), label);
 	gtk_container_add(GTK_CONTAINER(box), button); 
 	gtk_container_add(GTK_CONTAINER(box), checkbutton); 
 	gtk_container_add(GTK_CONTAINER(box), scale); 

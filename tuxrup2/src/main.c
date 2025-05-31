@@ -125,13 +125,20 @@ bool observed_type(GtkWidget* widget){
 		GTK_IS_SPIN_BUTTON(widget) ||
 		GTK_IS_SCALE(widget) ||
 		GTK_IS_COMBO_BOX(widget) ||
+		//task #5
+		//i add labels to the oserved types of widgets. this makes them show up in the list
+		GTK_IS_LABEL(widget);
 		GTK_IS_COMBO_BOX_TEXT(widget);
 }
+
 
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	if(!GTK_IS_WIDGET(widget)){return;}
 
-	if(observed_type(widget)){
+	//task #5
+	//i added an addtional condition, to sort out widgets that are the children of already modifiable widgets.
+	//this prevets the text on buttons from being registered
+	if(observed_type(widget) && observed_type(gtk_widget_get_parent(widget)) == FALSE){
 		*widgets = g_list_append(*widgets, widget);
 	}
 	
@@ -484,7 +491,7 @@ void refreshallcss() {
 	// SELECTING WIDGETS WITH RIGHT CLICK
 	// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	void on_widget_right_click(GtkWidget* widget){
-		
+		printf("how did it do it? \n");
 		if(selected_widget != NULL){
 			remove_class_from_widget(selected_widget, "selected");
 		}
@@ -499,6 +506,7 @@ void refreshallcss() {
 
 	gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
 		// Check that it is actually a right click and not just any click
+		printf("i got called \n");
 		if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)){
 			return false;
 		}
@@ -508,6 +516,23 @@ void refreshallcss() {
 	// Make this widget customizable 
 	void make_widget_customizable(GtkWidget* widget){
 		if(!observed_type(widget)){return;}
+		//task #5
+		//since labels are special, we need to take special care to make them modifiable.
+		if(GTK_IS_LABEL(widget) == TRUE){
+			GtkWidget *parent = gtk_widget_get_parent(widget);
+			GtkWidget *window = gtk_widget_get_toplevel(widget);
+			printf("i am a label \n");
+			printf("my text is: %s \n",gtk_label_get_text(widget));
+			printf("my toplevel title is: %s \n", gtk_window_get_title(window));
+			//first we remove the label from its original container
+			//gtk_container_remove(GTK_CONTAINER(parent), widget);
+			//we create an eventbox to contane the label, and add ite to the labels parent
+			GtkWidget *labelbutton2 = gtk_button_new_with_label("asdasdas");
+			GtkWidget *eventbox = gtk_event_box_new();
+			//gtk_container_add(GTK_CONTAINER(eventbox), label2);
+			gtk_container_add(GTK_CONTAINER(parent), labelbutton2);
+			gtk_widget_show_all_original(window);
+		}
 
 		add_class_to_widget(widget, "modifiable");
 
