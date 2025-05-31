@@ -29,6 +29,10 @@ void on_done_clicked(GtkWidget *widget, gpointer user_data)
 void on_load(GtkWidget *widget, gpointer user_data) {
     GtkTextBuffer *textbuffer = user_data;
 
+    //task #3
+    //here we run a few checks to ensure we actually have a widget selected when we try to change css
+    //the program was supposed to be able to run without it, and then only crash when you tried to change the css without a widget selected.
+    //however (on my machine) it also prevented tuxrup from building, so i actually fixed this first
     GtkWidget* w = selected_widget;
     if(w == NULL) {return;}
     if(!GTK_IS_WIDGET(w)) {return;}
