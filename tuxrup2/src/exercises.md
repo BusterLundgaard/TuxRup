@@ -14,3 +14,10 @@ Very chill: Just move the function read_file() currently in callbacks.c into uti
 
 # exercise 5:
 This current version of Tuxrup doesn't support selecting and editing GtkLabels. Add support for that.
+
+
+# use this to make it able to build:
+unset GTK_PATH
+
+# single line command for building test app and tuxrup, then running it.
+cd ../../tests/test1 && make && cd ../../tuxrup2/build && make build && make

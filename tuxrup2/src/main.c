@@ -523,30 +523,32 @@ void refreshallcss() {
 	typedef void(*activate_function_t)(GtkApplication*, gpointer);
 	activate_function_t original_activate = NULL;
 
-	/* static void */
-	/* tuxrup_activate ( */
-	/* 		GtkApplication *app, */
-	/* 		gpointer        data) */
-	/* { */
-	/* 	//tuxrup initialization */	
-	/* 	tuxrup_root = gtk_application_window_new(app); */ 
-	/* 	build_tuxrup_window(); */
-	/* 	gtk_widget_show_all_original(tuxrup_root); */
+	//task #1
+	//the modified activate function is defined
+	static void tuxrup_activate (GtkApplication* app, gpointer data){
 
-	/* 	//original initialization; */
-	/* 	original_activate(app, data); */
-	/* 	GList *windows = gtk_application_get_windows(app); */
-	/* 	if(windows == NULL){ */
-	/* 		g_print("couldn't get any windows from the app. Stopping\n"); */
-	/* 		exit(1); */
-	/* 	} */
-	/* 	GtkWidget* window = GTK_WIDGET(windows->data); */
-	/* 	if(window == NULL){ */
-	/* 		g_print("first element in list of windows was null. Stopping\n"); */
-	/* 		exit(1); */
-	/* 	} */
-	/* 	application_root = window; */
-	/* } */
+		//we call the original activate function, to render the target app's window
+		original_activate(app, data);
+
+		//we get all the current GTK windows, and check that there are any. if there are none, then something probably went wrong.
+		GList* windows = gtk_application_get_windows(app);
+		//we save the app's root window for later, we also check that it isent null
+		application_root = GTK_WIDGET(windows->data);
+		if(g_list_length(windows) == 0 || application_root == NULL){
+			printf("no windows were detected in this app, or the first window was NULL, something went wrong! \n");
+			exit(1);
+		}
+
+		//we add a new window to the app, which will serve as the root window of Tuxrup.
+		//i do this after the check, becuase adding tuxrup's root window before the tests, means that they would never fail. 
+		//this is because tuxrups window would always be there and would not be null
+		tuxrup_root = gtk_application_window_new(app);
+		//we build the tuxrup window
+		build_tuxrup_window();
+		//we call the show all function, in order to render tuxrup's window
+		gtk_widget_show_all_original(tuxrup_root);
+	}
+
 
 	gulong g_signal_connect_data(gpointer instance,
 								 const gchar *detailed_signal,
@@ -555,15 +557,22 @@ void refreshallcss() {
 								 GClosureNotify destroy_data,
 								 GConnectFlags connect_flags){
 
-		// This is normally not commented out, but for pedagogical/simplicity reasons it is now
-		/* if(GTK_IS_APPLICATION(instance) && strcmp(detailed_signal, "activate") && !initialized){ */
-		/* 	initialized = true; */
-			
-		/* 	original_activate = (activate_function_t)c_handler; */
-		/* 	g_signal_connect_data_original(instance, "activate", G_CALLBACK(tuxrup_activate), data, NULL, (GConnectFlags)0); */
+		
+		//task #1
+		//we check that we are dealing with the activations signal, and that we have not yet initialized
+		if(GTK_IS_APPLICATION(instance) && !strcmp(detailed_signal, "activate") && !initialized){
+			initialized = true;
 
-		/* 	return 0; */
-		/* } */
+			//we store the original activate callback as a activate_function_t, which is a function pointer.
+			//it will later be called during the modified activate function
+			original_activate = (activate_function_t)c_handler;
+
+			//we pass the signal along to GTK's original g_signal_connect_data function, but with its callback changed to tuxrup activate
+			//we do this so that tuxrup get activated and the window rendered
+			g_signal_connect_data_original(instance, "activate", G_CALLBACK(tuxrup_activate), data, NULL, (GConnectFlags)0);
+
+			return 0;
+		}
 
 		if(detailed_signal == "key-press-event"){
 			g_print("Adding a key-press-event", instance);	
