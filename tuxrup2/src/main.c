@@ -519,20 +519,26 @@ void refreshallcss() {
 		//task #5
 		//since labels are special, we need to take special care to make them modifiable.
 		if(GTK_IS_LABEL(widget) == TRUE){
+			//we get the labels parent, so we know where to place the new editable widget. 
+			//we also gets its index, so we can place the new widget where the old one was
 			GtkWidget *parent = gtk_widget_get_parent(widget);
-			GtkWidget *window = gtk_widget_get_toplevel(widget);
-			printf("i am a label \n");
-			printf("my text is: %s \n",gtk_label_get_text(widget));
-			printf("my toplevel title is: %s \n", gtk_window_get_title(window));
-			//first we remove the label from its original container
+			GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
+			int labelIndex = g_list_index(children, widget);
+			// we remove the label from its original container, but first we add a refrence.
+			//this is because if a widget has no refrences and no parent, it is destroyed
+			g_object_ref(widget);
 			gtk_container_remove(GTK_CONTAINER(parent), widget);
-			//we create an eventbox to contane the label, and add it to the labels parent
-			GtkWidget *label2 = gtk_label_new("asdasdas");
+			//we create an eventbox to contane the label
 			GtkWidget *eventbox = gtk_event_box_new();
-			gtk_container_add(GTK_CONTAINER(eventbox), label2);
-			gtk_container_add(GTK_CONTAINER(parent), eventbox);
+			gtk_container_add(GTK_CONTAINER(eventbox), widget);
+			//we add the new event box to the parent, and the place it in the correct possition
+			gtk_box_pack_start(GTK_BOX(parent), eventbox, true, true, 0);
+			gtk_box_reorder_child(GTK_BOX(parent), eventbox, labelIndex);
+			//finally we make the eventbox right-clickable, so that we may edit it
 			gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
 			g_signal_connect_data_original(eventbox, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
+			//we get the window, and refresh it, so that the new event box is displayed
+			GtkWidget *window = gtk_widget_get_toplevel(widget);
 			gtk_widget_show_all_original(window);
 			return;
 		}
