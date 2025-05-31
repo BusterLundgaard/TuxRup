@@ -5,6 +5,6 @@ tuxrup/build/__pycache__/*
 tuxrup/build/runtime_files/*
 tuxrup2/build/libtuxrup.so
 tests/test1/test1
-tuxrup2/build/runtime_generated_code
+tuxrup2/build/runtime_generated_code/*.so
 tuxrup2/build/temp.c
 tuxrup2/build/symbols/*_symbols
