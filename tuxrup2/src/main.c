@@ -498,7 +498,9 @@ void refreshallcss() {
 			return;
 		}
 		selected_widget = widget;
-		//if we are dealing with an eventbox containing a label, we select the label instead
+		//in GTK labels cannot have events attached. so in order to make them selectable we have put them in eventboxes, which can have events.
+		//this means that when we select a label we are actually selecting the eventbox that contains them, not the actual label.
+		//therefore to select the label, whenever we select an eventbox we instead select it child aka the label. thus making the label editable
 		if (GTK_IS_EVENT_BOX(widget) == TRUE)
 		{
 			//since the generated eventboxes only containe one label, the first child is that labe, so we select that
@@ -519,44 +521,46 @@ void refreshallcss() {
 		on_widget_right_click(widget);
 	}
 
+	//in order to make widget right-clickable, they must be put into an eventbox.
+	//this function takes a widget, put it in an eventbox, then puts said box in the same spot the widget occupied.
+	void make_label_editable(GtkWidget* widget){
+		//we retreive the label's parent and index among the parent children.
+		//this is needed in order to put the eventbox in the same spot as the label.
+		GtkWidget *parent = gtk_widget_get_parent(widget);
+		GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
+		int labelIndex = g_list_index(children, widget);
+
+		// in order to put the label into the event box it must first be removed from its parent.
+		//however before this is done we must add a floating refrence, otherwise the widget will be automatically destroyed, to save memory
+		g_object_ref(widget);
+		gtk_container_remove(GTK_CONTAINER(parent), widget);
+
+		//we create an eventbox, then but the label inside it
+		GtkWidget *eventbox = gtk_event_box_new();
+		gtk_container_add(GTK_CONTAINER(eventbox), widget);
+
+		//using the index we retrived at the start, we add the event box to the label's parent, and then move it to the position the label once occupied
+		gtk_box_pack_start(GTK_BOX(parent), eventbox, true, true, 0);
+		gtk_box_reorder_child(GTK_BOX(parent), eventbox, labelIndex);
+
+		//now that the eventbox has been added to the label's parent, we add a right-click event in the same way we would with any other editable widget.
+		gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
+		g_signal_connect_data_original(eventbox, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
+
+		//finally we force the window containing the eventbox to refresh it's displayed widget, so that the event box is rendered in the window
+		GtkWidget *window = gtk_widget_get_toplevel(widget);
+		gtk_widget_show_all_original(window);
+		return;
+
+	}
+
 	// Make this widget customizable 
 	void make_widget_customizable(GtkWidget* widget){
 		if(!observed_type(widget)){return;}
 		//task #5
-		//since labels are special, we need to take special care to make them modifiable.
+		//since labels requier special handeling to become editable, we have a check here to single them out.
 		if(GTK_IS_LABEL(widget) == TRUE){
-
-			//the reason we cant edit the text, is because we are still not actually selecting the label, but rather the eventbox it is put in!
-			//this must be addressed in order to edit the label
-			//also this should probably be moved to a helper function
-
-
-			//we get the labels parent, so we know where to place the new editable widget. 
-			//we also gets its index, so we can place the new widget where the old one was
-			GtkWidget *parent = gtk_widget_get_parent(widget);
-			GList *children = gtk_container_get_children(GTK_CONTAINER(parent));
-			int labelIndex = g_list_index(children, widget);
-
-			// we remove the label from its original container, but first we add a refrence.
-			//this is because if a widget has no refrences and no parent, it is destroyed
-			g_object_ref(widget);
-			gtk_container_remove(GTK_CONTAINER(parent), widget);
-
-			//we create an eventbox to contane the label
-			GtkWidget *eventbox = gtk_event_box_new();
-			gtk_container_add(GTK_CONTAINER(eventbox), widget);
-
-			//we add the new event box to the parent, and the place it in the correct possition
-			gtk_box_pack_start(GTK_BOX(parent), eventbox, true, true, 0);
-			gtk_box_reorder_child(GTK_BOX(parent), eventbox, labelIndex);
-
-			//finally we make the eventbox right-clickable, so that we may edit it
-			gtk_widget_add_events(eventbox, GDK_BUTTON_PRESS_MASK);
-			g_signal_connect_data_original(eventbox, "button-press-event", G_CALLBACK(on_widget_click), NULL, NULL, (GConnectFlags)0);
-
-			//we get the window, and refresh it, so that the new event box is displayed
-			GtkWidget *window = gtk_widget_get_toplevel(widget);
-			gtk_widget_show_all_original(window);
+			make_label_editable(widget);
 			return;
 		}
 
