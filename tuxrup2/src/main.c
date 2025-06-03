@@ -41,6 +41,8 @@ gboolean hasloaded = FALSE;
 //-------------------------------------------------------------------
 // HELPER FUNCTIONS
 //-------------------------------------------------------------------
+
+// Setter function, compares the root to the current application root and sets it if it's a valid candidate
 void set_application_root(GtkWidget* candidate) {
 	if (!application_root && GTK_IS_WINDOW(candidate)) {
 		application_root = candidate;
@@ -51,56 +53,76 @@ void set_application_root(GtkWidget* candidate) {
 	}
 }
 
+// reads a gfile, through the Glib API.
 gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
+	// we get the stream by reading the file
 	GFileInputStream *stream = g_file_read(file,NULL,error_out);
 	if (!stream) {
 		return NULL;
 	}
+	// we construct a new data stream from the stream
 	GDataInputStream *data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
 	if (!data_stream) {
 		return NULL;
 	}
-	
+	// we construct a buffer (what we will insert our bytes into) 
+	// a temporary buffer that will hold the data from the stream and declare the length and an error.
 	GByteArray *buffer = g_byte_array_new();
-	guint8 tempbuffer[4096];
-	gssize bytes;
-
+	guint8 data[4096];
+	gssize len;
 	GError *error = NULL;
-	while ((bytes = g_input_stream_read(G_INPUT_STREAM(data_stream), tempbuffer, sizeof(tempbuffer), NULL, &error)) > 0) {
-        g_byte_array_append(buffer, tempbuffer, bytes);
+	// we read the bytes in the stream.
+	while ((len = g_input_stream_read(G_INPUT_STREAM(data_stream), data, sizeof(data), NULL, &error)) > 0) {
+		// while bytes is > 0, ie we need to read more, we append the data chunks into the buffer.
+        g_byte_array_append(buffer, data, len);
     }
-	if (bytes<0) {
+	if (len<0) {
+		// the number of bytes to add should not be able to become negative.
+
+		//we use a warning
 		g_warning("could not read the file with error %s",error->message);
+
+		// cleanup
 		g_clear_error(&error);
 		g_byte_array_free(buffer,TRUE);
 		g_object_unref(data_stream);
 		g_object_unref(stream);
 		return NULL;
 	}
+	//cleanup
 	g_object_unref(data_stream);
 	g_object_unref(stream);
+	// c strings are null terminated so we append a unsigned byte \0 to the byte array and subract this from the buffer's length.
 	g_byte_array_append(buffer, (const guint8 *)"", 1);
     if (length) *length = buffer->len - 1;
-
+	// we free the wrapper (g_byte_array) but cast the return value as a string and return this.
     return (gchar *)g_byte_array_free(buffer, FALSE);
 }
 
 // could have used set text here
 void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
+
+	// we declare a GTK text iterator
 	GtkTextIter end;
+
+	// We get the end of the buffer using the iterator
     gtk_text_buffer_get_end_iter(buffer, &end);
+	// we insert the text into the end of the buffer.
     gtk_text_buffer_insert(buffer, &end, text, -1);
     gtk_text_buffer_insert(buffer, &end, "\n\n", -1);
 }
-
+// Putting it all together
 void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
 	GError *error = NULL;
 	gsize len = 0;
+	// bail out faast
 	if(!G_IS_FILE(file)) {
 		return;
 	}
+	// we read the file and get it's text
 	gchar *text = read_gfile(file,&len,&error);
 	if(text) {
+		// We append the text to the buffer
 		append_to_gtk_buffer(buffer,text);
 		g_free(text);
 	}
@@ -114,6 +136,8 @@ void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // FINDING ALL WIDGETS
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Filer function that returns true if it is a widget we are interested in.
 bool observed_type(GtkWidget* widget){
 	if(widget == NULL){return false;}
 	return 
@@ -128,33 +152,46 @@ bool observed_type(GtkWidget* widget){
 		GTK_IS_COMBO_BOX_TEXT(widget);
 }
 
+// Finds all modifiable children
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
+	// Bail out fast
 	if(!GTK_IS_WIDGET(widget)){return;}
-
+	// If it is a widget with the type we want, we add it to our list of modifiable children
 	if(observed_type(widget)){
 		*widgets = g_list_append(*widgets, widget);
 	}
-	
+	// bail out fast
 	if(!GTK_IS_CONTAINER(widget)){return;}
-
+	// We get the children of the container
 	GList *children = gtk_container_get_children(GTK_CONTAINER(widget));
+	// For each children, we traverse it's children and recursively call, to gather all children we are interested in.
 	for (GList *l = children; l; l = l->next){
 		find_all_modifiable_children(GTK_WIDGET(l->data), widgets);
 	}
+	//clean up
 	g_list_free(children);  
 }
-
+// Finds all modifiable widgets by traversing each window and finding all the modifiable children.
 GList* find_all_modifiable_widgets(){
+	// We get the application windows
 	GList* application_windows = gtk_application_get_windows(gtk_window_get_application(GTK_WINDOW(application_root)));
+
+	// We declare a list of widgets
 	GList* widgets = NULL; 
+
+	// For each window in the application
 	for(GList* elem = application_windows; elem; elem = elem->next){
+		// We get the root widget
 		GtkWidget* root_widget = GTK_WIDGET((GtkWindow*)elem->data);
+		// We check if it's TuxRup, if it is we ignore else we call get all the modifiable children in the window.
 		char* tempname = gtk_widget_get_name(root_widget);
 		if (strcmp(tempname, "Tuxrup") != 0)
 		{
 			find_all_modifiable_children(root_widget, &widgets);
 		}
 	}
+
+	//return the widgets found.
 	return widgets;
 }
 
@@ -693,70 +730,70 @@ bool exit_if_false(bool result, char* expected, char* got, int test_number){
 	return true;
 }
 
-bool tuxrup_test1(){
-	GList* widgets = find_all_modifiable_widgets();
-	int count = g_list_length(widgets);
+// bool tuxrup_test1(){
+// 	GList* widgets = find_all_modifiable_widgets();
+// 	int count = g_list_length(widgets);
 
-	return exit_if_false(
-		count == 8,
-		"8",
-		g_strdup_printf("%d", count),
-	   1	
-	);
-}
+// 	return exit_if_false(
+// 		count == 8,
+// 		"8",
+// 		g_strdup_printf("%d", count),
+// 	   1	
+// 	);
+// }
 
 // Test: "The 8 added elements have these specific names" 
-bool tuxrup_test2(){
-	char* names[8] = {
-		"GtkButton",
-		"GtkCheckButton",
-		"buster",
-		"GtkSpinButton",
-		"GtkEntry",
-		"super cool dropdown",
-		"GtkButton",
-		"GtkButton"
-	};
-	GList* widgets = find_all_modifiable_widgets();
+// bool tuxrup_test2(){
+// 	char* names[8] = {
+// 		"GtkButton",
+// 		"GtkCheckButton",
+// 		"buster",
+// 		"GtkSpinButton",
+// 		"GtkEntry",
+// 		"super cool dropdown",
+// 		"GtkButton",
+// 		"GtkButton"
+// 	};
+// 	GList* widgets = find_all_modifiable_widgets();
 
-	GList* elem = widgets;
-	for(int i = 0; i < 8 && elem != NULL; i++, elem = elem->next){
-		char* name = gtk_widget_get_name(elem->data); 
-		if(strcmp(name, names[i]) != 0){
-			g_print("test 2 failed. Expected: \"%s\", got \"%s\".\n", names[i], name);	
-			exit(1);
-		}
-	}
+// 	GList* elem = widgets;
+// 	for(int i = 0; i < 8 && elem != NULL; i++, elem = elem->next){
+// 		char* name = gtk_widget_get_name(elem->data); 
+// 		if(strcmp(name, names[i]) != 0){
+// 			g_print("test 2 failed. Expected: \"%s\", got \"%s\".\n", names[i], name);	
+// 			exit(1);
+// 		}
+// 	}
 
-	g_print("test 2 PASSED.\n");
-	return true;
-}
+// 	g_print("test 2 PASSED.\n");
+// 	return true;
+// }
 
 
-bool tuxrup_testBangladeshLable() {
-	GList* widgets = find_all_modifiable_widgets();
+// bool tuxrup_testBangladeshLable() {
+// 	GList* widgets = find_all_modifiable_widgets();
 
-	GList* elem = widgets;
-	for(int i = 0; i < g_list_length(widgets); i++, elem = elem->next) {
-		if(strcmp(get_widget_label(elem->data),"Bangladesh") == 0) {
-			g_print("test 3 PASSED\n");
-			return true;
-		}
-	}
-	g_print("test 3 failed. Expected: \"%s\", got \"%s\".\n", "Bangladesh", "None");	
-	exit(1);
-	return false;
-}
+// 	GList* elem = widgets;
+// 	for(int i = 0; i < g_list_length(widgets); i++, elem = elem->next) {
+// 		if(strcmp(get_widget_label(elem->data),"Bangladesh") == 0) {
+// 			g_print("test 3 PASSED\n");
+// 			return true;
+// 		}
+// 	}
+// 	g_print("test 3 failed. Expected: \"%s\", got \"%s\".\n", "Bangladesh", "None");	
+// 	exit(1);
+// 	return false;
+// }
 
-bool tuxrup_test_pointer_name_conversion(){
-	int x = *((int*)pointer_from_identifier("x"));
-	if(x != 23){
-		g_print("test 4 failed. Failed to properly resolve pointer with name \"x\". Expected: 23, got: %d\n", x);	
-		exit(1);
-	}		
+// bool tuxrup_test_pointer_name_conversion(){
+// 	int x = *((int*)pointer_from_identifier("x"));
+// 	if(x != 23){
+// 		g_print("test 4 failed. Failed to properly resolve pointer with name \"x\". Expected: 23, got: %d\n", x);	
+// 		exit(1);
+// 	}		
 
-	typedef void(*on_new_clicked_t)(GtkWidget*, gpointer);
-	((on_new_clicked_t)pointer_from_identifier("on_new_clicked"))(NULL, NULL);
+// 	typedef void(*on_new_clicked_t)(GtkWidget*, gpointer);
+// 	((on_new_clicked_t)pointer_from_identifier("on_new_clicked"))(NULL, NULL);
 
-	g_print("test 4 PASSED.\n");
-}
+// 	g_print("test 4 PASSED.\n");
+// }

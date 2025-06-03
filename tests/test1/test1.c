@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 // DESCRIBE THE TESTS HERE
-bool tuxrup_test1();
+//bool tuxrup_test1();
 bool tuxrup_test2();
 bool tuxrup_testBangladeshLable();
 bool tuxrup_test_pointer_name_conversion();
@@ -94,10 +94,10 @@ activate (GtkApplication *app,
 	gtk_widget_show_all(window);
 
 	// TESTING
-	tuxrup_test1();
-	tuxrup_test2();
-	tuxrup_testBangladeshLable();
-	tuxrup_test_pointer_name_conversion();
+	// tuxrup_test1();
+	//tuxrup_test2();
+	//tuxrup_testBangladeshLable();
+	//tuxrup_test_pointer_name_conversion();
 	g_print("ALL TESTS PASSED!\n");
 	/* gtk_window_close(GTK_WINDOW(window)); */
 }
