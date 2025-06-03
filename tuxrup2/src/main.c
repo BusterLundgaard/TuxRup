@@ -2,12 +2,10 @@
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gio/gio.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 #include "util.h"
 #include "css.h"
 #include "globals.h"
@@ -41,7 +39,6 @@ gboolean hasloaded = FALSE;
 //-------------------------------------------------------------------
 // HELPER FUNCTIONS
 //-------------------------------------------------------------------
-
 // Setter function, compares the root to the current application root and sets it if it's a valid candidate
 void set_application_root(GtkWidget* candidate) {
 	if (!application_root && GTK_IS_WINDOW(candidate)) {
@@ -99,7 +96,6 @@ gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {
     return (gchar *)g_byte_array_free(buffer, FALSE);
 }
 
-// could have used set text here
 void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
 
 	// we declare a GTK text iterator
@@ -111,6 +107,7 @@ void append_to_gtk_buffer(GtkTextBuffer *buffer, const gchar *text) {
     gtk_text_buffer_insert(buffer, &end, text, -1);
     gtk_text_buffer_insert(buffer, &end, "\n\n", -1);
 }
+
 // Putting it all together
 void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
 	GError *error = NULL;
@@ -136,7 +133,6 @@ void read_and_append_to_buffer(GFile *file, GtkTextBuffer *buffer) {
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // FINDING ALL WIDGETS
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 // Filer function that returns true if it is a widget we are interested in.
 bool observed_type(GtkWidget* widget){
 	if(widget == NULL){return false;}
@@ -171,6 +167,7 @@ void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
 	//clean up
 	g_list_free(children);  
 }
+
 // Finds all modifiable widgets by traversing each window and finding all the modifiable children.
 GList* find_all_modifiable_widgets(){
 	// We get the application windows
@@ -229,6 +226,7 @@ GtkWidget* create_overview_label(char* label_str){
 }
 
 void make_widget_customizable(GtkWidget* widget);
+
 void refresh_widgets_overview(){
 	empty_box(widget_types);
     empty_box(widget_names);
@@ -301,7 +299,7 @@ void refreshallcss() {
 	hasloaded = TRUE;
 	if(!G_IS_FILE(file_to_css)) {
 		g_print("G_IS_FILE says its not a file");
-		gtk_text_buffer_set_text(css_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+		gtk_text_buffer_set_text(css_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1);
 	}
 	else {
 		read_and_append_to_buffer(file_to_css,css_buffer);
@@ -326,7 +324,7 @@ void fix_application_root() {
 	}
 }
 
-// this is the important part, we need to try and grab the application window when refresh is called every time, gotdamn i hate this.
+// When the refresh function is called we grab the root window of the target application.
 void refresh_tuxrup_window(){
 	fix_application_root();
 	if(application_root) {refresh_widgets_overview();}
@@ -347,8 +345,8 @@ void refresh_tuxrup_window(){
 	gtk_widget_show_all_original(tuxrup_root);
 }
 
-
 static GtkWidget* widget_with_keyboard_shortcut = NULL;
+
 static gboolean on_key_press(GtkWidget* widget, GdkEventKey* event, gpointer user_data){
 	if(event->keyval == GDK_KEY_e){
 		if(selected_widget == NULL){return false;}
@@ -477,7 +475,7 @@ void build_tuxrup_window(){
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_edit_label);
 
 	css_text_buffer = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_set_text(css_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	gtk_text_buffer_set_text(css_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1);
 	GtkWidget* css_editor = gtk_text_view_new_with_buffer(css_text_buffer);
 	gtk_container_add(GTK_CONTAINER(change_css_column), css_editor);
 	g_signal_connect(done, "clicked", G_CALLBACK(on_done_clicked), css_text_buffer);
@@ -505,7 +503,7 @@ void build_tuxrup_window(){
 	gtk_box_pack_start(GTK_BOX(change_callback_column), callback_editor_scrolled_window, TRUE, TRUE, 0);
 
 	callbacks_text_buffer = gtk_text_buffer_new(NULL);
-	gtk_text_buffer_set_text(callbacks_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1); //TODO: Make this less bad
+	gtk_text_buffer_set_text(callbacks_text_buffer, "\n\n\n\n\n\n\n\n\n\n\n\n", -1);
 	GtkWidget* callback_editor = gtk_text_view_new_with_buffer(callbacks_text_buffer);
 	gtk_container_add(GTK_CONTAINER(callback_editor_scrolled_window), callback_editor);
 
@@ -533,7 +531,6 @@ void on_widget_right_click(GtkWidget* widget){
     add_class_to_widget(selected_widget, "selected");
 	refresh_tuxrup_window();
 }
-
 
 gboolean on_widget_click(GtkWidget* widget, GdkEventButton* event, gpointer user_data){
     // Check that it is actually a right click and not just any click
@@ -563,7 +560,7 @@ activate_function_t original_activate = NULL;
 
 static void
 tuxrup_activate (GtkApplication *app,
-          gpointer        data)
+          		 gpointer        data)
 {
 
 	//original initialization
@@ -592,12 +589,6 @@ gulong g_signal_connect_data(gpointer instance,
 
 		return 0;
 	}
-	/* if(G_IS_APPLICATION(instance)){ */
-	/* 	g_print("It is an application\n"); */
-	/* } */
-	/* if(strcmp(detailed_signal, "activate")){ */
-	/* 	g_print("it is the activate signal\n"); */
-	/* } */
 
 
 	if(detailed_signal == "key-press-event"){
@@ -614,7 +605,7 @@ gulong g_signal_connect_data(gpointer instance,
 	)
 	{goto signal_connect_end;}
 
-	/* g_print("widget %p passed. Has detailed_signal %s, and name %s.\n", instance, detailed_signal, gtk_widget_get_name(GTK_WIDGET(instance))); */
+	
 	g_object_set_data(G_OBJECT(instance), "callback_name", detailed_signal); 
 	g_object_set_data(G_OBJECT(instance), "callback_pointer", (gpointer)c_handler);
 	g_object_set_data(G_OBJECT(instance), "callback_data", data); 
@@ -637,7 +628,6 @@ gboolean gtk_css_provider_load_from_file(GtkCssProvider *css_provider, GFile *fi
 }
 
 
-
 // --------------------------------------------
 // INITIALIZATION
 // ---------------------------------------------
@@ -652,8 +642,6 @@ void init(){
 }
 
 // This function is called right AFTER the application shows its first window
-// we should try to get the application root here yes?
-//:thinking:;______________________________;
 void post_init(){
 	char* selected_css = 
 	".selected{\
@@ -678,7 +666,7 @@ void gtk_widget_show_all(GtkWidget *widget)
 		fix_application_root();
 
 		init();
-		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL); // why is this not just in init ;________;
+		tuxrup_root = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		build_tuxrup_window();
 		gtk_widget_show_all_original(tuxrup_root);
 		gtk_widget_show_all_original(widget);	
@@ -691,23 +679,6 @@ void gtk_widget_show_all(GtkWidget *widget)
 		gtk_widget_show_all_original(widget);	
 	}
 }
-
-/* void g_application_run(GApplication* application, int argc, char** argv){ */
-	
-/* } */
-
-/* GtkWidget* gtk_window_new ( */
-/*   GtkWindowType type */
-/* ){ */
-/* 	g_print("gtk_window_new called!\n"); */
-/* } */
-
-/* GtkWidget* */
-/* gtk_application_window_new ( */
-/*   GtkApplication* application */
-/* ){ */
-/* 	g_print("gtk_application_window_new was called!\n"); */
-/* } */
 
 
 // ------------------------------------------------------------------

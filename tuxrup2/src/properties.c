@@ -1,11 +1,9 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 #include "globals.h"
 #include "util.h"
 #include "properties.h"
@@ -27,7 +25,7 @@ GValue get_current_value(gchar* property_name, GType value_type){
 }
 
 void set_value(gchar* property_name, GType value_type, gpointer new_value){
-    GValue value = G_VALUE_INIT; //let me just add a little comment here:
+    GValue value = G_VALUE_INIT;
     g_value_init(&value, value_type); 
     switch(value_type){
         case G_TYPE_INT: g_value_set_int(&value, *(gint*)new_value); break;
@@ -50,6 +48,7 @@ void on_check_button_changed(GtkCheckButton* check_button, gpointer user_data){
 	gboolean current_boolean = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_button));
     set_value(property_name, G_TYPE_BOOLEAN, &current_boolean);
 }
+
 GtkWidget* create_boolean_editor(gchar* property_name){
     GValue current_value = get_current_value(property_name, G_TYPE_BOOLEAN);
     gboolean current_boolean = g_value_get_boolean(&current_value);
@@ -68,6 +67,7 @@ void on_spin_button_changed(GtkSpinButton* spin_button, gpointer user_data){
     double spin_button_value = gtk_spin_button_get_value(spin_button);
     set_value(property_name, G_TYPE_DOUBLE, &spin_button_value);
 }
+
 GtkWidget* create_number_editor(gchar* property_name, GType number_type){
     GValue current_value = get_current_value(property_name, number_type);
     
@@ -96,6 +96,7 @@ void on_text_entry_changed(GtkEntry* entry, gpointer user_data){
     const char* current_text = gtk_entry_buffer_get_text(buffer);
     set_value(property_name, G_TYPE_STRING, current_text);
 }
+
 GtkWidget* create_string_editor(gchar* property_name){
     GValue current_value = G_VALUE_INIT;
     g_value_init(&current_value, G_TYPE_STRING); 
@@ -114,21 +115,23 @@ GtkWidget* create_string_editor(gchar* property_name){
     return entry;
 }
 
+
 // ENUMS
 void on_dropdown_menu_changed(GtkComboBox* dropdown, GParamSpec* pspec, gpointer user_data){
 	gchar* property_name = (gchar*)user_data;
 	gint current_selected = gtk_combo_box_get_active(dropdown);
 	set_value(property_name, G_TYPE_ENUM, &current_selected);
 }
+
 GtkWidget* create_enum_editor(gchar* property_name, GType typ){
     GEnumClass* enum_class = g_type_class_ref(typ);
 
-    GValue current_value = get_current_value(property_name, G_TYPE_ENUM); //i
-									  //am making a comment to test my keyboard yay 
+    GValue current_value = get_current_value(property_name, G_TYPE_ENUM);
     gint current_enum_value = g_value_get_enum(&current_value);
 
     const gchar** dropdown_items = malloc((enum_class->n_values+1)*sizeof(gchar*));
-    dropdown_items[enum_class->n_values] = NULL; //Add NULL-terminator to list
+    //Add NULL-terminator to list
+    dropdown_items[enum_class->n_values] = NULL; 
     for(guint i = 0; i < enum_class->n_values; i++){
         GEnumValue *value = &enum_class->values[i];
         dropdown_items[i] = value->value_nick;
@@ -151,7 +154,8 @@ GtkWidget* create_enum_editor(gchar* property_name, GType typ){
 // Creates a field for editing a given widget property
 void create_and_add_property_editor(GtkWidget* vbox, GParamSpec* pspec){
     if (!(pspec->flags & G_PARAM_WRITABLE)) 
-    {return;} //Return if property isn't writeable
+    //Return if property isn't writeable
+    {return;}
 
     GType typ = G_PARAM_SPEC_VALUE_TYPE(pspec);
     char* property_type = g_type_name(typ);
@@ -174,7 +178,6 @@ void create_and_add_property_editor(GtkWidget* vbox, GParamSpec* pspec){
     gtk_widget_set_halign(hbox, GTK_ALIGN_END);
 	gtk_container_add(GTK_CONTAINER(vbox), hbox);
 }
-
 
 void on_edit_properties(GtkWidget* widget, gpointer user_data){
 	GtkWidget* property_editor = user_data;

@@ -1,16 +1,15 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 #include "globals.h"
 
 //------------------------------------
 // GlOBALS
 // -----------------------------------
+//these are variales the need to be accessed from everywhere in Tuxrup
 GtkWidget* application_root = NULL; // the first window from the application we are modifying. Should remain constant.
 GtkWidget* tuxrup_root = NULL; // the tuxrup window. Should remain constant.   
 GtkWidget* selected_widget = NULL; //the currently selected widget.

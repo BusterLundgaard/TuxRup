@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <gtk-3.0/gtk/gtk.h>
-
 #include "io.h"
 
 char* program_src_folder = NULL;

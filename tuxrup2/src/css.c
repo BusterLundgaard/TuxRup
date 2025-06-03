@@ -1,11 +1,9 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 #include "globals.h"
 #include "util.h"
 

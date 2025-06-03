@@ -1,13 +1,11 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
 #include <setjmp.h>
 #include <signal.h>
-
 #include "util.h"
 
 gpointer* get_original_function_pointer(char* name){
@@ -40,20 +38,21 @@ void empty_box(GtkWidget* box){
 }
 
 
-
-
-
-// CSS methods:
+//------------------------------------
+// CSS Functions:
+// -----------------------------------
 // Adds a CSS class to a widget
 void add_class_to_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	gtk_style_context_add_class(context, class);
 }
+
 // Removes a CSS class from a widget
 void remove_class_from_widget(GtkWidget* widget, char* class){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
 	gtk_style_context_remove_class(context, class);
 }
+
 // Checks if a widget contains a certain class_name
 bool contains_class(GtkWidget* widget, char* class_name){
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);
@@ -71,8 +70,8 @@ void apply_css(char* css_string, GtkWidget* application_root){
     gtk_css_provider_load_from_data(provider, css_string, -1, NULL); 
     GdkScreen *screen = gtk_widget_get_screen(application_root);
     gtk_style_context_add_provider_for_screen(screen,
-                                   GTK_STYLE_PROVIDER(provider),
-                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+                                   			  GTK_STYLE_PROVIDER(provider),
+                                   			  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_object_unref(provider); 
 }
 
@@ -89,12 +88,10 @@ void apply_css_to_widget(GtkWidget *widget, const gchar *css_data) {
                                    GTK_STYLE_PROVIDER(provider),
                                    GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-
     // Clean up
     g_free(css_block);
     g_object_unref(provider);
 }
-
 
 char* get_widget_type_string(GtkWidget* widget){
 	if      (GTK_IS_CHECK_BUTTON(widget))  {return "check_button";} 

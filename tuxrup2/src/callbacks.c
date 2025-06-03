@@ -1,11 +1,9 @@
 #include <gtk-3.0/gtk/gtk.h>
 #include <gdk/gdk.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <dlfcn.h>
-
 #include "util.h"
 #include "io.h"
 #include "symbols.h"
@@ -191,7 +189,7 @@ void on_callback_done(GtkWidget* widget, GtkTextBuffer* buffer){
 	}
 
 
-	/* gcc -rdynamic -o my_app main.o other.o ... */
+	
 	void* shared_lib_pointer = dlopen(compile_path, RTLD_LAZY);
 	if(shared_lib_pointer == NULL){
 		g_print("Failed to open shared lib pointer to %s. Won't overwrite callback.\n", compile_path);

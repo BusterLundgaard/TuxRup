@@ -11,7 +11,6 @@
 #include <glib.h>
 #include <ctype.h>
 #include <link.h>
-
 #include "io.h"
 
 typedef struct {
@@ -22,7 +21,6 @@ typedef struct {
 __attribute__((used)) static void* force_link = (void*)g_direct_hash;
 GHashTable* identifiers_to_pointers_map = NULL;
 GHashTable* pointers_to_identifiers_map = NULL; 
-
 
 bool is_variable(char symbol_type){
 	return
@@ -46,7 +44,6 @@ bool is_variable(char symbol_type){
 	/* so you should check after D, B, R, U, C */
 }
 
-
 bool is_pie_executable()
 {
     int fd = open(get_executable_symbols_path(), O_RDONLY);
@@ -59,7 +56,8 @@ bool is_pie_executable()
     }
     close(fd);
 
-    return (ehdr.e_type == ET_DYN); // PIE executables are of type ET_DYN
+	//PIE executables are of type ET_DYN
+    return (ehdr.e_type == ET_DYN); 
 }
 
 void *get_base_address()
@@ -123,7 +121,6 @@ GHashTable* get_main_symbols(){
 	return identifiers_to_pointers_map;
     pclose(fp);
 }
-
 
 void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, bool to_from){
     char command[512];
@@ -241,7 +238,6 @@ void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, boo
 	
 }
 
-
 char* identifier_from_pointer(void* pointer){
 	if(pointers_to_identifiers_map == NULL){
 		get_main_symbols();	
@@ -251,6 +247,7 @@ char* identifier_from_pointer(void* pointer){
 	}
 	return g_hash_table_lookup(pointers_to_identifiers_map, pointer);
 }
+
 char* pointer_from_identifier(char* identifier){
 	if(identifiers_to_pointers_map == NULL){
 		get_main_symbols();
