@@ -1,5 +1,7 @@
-´tuxrup´ folder is the folder for the code and build files *our* program, ie TuxRup.
+´tuxrup´ folder is the folder for the code and build files for the first-phase experimental TuxRup.
 
-´gtk_program_src` folder is the folder for the code and build files for the test program we are modifying
+'tuxrup2' folder is the folder for the code and build files for the minimum-viable product polished TuxRup
 
-See tuxrup/documentation for an explanation of the general principles behind how Tuxrup works. ,
+'statistics' includes a docker .tar file that can be run to compute the statistics regarding usage of GTK on Debian
+
+'gtk_program_src', 'tests' and 'evaluation_applications' all contain programs we tested Tuxrup on. 
