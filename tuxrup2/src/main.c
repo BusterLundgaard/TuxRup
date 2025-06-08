@@ -558,6 +558,8 @@ bool initialized = false;
 typedef void(*activate_function_t)(GtkApplication*, gpointer);
 activate_function_t original_activate = NULL;
 
+void post_init();
+
 static void
 tuxrup_activate (GtkApplication *app,
           		 gpointer        data)
@@ -571,6 +573,8 @@ tuxrup_activate (GtkApplication *app,
 	build_tuxrup_window();
 	gtk_widget_show_all_original = (gtk_widget_show_all_t)get_original_function_pointer("gtk_widget_show_all");
 	gtk_widget_show_all_original(tuxrup_root);
+
+	post_init();
 }
 
 gulong g_signal_connect_data(gpointer instance,
