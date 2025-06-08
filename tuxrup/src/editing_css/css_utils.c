@@ -12,6 +12,7 @@
  * CSS rules specifically matching a given css_name and 
  * list of css_classes.
  */
+
  char* parse_applicable_css_rules(const char *filepath, CssProps* widget_css_properties) {
     // Build a Python list for classes: e.g. ["class1","class2"]
     char class_list[1024] = "[";
