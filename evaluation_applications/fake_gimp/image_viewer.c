@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <limits.h>
-
+#include <stdbool.h>
 #include "globals.h"
 #include "image_viewer.h"
 

@@ -26,6 +26,8 @@
         "edit_callbacks_window.h": "c",
         "fakegimp.C": "cpp",
         "gdk.h": "c",
-        "dlfcn.h": "c"
+        "dlfcn.h": "c",
+        "string.h": "c",
+        "stdbool.h": "c"
     }
 }

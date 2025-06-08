@@ -29,7 +29,7 @@ char* get_program_src_folder(){
 		g_hash_table_insert(source_code_paths, "quodlibet", "../../../tuxrup_test_programs_source_code/quodlibet"                );
 		g_hash_table_insert(source_code_paths, "totem", "../../../tuxrup_test_programs_source_code/totem"                        );
 		g_hash_table_insert(source_code_paths, "xzgv", "../../../tuxrup_test_programs_source_code/xzgv"                          );
-		g_hash_table_insert(source_code_paths, "test1", "../../../../tests/test1/"                                              );
+		g_hash_table_insert(source_code_paths, "test1", "../../tests/test1/"                                              );
 		g_hash_table_insert(source_code_paths, "cpu-x", "../../../tuxrup_test_programs_source_code/CPU-X");
 		g_hash_table_insert(source_code_paths, "gaupol", "../../../tuxrup_test_programs_source_code/gaupol");
 		g_hash_table_insert(source_code_paths, "gigolo", "../../../tuxrup_test_programs_source_code/gigolo");

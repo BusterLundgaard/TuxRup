@@ -80,7 +80,7 @@ activate (GtkApplication *app,
 	// applying css:
 
 	GtkCssProvider *provider = gtk_css_provider_new();
-	GFile *file = g_file_new_for_path("/home/wowsuchdoge/TuxRup/tests/test1/test1.css");
+	GFile *file = g_file_new_for_path("../../tests/test1/test1.css");
 	gtk_css_provider_load_from_file(provider,file,NULL);
 	g_object_unref(file);
 

@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <gtk/gtk.h>
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
@@ -104,6 +103,6 @@ void timer(GtkWidget *button, gpointer data){
     snprintf(buffer, sizeof(buffer), "%d", diff);
 
 }
-void activate(GtkApplication *app, gpointer        user_data){
+void activate(GtkApplication *app, gpointer user_data){
 
 }
