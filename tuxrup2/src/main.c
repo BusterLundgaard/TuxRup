@@ -53,7 +53,7 @@ void set_application_root(GtkWidget* candidate) {
 // reads a gfile, through the Glib API.
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-// Chat GPT was used to help construct read_gfile
+// GPT4o was used to help construct read_gfile
 // It was used to understand the API of Glib and how one reads a GFile
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 gchar* read_gfile(GFile *file, gsize *length, GError **error_out) {

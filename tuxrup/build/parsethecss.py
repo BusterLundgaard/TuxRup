@@ -1,5 +1,11 @@
 import tinycss2
 
+
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+# GPT4o was used to help construct parsethecss.py
+# It was used to generate a dummy parser, to see if it was a viable design route
+# It was not a viable design route.
+# *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 def getTheCss(css, widget_css_name, widget_css_classes):
     rules = tinycss2.parse_stylesheet(css)
     matched_rules = []

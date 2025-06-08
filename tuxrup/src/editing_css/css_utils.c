@@ -12,8 +12,12 @@
  * CSS rules specifically matching a given css_name and 
  * list of css_classes.
  */
-
- char* parse_applicable_css_rules(const char *filepath, CssProps* widget_css_properties) {
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+// GPT4o was used to help construct parse_applicable_css_rules
+// It was used to generate a dummy parser, to see if it was a viable design route
+// It was not a viable design route.
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+char* parse_applicable_css_rules(const char *filepath, CssProps* widget_css_properties) {
     // Build a Python list for classes: e.g. ["class1","class2"]
     char class_list[1024] = "[";
     for (size_t i = 0; i < widget_css_properties->num_classes; i++) {
