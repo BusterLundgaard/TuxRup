@@ -14,7 +14,7 @@
  */
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 // GPT4o was used to help construct parse_applicable_css_rules
-// It was used to generate a dummy parser, to see if it was a viable design route
+// It was used to generate a dummy parser, to test if it was a viable design route
 // It was not a viable design route.
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 char* parse_applicable_css_rules(const char *filepath, CssProps* widget_css_properties) {

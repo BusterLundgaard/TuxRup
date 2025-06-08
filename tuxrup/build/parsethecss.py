@@ -3,7 +3,7 @@ import tinycss2
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # GPT4o was used to help construct parsethecss.py
-# It was used to generate a dummy parser, to see if it was a viable design route
+# It was used to generate a dummy parser in a public python API, to test if it was a viable design route
 # It was not a viable design route.
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 def getTheCss(css, widget_css_name, widget_css_classes):
