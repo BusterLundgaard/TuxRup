@@ -16,6 +16,7 @@
 // GPT4o was used to help construct parse_applicable_css_rules
 // It was used to generate a dummy parser, to test if it was a viable design route
 // It was not a viable design route.
+// And is not used in the final version of tuxrup
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 char* parse_applicable_css_rules(const char *filepath, CssProps* widget_css_properties) {
     // Build a Python list for classes: e.g. ["class1","class2"]
