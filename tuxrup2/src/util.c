@@ -8,15 +8,9 @@
 #include <signal.h>
 #include "util.h"
 
-gpointer* get_original_function_pointer(char* name){
-	void* p = dlsym(RTLD_NEXT, name);
-	if(p == NULL){
-		g_print("Could not load function %s\n", name);
-		exit(1);
-	}
-	return p;
-}
-
+// ---------------------------------------
+// GTK Utility functions
+// ---------------------------------------
 GtkWidget* make_scrolled_window(int width, int height){
 	GtkAdjustment* h_adj = gtk_adjustment_new(0,0,0,0,0,0);
 	GtkAdjustment* v_adj = gtk_adjustment_new(0,0,0,0,0,0);
@@ -35,6 +29,39 @@ void empty_box(GtkWidget* box){
         gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(iter->data));
     }
     g_list_free(children);
+}
+
+char* get_widget_type_string(GtkWidget* widget){
+	if      (GTK_IS_CHECK_BUTTON(widget))  {return "check_button";} 
+	else if (GTK_IS_TOGGLE_BUTTON(widget)) {return "toggle_button";} 
+	else if (GTK_IS_SPIN_BUTTON(widget))   {return "spin_button";} 
+	else if (GTK_IS_BUTTON(widget))        {return "button";}
+	else if (GTK_IS_LABEL(widget))		   {return "label";}
+	else if (GTK_IS_ENTRY(widget))         {return "entry";} 
+	else if (GTK_IS_TEXT_BUFFER(widget))   {return "text_buffer";} 
+	else if (GTK_IS_SCALE(widget))         {return "scale";} 
+	else if (GTK_IS_COMBO_BOX_TEXT(widget)){return "combo_box_text";}
+	else if (GTK_IS_COMBO_BOX(widget))     {return "combo_box";} 
+	return "";
+}
+
+char* get_widget_label(GtkWidget* widget){
+	char* label = NULL;
+	if(GTK_IS_BUTTON(widget)){ 
+		label = gtk_button_get_label(GTK_BUTTON(widget));	
+	}
+	if(GTK_IS_LABEL(widget)){
+		label = gtk_label_get_label(GTK_LABEL(widget));
+	}
+	
+	return label ? label : "";
+}
+
+char* get_text_from_buffer(GtkTextBuffer *buffer){
+    GtkTextIter start, end;
+    gtk_text_buffer_get_start_iter(buffer, &start);
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    return g_strdup(gtk_text_buffer_get_text(buffer, &start, &end, FALSE));
 }
 
 
@@ -93,36 +120,15 @@ void apply_css_to_widget(GtkWidget *widget, const gchar *css_data) {
     g_object_unref(provider);
 }
 
-char* get_widget_type_string(GtkWidget* widget){
-	if      (GTK_IS_CHECK_BUTTON(widget))  {return "check_button";} 
-	else if (GTK_IS_TOGGLE_BUTTON(widget)) {return "toggle_button";} 
-	else if (GTK_IS_SPIN_BUTTON(widget))   {return "spin_button";} 
-	else if (GTK_IS_BUTTON(widget))        {return "button";}
-	else if (GTK_IS_LABEL(widget))		   {return "label";}
-	else if (GTK_IS_ENTRY(widget))         {return "entry";} 
-	else if (GTK_IS_TEXT_BUFFER(widget))   {return "text_buffer";} 
-	else if (GTK_IS_SCALE(widget))         {return "scale";} 
-	else if (GTK_IS_COMBO_BOX_TEXT(widget)){return "combo_box_text";}
-	else if (GTK_IS_COMBO_BOX(widget))     {return "combo_box";} 
-	return "";
-}
 
-char* get_widget_label(GtkWidget* widget){
-	char* label = NULL;
-	if(GTK_IS_BUTTON(widget)){ 
-		label = gtk_button_get_label(GTK_BUTTON(widget));	
+// ------------------------------------
+// Misc
+// ------------------------------------
+gpointer* get_original_function_pointer(char* name){
+	void* p = dlsym(RTLD_NEXT, name);
+	if(p == NULL){
+		g_print("Could not load function %s\n", name);
+		exit(1);
 	}
-	if(GTK_IS_LABEL(widget)){
-		label = gtk_label_get_label(GTK_LABEL(widget));
-	}
-	
-	return label ? label : "";
+	return p;
 }
-
-char* get_text_from_buffer(GtkTextBuffer *buffer){
-    GtkTextIter start, end;
-    gtk_text_buffer_get_start_iter(buffer, &start);
-    gtk_text_buffer_get_end_iter(buffer, &end);
-    return g_strdup(gtk_text_buffer_get_text(buffer, &start, &end, FALSE));
-}
-
