@@ -60,29 +60,21 @@ bool is_pie_executable()
     return (ehdr.e_type == ET_DYN); 
 }
 
-void *get_base_address()
-{
-	if(!is_pie_executable()){
-		return 0;
-	}
-
+void* get_process_memory_offset(char* process_name){
     FILE* fp = fopen("/proc/self/maps", "r");
     if (!fp){return NULL;}
 
-    void *base_addr = NULL;
     char line[256];
-
-    while (fgets(line, sizeof(line), fp))
-    {
-        if (strstr(line, "r--p") && strstr(line, get_executable_name()))
-        {
-            base_addr = (void *)strtoull(line, NULL, 16);
-            break;
+	g_print("Getting memory offset of %s\n", process_name);
+	g_print("Printing memory maps:\n");
+    while (fgets(line, sizeof(line), fp)) {
+		g_print("%s\n", line);
+		
+        if (strstr(line, "r--p") && strstr(line, process_name)) {
+			fclose(fp);
+            return (void *)strtoull(line, NULL, 16);
         }
     }
-
-    fclose(fp);
-    return base_addr;
 }
 
 GHashTable* get_main_symbols(){
@@ -93,7 +85,7 @@ GHashTable* get_main_symbols(){
 	identifiers_to_pointers_map = g_hash_table_new(g_str_hash, g_str_equal);
 	pointers_to_identifiers_map = g_hash_table_new(g_direct_hash, g_direct_equal);
 
-	void* base_addr = get_base_address();
+	void* base_addr = get_process_memory_offset(get_executable_name());
 
     char command[512];
     snprintf(command, sizeof(command), "nm %s", get_executable_symbols_path());
@@ -123,11 +115,12 @@ GHashTable* get_main_symbols(){
 }
 
 void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, bool to_from){
+	//Part 1: Get addresses of symbols in shared library
+	GHashTable* shared_lib_identifiers = g_hash_table_new(g_str_hash, g_str_equal);  
+
     char command[512];
     snprintf(command, sizeof(command), "nm -C -S %s", shared_lib_path);
-
-	// Pass 1: Get the base (real, not relative) address you will use to compute the other addresses
-	FILE *fp = popen(command, "r");
+	FILE* fp = popen(command, "r");
 
     char line[1024];
 	char type;
@@ -135,29 +128,7 @@ void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, boo
 	size_t address;
 	size_t size;
 
-	void* base_absolute = NULL;
-	void* base_relative = NULL;
-    while (fgets(line, sizeof(line), fp)) {
-
-        // Format: address size type name
-		if(!isdigit(line[0]) || !isdigit(line[18]))
-		{continue;}
-        if (!sscanf(line, "%lx %lx %c %511s", &address, &size, &type, name) == 3)
-		{continue;}
-
-		void* real_address = dlsym(shared_lib_dl_open_pointer, name);
-		if(real_address == NULL)
-		{continue;}
-
-		base_absolute = (void*)real_address;
-		base_relative = (void*)address;
-		break;
-    }
-    pclose(fp);
-	
-	// Pass 2: Get real addresses 
-	GHashTable* shared_lib_identifiers = g_hash_table_new(g_str_hash, g_str_equal);  
-	fp = popen(command, "r");
+	void* base_addr = get_process_memory_offset(g_basename(g_strdup(shared_lib_path)));
     while (fgets(line, sizeof(line), fp)) {
 
         // Format: address size type name
@@ -176,11 +147,11 @@ void sync_variables(char* shared_lib_path, void* shared_lib_dl_open_pointer, boo
 
 		symbol_info* value = malloc(sizeof(symbol_info));
 		value->size = size;
-		value->address = (void*)((uintptr_t)base_absolute + ((uintptr_t)address - (uintptr_t)base_relative)); 	
+		value->address = (void*)((uintptr_t)base_addr + (uintptr_t)address);
 		g_hash_table_insert(shared_lib_identifiers, g_strdup(name), value);
     }
 
-	// Pass 3: Actually sync!
+	// Pass 2: Actually sync!
 	GHashTableIter iter;
 	gpointer key, value;
 

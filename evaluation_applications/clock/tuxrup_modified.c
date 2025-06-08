@@ -96,7 +96,15 @@ void timer(GtkWidget *button, gpointer data) {
     time_t timeNow;
     time(&timeNow);
     //convert am/pm time to 24h time
-    int hour24 =hour;
+    int hour24 = 0;
+    if (strcmp("AM", amPm) == 0)
+    {
+        hour24 = hour;
+    }
+    else if (strcmp("PM", amPm) == 0)
+    {
+        hour24 = hour + 12;
+    }
     //setting the time we want to reach
     struct tm *setTimeInfo;
     setTimeInfo = localtime(&timeNow);

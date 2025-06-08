@@ -582,8 +582,6 @@ gulong g_signal_connect_data(gpointer instance,
 
 	if(GTK_IS_APPLICATION(instance) && strcmp(detailed_signal, "activate") && !initialized){
 		initialized = true;
-		g_print("I was initialized yay!\n");
-		
 		original_activate = (activate_function_t)c_handler;
 		g_signal_connect_data_original(instance, "activate", G_CALLBACK(tuxrup_activate), data, NULL, (GConnectFlags)0);
 
@@ -634,6 +632,7 @@ gboolean gtk_css_provider_load_from_file(GtkCssProvider *css_provider, GFile *fi
 // This function is called as the very first function, ie. before ANYTHING else. Can't rely on any kind of GTK context, since GTK hasn't even run it's application yet.
 __attribute__((constructor))
 void pre_init(){
+
 }
 
 // This function is run right BEFORE the application shows its first window
