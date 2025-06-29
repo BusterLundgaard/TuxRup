@@ -185,7 +185,6 @@ void on_edit_properties(GtkWidget* widget, gpointer user_data){
     active_widget = selected_widget;
     if(active_widget == NULL) {return;}
 	
-	g_print("about to cast to object. active_widget = %p\n!", active_widget);
     GObjectClass* klass = G_OBJECT_GET_CLASS(G_OBJECT(active_widget));
     guint properties_n;
     GParamSpec **properties = g_object_class_list_properties(klass, &properties_n);

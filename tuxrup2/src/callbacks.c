@@ -13,11 +13,11 @@ static GtkWidget* active_widget = NULL;
 
 typedef void(*callback_function_t)(GtkWidget*, gpointer);
 
-void remove_callback (GtkWidget* w, char* callback_name){
+void remove_callback (GtkWidget* w, char* detailed_signal){
     g_signal_handlers_disconnect_matched(
         w, 
         G_SIGNAL_MATCH_ID, 
-        g_signal_lookup(callback_name, G_OBJECT_TYPE(w)), 
+        g_signal_lookup(detailed_signal, G_OBJECT_TYPE(w)), 
         0, 
         NULL, 
         NULL, 

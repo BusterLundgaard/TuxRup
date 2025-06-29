@@ -596,11 +596,14 @@ gulong g_signal_connect_data(gpointer instance,
 
 		return 0;
 	}
+<<<<<<< HEAD
 
 
 	if(detailed_signal == "key-press-event"){
 		g_print("Adding a key-press-event", instance);	
 	}
+=======
+>>>>>>> 5c9e40f (wrote way more about converting between names and pointers)
 
 	if(!observed_type(instance))
 	{goto signal_connect_end;}
