@@ -24,6 +24,7 @@ char* get_program_src_folder(){
 		g_hash_table_insert(source_code_paths, "ow", "../../evaluation_applications/overwrites"                   );
 		g_hash_table_insert(source_code_paths, "fg", "../../evaluation_applications/fake_gimp"                    );
 		g_hash_table_insert(source_code_paths, "gnome-clocks", "/src/tuxrup_testing_applications_src/gnome-clocks");
+		g_hash_table_insert(source_code_paths, "presentation", "../../../forsvar/");
 
 		g_hash_table_insert(source_code_paths, "fcitx-config-gtk3", "../../../tuxrup_test_programs_source_code/fcitx-configtool" );
 		g_hash_table_insert(source_code_paths, "quodlibet", "../../../tuxrup_test_programs_source_code/quodlibet"                );

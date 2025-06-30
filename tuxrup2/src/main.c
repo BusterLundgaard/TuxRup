@@ -150,26 +150,24 @@ bool observed_type(GtkWidget* widget){
 		GTK_IS_SPIN_BUTTON(widget) ||
 		GTK_IS_SCALE(widget) ||
 		GTK_IS_COMBO_BOX(widget) ||
-		GTK_IS_COMBO_BOX_TEXT(widget);
+		GTK_IS_COMBO_BOX_TEXT(widget) || 
+		GTK_IS_LABEL(widget);
 }
 
 // Finds all modifiable children
 void find_all_modifiable_children(GtkWidget* widget, GList** widgets){
-	// Bail out fast
 	if(!GTK_IS_WIDGET(widget)){return;}
-	// If it is a widget with the type we want, we add it to our list of modifiable children
 	if(observed_type(widget)){
 		*widgets = g_list_append(*widgets, widget);
+		return;
 	}
-	// bail out fast
+
 	if(!GTK_IS_CONTAINER(widget)){return;}
-	// We get the children of the container
 	GList *children = gtk_container_get_children(GTK_CONTAINER(widget));
-	// For each children, we traverse it's children and recursively call, to gather all children we are interested in.
 	for (GList *l = children; l; l = l->next){
 		find_all_modifiable_children(GTK_WIDGET(l->data), widgets);
 	}
-	//clean up
+
 	g_list_free(children);  
 }
 
@@ -596,14 +594,10 @@ gulong g_signal_connect_data(gpointer instance,
 
 		return 0;
 	}
-<<<<<<< HEAD
-
 
 	if(detailed_signal == "key-press-event"){
 		g_print("Adding a key-press-event", instance);	
 	}
-=======
->>>>>>> 5c9e40f (wrote way more about converting between names and pointers)
 
 	if(!observed_type(instance))
 	{goto signal_connect_end;}
